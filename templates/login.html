@@ -1,41 +1,224 @@
-<script>
-  const message = document.getElementById('message');
-
-  function clearMessage() {
-    message.textContent = '';
-  }
-
-  async function login() {
-    const username = document.getElementById('username').value.trim();
-    const password = document.getElementById('password').value.trim();
-
-    if (!username || !password) {
-      message.textContent = 'Please enter username and password';
-      return;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paradise Shop - Login</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      overflow-x: hidden;
+      perspective: 1px;
+      height: 100vh;
+      overflow-y: auto;
+      background-attachment: fixed;
+      color: #333;
     }
 
-    try {
-      // Use relative URL so it works on Render too
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include'  // important to include cookies for session!
-      });
+    /* Parallax Background */
+    .parallax-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
+      z-index: -1;
+      filter: brightness(0.75);
+    }
 
-      const data = await response.json();
+    /* Floating Palm Logo */
+    .logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      animation: floatPalm 4s ease-in-out infinite;
+      z-index: 10;
+    }
 
-      if (!response.ok) {
-        message.textContent = data.error || 'Login failed';
+    @keyframes floatPalm {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    /* Login container with neon pulse border */
+    .login-container {
+      margin: 120px auto;
+      width: 320px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
+      box-sizing: border-box;
+      color: #222;
+    }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
+    }
+
+    input, button {
+      margin: 12px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      outline-offset: 2px;
+    }
+
+    input:focus {
+      border-color: #00ffd0;
+      box-shadow: 0 0 8px #00ffd0;
+    }
+
+    button {
+      background-color: #00aaff;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00aaff;
+      text-transform: uppercase;
+    }
+    button:hover {
+      background-color: #008ecc;
+      box-shadow: 0 0 20px #008ecc;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: red;
+      font-weight: 600;
+      min-height: 22px;
+      text-align: center;
+    }
+
+    /* Link style */
+    p.signup-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1rem;
+    }
+    p.signup-link a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    p.signup-link a:hover {
+      text-decoration: underline;
+      color: #004999;
+    }
+  </style>
+
+  <!-- Google reCAPTCHA v2 -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+</head>
+<body>
+
+  <!-- Parallax Background -->
+  <div class="parallax-bg"></div>
+
+  <!-- Floating Palm Logo -->
+  <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
+
+  <!-- Background tropical music -->
+  <audio id="bg-music" autoplay loop>
+    <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
+  </audio>
+
+  <!-- Login Form -->
+  <div class="login-container">
+    <h2>🌺 Welcome Back to Paradise</h2>
+
+    <input type="text" id="username" placeholder="Username" oninput="clearMessage()" autofocus />
+    <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
+
+    <!-- reCAPTCHA -->
+    <div style="margin: 15px 0; text-align: center;">
+      <div class="g-recaptcha" data-sitekey="6LeFEFYrAAAAADtsjeNDwHOfrIIuC777r2jnN_rE"></div>
+    </div>
+
+    <button id="loginButton" type="button">Login</button>
+
+    <p id="message"></p>
+    <p class="signup-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+  </div>
+
+  <script>
+    const message = document.getElementById('message');
+    const loginButton = document.getElementById('loginButton');
+    const bgMusic = document.getElementById('bg-music');
+
+    // Soft background music volume
+    bgMusic.volume = 0.15;
+
+    function clearMessage() {
+      message.textContent = '';
+      message.style.color = 'red';
+    }
+
+    async function login() {
+      clearMessage();
+
+      // Check reCAPTCHA response
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) {
+        message.textContent = 'Please verify you are not a robot.';
         return;
       }
 
-      // On successful login, redirect to homepage
-      window.location.href = '/';
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
 
-    } catch (error) {
-      message.textContent = 'Error connecting to server';
-      console.error('Login error:', error);
+      if (!username || !password) {
+        message.textContent = 'Please enter username and password';
+        return;
+      }
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, recaptcha: recaptchaResponse }),
+          credentials: 'include'
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.error || 'Login failed';
+          grecaptcha.reset();
+          return;
+        }
+
+        // On successful login, redirect home
+        window.location.href = '/';
+
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        grecaptcha.reset();
+        console.error('Login error:', error);
+      }
     }
-  }
-</script>
+
+    loginButton.addEventListener('click', login);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+  </script>
+
+</body>
+</html>
