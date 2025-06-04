@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Your Orders</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden; /* prevent horizontal scroll on slide */
+      background: linear-gradient(to bottom, #f0f8ff, #e0f7fa);
+      color: #333;
+    }
+
+    /* Hamburger menu styles (match balance.html) */
+    #menuToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 35px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+
+    /* Sliding side menu */
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 23vw;
+      max-width: 300px;
+      height: 100vh;
+      background: white;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding-top: 60px;
+      box-sizing: border-box;
+      font-family: sans-serif;
+    }
+    #sideMenu.active {
+      transform: translateX(0);
+    }
+    #sideMenu a {
+      display: block;
+      padding: 15px 25px;
+      text-decoration: none;
+      color: #00796b;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.3s ease;
+    }
+    #sideMenu a:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Profile dropdown styles */
+    #profileDropdownContainer {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      font-family: sans-serif;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px;
+      height: 40px;
+      background-color: #00796b;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 220px;
+      border-radius: 5px;
+    }
+    #profileDropdown.active {
+      display: block;
+    }
+    #profileDropdown div {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      color: #333;
+    }
+    #profileDropdown div:last-child {
+      border-bottom: none;
+    }
+    #profileDropdown a {
+      display: block;
+      padding: 8px 15px;
+      text-decoration: none;
+      color: #00796b;
+      border-top: 1px solid #eee;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    #profileDropdown a:hover {
+      background-color: #f0f0f0;
+    }
+
+    /* Orders styling */
+    h1 {
+      margin-top: 80px; /* avoid overlap with fixed hamburger */
+      color: #00796b;
+    }
+    #orders-list .order {
+      border: 1px solid #ccc;
+      margin-bottom: 15px;
+      padding: 10px 15px;
+      border-radius: 5px;
+      background-color: #fafafa;
+    }
+    .order h3 {
+      margin-top: 0;
+      font-weight: 700;
+      font-size: 18px;
+      color: #00796b;
+    }
+    .order-item {
+      padding-left: 15px;
+      font-size: 14px;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    /* Buttons - example styles if any buttons exist */
+    button, .btn-remove {
+      background-color: #00796b;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.3s ease;
+    }
+    button:hover, .btn-remove:hover {
+      background-color: #004d40;
+    }
+
+    /* Links outside menu also get colored */
+    a {
+      color: #00796b;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Hamburger menu -->
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Sliding side menu -->
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="index.html">Home</a>
+    <a href="balance.html">Balance</a>
+    <a href="marketplace.html">Market</a>
+    <a href="cart.html">Cart</a>
+    <a href="orders.html">Orders</a>
+    <a href="more.html">More</a>
+    <a href="logout.html">Logout</a>
+  </nav>
+
+  <!-- Profile Dropdown -->
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+      <div id="profileInfo"></div>
+      <a href="balance.html">Load Funds</a>
+      <a href="index.html">Shop</a>
+      <a href="cart.html">Cart</a>
+      <a href="orders.html">Orders</a>
+      <a href="logout.html">Logout</a>
+    </div>
+  </div>
+
+  <h1>Your Orders</h1>
+  <div id="orders-list"></div>
+
+  <script>
+    const user = sessionStorage.getItem('loggedInUser');
+    if (!user) {
+      alert('Please log in to view your orders.');
+      window.location.href = 'login.html';
+    }
+
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileInfoDiv = document.getElementById('profileInfo');
+    const ordersList = document.getElementById('orders-list');
+
+    // Hamburger toggle logic
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    function toggleMenu() {
+      sideMenu.classList.toggle('active');
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+
+    // Close menu if clicking outside
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+      }
+    });
+
+    // Profile dropdown toggle
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileIcon.setAttribute('aria-expanded', isActive);
+    }
+
+    profileIcon.addEventListener('click', toggleProfileDropdown);
+    profileIcon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleProfileDropdown();
+      }
+    });
+
+    // Close profile dropdown if clicked outside
+    window.addEventListener('click', (e) => {
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
+
+    // Profile info rendering
+    if (user && users[user]) {
+      const userData = users[user];
+      let totalSpent = 0;
+      if (userData.orders) {
+        userData.orders.forEach(order => {
+          order.forEach(item => {
+            totalSpent += parseFloat(item.price.replace('$', ''));
+          });
+        });
+      }
+
+      let joinDate = userData.joinDate || 'Unknown';
+      profileInfoDiv.innerHTML = `
+        <strong>${user}</strong><br>
+        Balance: $${userData.balance.toFixed(2)}<br>
+        Spent: $${totalSpent.toFixed(2)}<br>
+        Total: $${(userData.balance + totalSpent).toFixed(2)}<br>
+        Joined: ${joinDate}<br>
+        Orders: ${userData.orders ? userData.orders.length : 0}
+      `;
+
+      // Render orders list
+      if (userData.orders && userData.orders.length > 0) {
+        ordersList.innerHTML = '';
+        userData.orders.forEach((order, i) => {
+          const orderDiv = document.createElement('div');
+          orderDiv.className = 'order';
+          orderDiv.innerHTML = `<h3>Order #${i + 1}</h3>`;
+          order.forEach(item => {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'order-item';
+            itemDiv.textContent = `${item.name} - ${item.price}`;
+            orderDiv.appendChild(itemDiv);
+          });
+          ordersList.appendChild(orderDiv);
+        });
+      } else {
+        ordersList.innerHTML = '<p>You have no orders yet.</p>';
+      }
+    } else {
+      ordersList.innerHTML = '<p>Please log in to see your orders.</p>';
+    }
+  </script>
+
+</body>
+</html>

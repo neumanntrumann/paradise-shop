@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, button { margin: 5px 0; padding: 8px; width: 200px; }
+    button { background-color: black; color: white; border: none; cursor: pointer; }
+    #message { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Login</h1>
+  <input type="text" id="username" placeholder="Username" oninput="clearMessage()" autofocus />
+  <br/>
+  <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
+  <br/>
+  <button onclick="login()">Login</button>
+  <p id="message"></p>
+
+  <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+
+  <script>
+    const message = document.getElementById('message');
+
+    function clearMessage() {
+      message.textContent = '';
+    }
+
+    function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        message.textContent = 'Please enter username and password';
+        return;
+      }
+
+      let users = JSON.parse(localStorage.getItem('users')) || {};
+
+      if (!users[username]) {
+        message.textContent = 'User not found';
+        return;
+      }
+
+      if (users[username].password !== password) {
+        message.textContent = 'Incorrect password';
+        return;
+      }
+
+      // Save logged in user in sessionStorage
+      sessionStorage.setItem('loggedInUser', username);
+
+      // Redirect to homepage or dashboard
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

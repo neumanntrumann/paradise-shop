@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Logout</title>
+  <script>
+    // Clear session and redirect to login page
+    sessionStorage.removeItem('loggedInUser');
+    window.location.href = 'login.html';
+  </script>
+</head>
+<body>
+  <p>Logging out...</p>
+</body>
+</html>

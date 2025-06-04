@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PARADISE SHOP - Home</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #f0f8ff, #e0f7fa, #f0f8ff, #e0f7fa);
+      background-size: 400% 400%;
+      animation: ocean 20s ease infinite;
+      color: #333;
+    }
+
+    @keyframes ocean {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
+    .fade-slide {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeSlideIn 1s ease-out forwards;
+    }
+
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .wave-emoji {
+      display: inline-block;
+      animation: wave 2.5s infinite ease-in-out;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg); }
+      75% { transform: rotate(-10deg); }
+    }
+
+    .floating {
+      position: absolute;
+      animation: float 10s infinite ease-in-out;
+      pointer-events: none;
+      opacity: 0.3;
+      font-size: 20px;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+
+    #menuToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 35px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 23vw;
+      max-width: 300px;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding-top: 60px;
+      box-sizing: border-box;
+    }
+    #sideMenu.active {
+      transform: translateX(0);
+    }
+    #sideMenu a {
+      display: block;
+      padding: 15px 25px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+    }
+    #sideMenu a:hover {
+      background-color: #f0f0f0;
+    }
+
+    #profileDropdownContainer {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px;
+      height: 40px;
+      background-color: #00796b;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      font-size: 20px;
+    }
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 220px;
+      border-radius: 5px;
+    }
+    #profileDropdown.active {
+      display: block;
+    }
+    #profileDropdown div, #profileDropdown a {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      font-size: 14px;
+      display: block;
+      text-decoration: none;
+      color: #333;
+    }
+    #profileDropdown a:hover {
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      margin-top: 80px;
+      text-align: center;
+      font-size: 2.4em;
+      color: #00796b;
+    }
+
+    button {
+      padding: 8px 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+    button:hover {
+      background-color: #004d40;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+
+    a {
+      color: #00796b;
+      font-weight: bold;
+      transition: text-shadow 0.2s;
+    }
+    a:hover {
+      text-shadow: 0 0 6px rgba(0, 137, 123, 0.5);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="floating" style="top: 100px; left: 20px;">🌺</div>
+  <div class="floating" style="top: 250px; right: 30px;">🌊</div>
+  <div class="floating" style="top: 400px; left: 50%;">🌴</div>
+
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="index.html">Home</a>
+    <a href="balance.html">Balance</a>
+    <a href="marketplace.html">Market</a>
+    <a href="cart.html">Cart</a>
+    <a href="orders.html">Orders</a>
+    <a href="more.html">More</a>
+    <a href="logout.html">Logout</a>
+  </nav>
+
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+      <div id="profileInfo"></div>
+      <a href="balance.html">Load Funds</a>
+      <a href="index.html">Shop</a>
+      <a href="cart.html">Cart</a>
+      <a href="orders.html">Orders</a>
+      <a href="logout.html">Logout</a>
+    </div>
+  </div>
+
+  <h1 class="fade-slide">🌴 <span class="wave-emoji">WELCOME TO PARADISE SHOP</span> 🌴</h1>
+
+  <div class="fade-slide" style="max-width: 700px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); line-height: 1.6;">
+    <p>Thank you for stopping by! You’re now part of an exclusive community focused on premium products, reliable service, and a smooth shopping experience. Whether you’re here to browse, buy, or partner up — we got you covered.</p>
+
+    <h3>🛍️ New Products Dropping Soon</h3>
+    <p>We’re always working behind the scenes to bring you fresh inventory. Expect new listings, rare finds, and exciting updates. Check back often — you don’t want to miss out.</p>
+
+    <h3>💬 Need Help or Have Questions?</h3>
+    <p>We’re here for you.<br>
+    → Join our support group: <a href="https://t.me/ParadiseShopGroup">t.me/ParadiseShopGroup</a><br>
+    → Or DM: <a href="https://t.me/ParadiseStoreOwner">@ParadiseStoreOwner</a></p>
+
+    <h3>⚠️ Watch Out for Fakes</h3>
+    <p>There are a lot of fake accounts out there. Always double-check usernames and links. We’ll never ask for your info outside of official channels.</p>
+
+    <h3>💼 Interested in Selling With Us?</h3>
+    <p>We’re currently expanding and looking for trusted sellers.<br>
+    → Apply or inquire via: <a href="https://t.me/ParaRequests">@ParaRequests</a></p>
+
+    <h3>💸 Payment Info</h3>
+    <p>We currently accept Bitcoin only — it’s fast, secure, and reliable.<br>
+    CashApp and other payment options coming soon.</p>
+
+    <h3>🔐 Safe. Private. Reliable.</h3>
+    <p>Your privacy is our top priority. Orders are handled discreetly and professionally. No unnecessary questions — just straight business.</p>
+
+    <h3>🌐 Spread the Word</h3>
+    <p>If you enjoy our service, let others know. The best way to support us is through word-of-mouth and honest feedback.</p>
+  </div>
+
+  <script>
+    const user = sessionStorage.getItem('loggedInUser');
+    if (!user) {
+      alert('Please log in first.');
+      window.location.href = 'login.html';
+    }
+
+    const users = JSON.parse(localStorage.getItem('users')) || {};
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileInfoDiv = document.getElementById('profileInfo');
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    function toggleMenu() {
+      sideMenu.classList.toggle('active');
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+      }
+    });
+
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileIcon.setAttribute('aria-expanded', isActive);
+    }
+
+    profileIcon.addEventListener('click', toggleProfileDropdown);
+    profileIcon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleProfileDropdown();
+      }
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
+
+    if (user && users[user]) {
+      const userData = users[user];
+      let totalSpent = 0;
+      if (userData.orders) {
+        userData.orders.forEach(order => {
+          order.forEach(item => {
+            totalSpent += parseFloat(item.price.replace('$', ''));
+          });
+        });
+      }
+
+      let joinDate = userData.joinDate || 'Unknown';
+      profileInfoDiv.innerHTML = `
+        <strong>${user}</strong><br>
+        Balance: $${userData.balance.toFixed(2)}<br>
+        Spent: $${totalSpent.toFixed(2)}<br>
+        Total: $${(userData.balance + totalSpent).toFixed(2)}<br>
+        Joined: ${joinDate}<br>
+        Orders: ${userData.orders ? userData.orders.length : 0}
+      `;
+    } else {
+      profileInfoDiv.textContent = 'No user data found';
+    }
+  </script>
+</body>
+</html>
