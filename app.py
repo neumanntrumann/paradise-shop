@@ -154,7 +154,7 @@ def serialize_order(order):
 def index():
     return render_template('index.html')
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup.html', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
         data = request.get_json() if request.is_json else request.form
