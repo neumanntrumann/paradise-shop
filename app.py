@@ -184,7 +184,7 @@ def signup():
         response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
         return response
 
-    return render_template('signup.html')
+    return render_template('signup')
 
 @app.route('/login', methods=['GET'])
 def login_page():
