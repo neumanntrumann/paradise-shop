@@ -13,37 +13,31 @@
       animation: ocean 20s ease infinite;
       color: #333;
     }
-
     @keyframes ocean {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
       100% {background-position: 0% 50%;}
     }
-
     .fade-slide {
       opacity: 0;
       transform: translateY(20px);
       animation: fadeSlideIn 1s ease-out forwards;
     }
-
     @keyframes fadeSlideIn {
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
-
     .wave-emoji {
       display: inline-block;
       animation: wave 2.5s infinite ease-in-out;
     }
-
     @keyframes wave {
       0%, 100% { transform: rotate(0deg); }
       25% { transform: rotate(10deg); }
       75% { transform: rotate(-10deg); }
     }
-
     .floating {
       position: absolute;
       animation: float 10s infinite ease-in-out;
@@ -51,13 +45,11 @@
       opacity: 0.3;
       font-size: 20px;
     }
-
     @keyframes float {
       0% { transform: translateY(0) translateX(0); }
       50% { transform: translateY(-20px) translateX(10px); }
       100% { transform: translateY(0) translateX(0); }
     }
-
     #menuToggle {
       position: fixed;
       top: 15px;
@@ -76,7 +68,6 @@
       background: #333;
       border-radius: 2px;
     }
-
     #sideMenu {
       position: fixed;
       top: 0;
@@ -106,7 +97,6 @@
     #sideMenu a:hover {
       background-color: #f0f0f0;
     }
-
     #profileDropdownContainer {
       position: fixed;
       top: 15px;
@@ -152,14 +142,12 @@
     #profileDropdown a:hover {
       background-color: #f0f0f0;
     }
-
     h1 {
       margin-top: 80px;
       text-align: center;
       font-size: 2.4em;
       color: #00796b;
     }
-
     button {
       padding: 8px 16px;
       background-color: #00796b;
@@ -176,7 +164,6 @@
     button:active {
       transform: scale(0.97);
     }
-
     a {
       color: #00796b;
       font-weight: bold;
@@ -253,13 +240,6 @@
   </div>
 
   <script>
-    const user = sessionStorage.getItem('loggedInUser');
-    if (!user) {
-      alert('Please log in first.');
-      window.location.href = 'login.html';
-    }
-
-    const users = JSON.parse(localStorage.getItem('users')) || {};
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
     const profileInfoDiv = document.getElementById('profileInfo');
@@ -269,7 +249,6 @@
     function toggleMenu() {
       sideMenu.classList.toggle('active');
     }
-
     menuToggle.addEventListener('click', toggleMenu);
     menuToggle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -277,7 +256,6 @@
         toggleMenu();
       }
     });
-
     window.addEventListener('click', (e) => {
       if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
         sideMenu.classList.remove('active');
@@ -288,7 +266,6 @@
       const isActive = profileDropdown.classList.toggle('active');
       profileIcon.setAttribute('aria-expanded', isActive);
     }
-
     profileIcon.addEventListener('click', toggleProfileDropdown);
     profileIcon.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -296,7 +273,6 @@
         toggleProfileDropdown();
       }
     });
-
     window.addEventListener('click', (e) => {
       if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
         profileDropdown.classList.remove('active');
@@ -304,29 +280,42 @@
       }
     });
 
-    if (user && users[user]) {
-      const userData = users[user];
-      let totalSpent = 0;
-      if (userData.orders) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            totalSpent += parseFloat(item.price.replace('$', ''));
-          });
-        });
+    async function loadUserInfo() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please log in first.');
+        window.location.href = 'login.html';
+        return;
       }
 
-      let joinDate = userData.joinDate || 'Unknown';
-      profileInfoDiv.innerHTML = `
-        <strong>${user}</strong><br>
-        Balance: $${userData.balance.toFixed(2)}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Total: $${(userData.balance + totalSpent).toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${userData.orders ? userData.orders.length : 0}
-      `;
-    } else {
-      profileInfoDiv.textContent = 'No user data found';
+      try {
+        const response = await fetch('http://localhost:5000/user-info', {
+          headers: {
+            'Authorization': 'Bearer ' + token
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Invalid token or session expired');
+        }
+
+        const data = await response.json();
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username}</strong><br>
+          Balance: $${(data.balance || 0).toFixed(2)}<br>
+          Spent: $${(data.spent || 0).toFixed(2)}<br>
+          Total: $${((data.balance || 0) + (data.spent || 0)).toFixed(2)}<br>
+          Joined: ${data.joinDate || 'Unknown'}<br>
+          Orders: ${data.orders || 0}
+        `;
+      } catch (err) {
+        console.error(err);
+        alert('Session expired. Please log in again.');
+        window.location.href = 'login.html';
+      }
     }
+
+    loadUserInfo();
   </script>
 </body>
 </html>

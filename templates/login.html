@@ -27,7 +27,7 @@
       message.textContent = '';
     }
 
-    function login() {
+    async function login() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
 
@@ -36,23 +36,32 @@
         return;
       }
 
-      let users = JSON.parse(localStorage.getItem('users')) || {};
+      try {
+        // Change URL to your backend login endpoint if different
+        const response = await fetch('http://localhost:5000/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+          // credentials: 'include' // Uncomment if your backend uses cookies for sessions
+        });
 
-      if (!users[username]) {
-        message.textContent = 'User not found';
-        return;
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.message || 'Login failed';
+          return;
+        }
+
+        // Save the JWT token in localStorage using key 'token' for consistency
+        localStorage.setItem('token', data.access_token);
+
+        // Redirect to homepage/dashboard
+        window.location.href = 'index.html';
+
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        console.error('Login error:', error);
       }
-
-      if (users[username].password !== password) {
-        message.textContent = 'Incorrect password';
-        return;
-      }
-
-      // Save logged in user in sessionStorage
-      sessionStorage.setItem('loggedInUser', username);
-
-      // Redirect to homepage or dashboard
-      window.location.href = 'index.html';
     }
   </script>
 </body>

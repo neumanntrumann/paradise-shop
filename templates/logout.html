@@ -3,8 +3,8 @@
 <head>
   <title>Logout</title>
   <script>
-    // Clear session and redirect to login page
-    sessionStorage.removeItem('loggedInUser');
+    // Clear JWT token from localStorage and redirect to login page
+    localStorage.removeItem('token');
     window.location.href = 'login.html';
   </script>
 </head>

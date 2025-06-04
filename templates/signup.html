@@ -15,20 +15,21 @@
   <br/>
   <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
   <br/>
-  <button onclick="signup()">Sign Up</button>
+  <button id="signupButton">Sign Up</button>
   <p id="message" style="color: red;"></p>
 
   <p>Already have an account? <a href="login.html">Login here</a></p>
 
   <script>
     const message = document.getElementById('message');
+    const signupButton = document.getElementById('signupButton');
 
     function clearMessage() {
       message.textContent = '';
       message.style.color = 'red';
     }
 
-    function signup() {
+    async function signup() {
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
 
@@ -37,23 +38,43 @@
         return;
       }
 
-      let users = JSON.parse(localStorage.getItem('users')) || {};
+      try {
+        const response = await fetch('http://localhost:5000/register', {  // update URL if deployed
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password })
+        });
 
-      if (users[username]) {
-        message.textContent = 'Username already exists';
-        return;
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.message || 'Registration failed';
+          return;
+        }
+
+        message.style.color = 'green';
+        message.textContent = 'Account created! Redirecting to login...';
+
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 2000);
+
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        console.error(error);
       }
-
-      users[username] = { password: password, balance: 0, orders: [] };
-      localStorage.setItem('users', JSON.stringify(users));
-
-      message.style.color = 'green';
-      message.textContent = 'Account created! Redirecting to login...';
-
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 2000);
     }
+
+    signupButton.addEventListener('click', signup);
+
+    // Allow pressing Enter key to submit
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        signup();
+      }
+    });
   </script>
 </body>
 </html>

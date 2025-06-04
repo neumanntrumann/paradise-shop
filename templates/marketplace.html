@@ -1,0 +1,71 @@
+<!-- Replace static product blocks with: -->
+<div id="productList" style="max-width: 500px; margin: 20px auto;"></div>
+
+<script>
+  const user = sessionStorage.getItem('loggedInUser');
+  if (!user) {
+    alert('Please log in first.');
+    window.location.href = 'login.html';
+  }
+
+  // Your existing menu/profile code here...
+
+  // Fetch products from backend API and render
+  async function loadProducts() {
+    try {
+      const response = await fetch('/api/products', {
+        headers: {
+          'Content-Type': 'application/json',
+          // Include auth token or cookie here if needed
+        },
+        credentials: 'include'  // if using cookie-based auth
+      });
+      if (!response.ok) throw new Error('Failed to fetch products');
+
+      const products = await response.json();
+      const productList = document.getElementById('productList');
+      productList.innerHTML = ''; // clear container
+
+      products.forEach(prod => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'item';
+
+        itemDiv.innerHTML = `
+          <p><strong>${prod.name} — $${prod.price}</strong></p>
+          <button onclick="toggleDetails(this)">Details</button>
+          <button onclick="addToCart(${prod.id}, '${prod.name}')">Add to Cart</button>
+          <div class="description" style="display:none;">${prod.description}</div>
+        `;
+
+        productList.appendChild(itemDiv);
+      });
+    } catch (error) {
+      alert('Error loading products: ' + error.message);
+    }
+  }
+
+  // Add product to cart by calling backend API
+  async function addToCart(productId, productName) {
+    try {
+      const response = await fetch('/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',  // include cookies/session
+        body: JSON.stringify({ product_id: productId })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        alert('Failed to add to cart: ' + (err.message || response.statusText));
+        return;
+      }
+      alert(productName + ' added to cart');
+    } catch (error) {
+      alert('Error adding to cart: ' + error.message);
+    }
+  }
+
+  // Keep your existing toggleDetails function here...
+
+  // Load products on page load
+  window.onload = loadProducts;
+</script>
