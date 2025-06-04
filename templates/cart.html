@@ -1,265 +1,366 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Your Cart</title>
-  <style>
-    /* ... keep all your existing CSS exactly as is ... */
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your Cart - Paradise Shop</title>
+<style>
+  /* Combined styles */
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    padding: 20px;
+    margin: 0;
+    background: linear-gradient(-45deg, #f0f8ff, #e0f2ff);
+  }
+  #menuToggle {
+    cursor: pointer;
+    width: 30px;
+    margin-bottom: 20px;
+  }
+  #menuToggle span {
+    display: block;
+    height: 3px;
+    background: #333;
+    margin: 5px 0;
+  }
+  nav#sideMenu {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background: #004d99;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    transition: left 0.3s ease;
+    overflow-y: auto;
+    z-index: 1000;
+  }
+  nav#sideMenu.active {
+    left: 0;
+  }
+  nav#sideMenu a {
+    display: block;
+    padding: 10px 0;
+    color: white;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+  }
+  nav#sideMenu a:hover {
+    background: rgba(255,255,255,0.1);
+  }
+  #profileDropdownContainer {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+  }
+  #profileIcon {
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #profileDropdown {
+    display: none;
+    position: absolute;
+    top: 30px;
+    right: 0;
+    background: white;
+    border: 1px solid #ccc;
+    padding: 10px;
+    width: 200px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    z-index: 1001;
+  }
+  #profileDropdown.active {
+    display: block;
+  }
+  #profileDropdown a {
+    display: block;
+    margin: 5px 0;
+    color: #004d99;
+    text-decoration: none;
+  }
+  #profileDropdown a:hover {
+    text-decoration: underline;
+  }
+
+  /* Table styles from original cart */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  th {
+    background-color: #00b894;
+    color: white;
+  }
+  button.remove-btn {
+    padding: 6px 10px;
+    background: #d63031;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  button.remove-btn:hover {
+    background: #b02020;
+  }
+  #total-price {
+    font-weight: bold;
+    font-size: 1.2em;
+  }
+  #checkout-btn {
+    padding: 10px 15px;
+    background: #0984e3;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1em;
+  }
+  #checkout-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+  }
+</style>
 </head>
 <body>
 
-  <!-- Hamburger menu -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+<!-- Hamburger menu -->
+<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
 
-  <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="index.html">Home</a>
-    <a href="balance.html">Balance</a>
-    <a href="marketplace.html">Market</a>
+<!-- Sliding side menu -->
+<nav id="sideMenu" aria-label="Main navigation menu">
+  <a href="index.html">Home</a>
+  <a href="balance.html">Balance</a>
+  <a href="marketplace.html">Market</a>
+  <a href="cart.html" aria-current="page">Cart</a>
+  <a href="orders.html">Orders</a>
+  <a href="more.html">More</a>
+  <a href="logout.html">Logout</a>
+</nav>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdownContainer">
+  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+  <div id="profileDropdown" role="menu" aria-label="User profile menu">
+    <div id="profileInfo"></div>
+    <a href="balance.html">Load Funds</a>
+    <a href="index.html">Shop</a>
     <a href="cart.html">Cart</a>
     <a href="orders.html">Orders</a>
-    <a href="more.html">More</a>
     <a href="logout.html">Logout</a>
-  </nav>
-
-  <!-- Profile Dropdown -->
-  <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo"></div>
-      <a href="balance.html">Load Funds</a>
-      <a href="index.html">Shop</a>
-      <a href="cart.html">Cart</a>
-      <a href="orders.html">Orders</a>
-      <a href="logout.html">Logout</a>
-    </div>
   </div>
+</div>
 
-  <h1>Your Cart</h1>
+<h1>Your Cart</h1>
 
-  <!-- Your existing cart container -->
-  <div id="cart-items"></div>
-  <div id="orderTotal"></div>
-  <button id="checkoutBtn" disabled>💰 Proceed to Checkout</button>
+<!-- Cart Table -->
+<table id="cart-table" aria-live="polite" aria-label="Shopping cart items">
+  <thead>
+    <tr>
+      <th>Item</th>
+      <th>Price</th>
+      <th>Quantity</th>
+      <th>Subtotal</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="5">Loading cart...</td></tr>
+  </tbody>
+</table>
 
-  <!-- New cart list container for the additional fetchUserCart script -->
-  <div id="cart-list">Loading cart...</div>
+<div id="total-price">Total: $0.00</div>
+<button id="checkout-btn" disabled aria-disabled="true">💰 Proceed to Checkout</button>
 
-  <script>
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    const cartContainer = document.getElementById('cart-items');
-    const orderTotalDiv = document.getElementById('orderTotal');
+<script>
+  // Hamburger toggle logic
+  const menuToggle = document.getElementById('menuToggle');
+  const sideMenu = document.getElementById('sideMenu');
 
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-
-    // Hamburger toggle logic
-    function toggleMenu() {
-      sideMenu.classList.toggle('active');
+  function toggleMenu() {
+    sideMenu.classList.toggle('active');
+  }
+  menuToggle.addEventListener('click', toggleMenu);
+  menuToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleMenu();
     }
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-      }
-    });
-
-    // Profile dropdown toggle
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
+  });
+  window.addEventListener('click', (e) => {
+    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+      sideMenu.classList.remove('active');
     }
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', false);
-      }
-    });
+  });
 
-    // Helper to fetch JSON with error handling
-    async function fetchJson(url, options = {}) {
-      const resp = await fetch(url, options);
-      if (!resp.ok) {
-        throw new Error(`HTTP error! Status: ${resp.status}`);
-      }
-      return await resp.json();
+  // Profile dropdown toggle
+  const profileIcon = document.getElementById('profileIcon');
+  const profileDropdown = document.getElementById('profileDropdown');
+
+  function toggleProfileDropdown() {
+    const isActive = profileDropdown.classList.toggle('active');
+    profileIcon.setAttribute('aria-expanded', isActive);
+  }
+  profileIcon.addEventListener('click', toggleProfileDropdown);
+  profileIcon.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleProfileDropdown();
     }
-
-    // Check if logged in by calling backend session endpoint
-    async function checkSession() {
-      try {
-        const session = await fetchJson('/api/session');
-        return session.user; // assume { user: 'username' }
-      } catch (e) {
-        alert('Please log in to view your cart.');
-        window.location.href = 'login.html';
-        return null;
-      }
+  });
+  window.addEventListener('click', (e) => {
+    if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+      profileDropdown.classList.remove('active');
+      profileIcon.setAttribute('aria-expanded', false);
     }
+  });
 
-    // Load profile info for dropdown
-    async function loadProfile() {
-      try {
-        const profile = await fetchJson('/api/user/profile');
-        profileInfoDiv.innerHTML = `
-          <strong>${profile.username}</strong><br>
-          Balance: $${profile.balance.toFixed(2)}<br>
-          Spent: $${profile.totalSpent.toFixed(2)}<br>
-          Joined: ${profile.joinDate}<br>
-          Orders: ${profile.orderCount}
-        `;
-      } catch (e) {
-        profileInfoDiv.textContent = 'Failed to load profile info.';
-      }
+  // Helper: fetch JSON with error handling
+  async function fetchJson(url, options = {}) {
+    const resp = await fetch(url, options);
+    if (!resp.ok) {
+      throw new Error(`HTTP error! Status: ${resp.status}`);
     }
+    return await resp.json();
+  }
 
-    // Load cart items from backend (your existing function)
-    async function loadCart() {
-      try {
-        const cart = await fetchJson('/api/cart');
-        renderCart(cart);
-      } catch (e) {
-        cartContainer.innerHTML = '<p>Failed to load cart. Please try again later.</p>';
-        checkoutBtn.disabled = true;
-      }
+  // Check session; redirect to login if none
+  async function checkSession() {
+    try {
+      const session = await fetchJson('/api/session');
+      return session.user; // expecting { user: 'username' }
+    } catch {
+      alert('Please log in to view your cart.');
+      window.location.href = 'login.html';
+      return null;
     }
+  }
 
-    // Render cart items (your existing function)
-    function renderCart(cart) {
-      cartContainer.innerHTML = '';
-      if (cart.length === 0) {
-        cartContainer.innerHTML = '<p>Your cart is empty.</p>';
-        orderTotalDiv.textContent = '';
-        checkoutBtn.disabled = true;
+  // Load user profile info for dropdown
+  async function loadProfile() {
+    try {
+      const profile = await fetchJson('/api/user/profile');
+      document.getElementById('profileInfo').innerHTML = `
+        <strong>${profile.username}</strong><br>
+        Balance: $${profile.balance.toFixed(2)}<br>
+        Spent: $${profile.totalSpent.toFixed(2)}<br>
+        Joined: ${profile.joinDate}<br>
+        Orders: ${profile.orderCount}
+      `;
+    } catch {
+      document.getElementById('profileInfo').textContent = 'Failed to load profile info.';
+    }
+  }
+
+  // Load and render cart items from backend
+  async function loadCart() {
+    try {
+      const data = await fetchJson('/api/userdata'); // Using your original cart endpoint
+      const cartItems = data.cart || [];
+      const tbody = document.querySelector('#cart-table tbody');
+      tbody.innerHTML = '';
+
+      if (cartItems.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5">Your cart is empty.</td></tr>';
+        document.getElementById('total-price').textContent = 'Total: $0.00';
+        disableCheckout();
         return;
       }
 
       let total = 0;
-      cart.forEach(item => {
-        total += item.price;
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <strong>${item.name}</strong> - $${item.price.toFixed(2)}
-          <button class="remove-btn" aria-label="Remove ${item.name} from cart" data-id="${item.id}">❌ Remove</button>
+      cartItems.forEach(item => {
+        const subtotal = item.price * item.quantity;
+        total += subtotal;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.name}</td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td>${item.quantity}</td>
+          <td>$${subtotal.toFixed(2)}</td>
+          <td><button class="remove-btn" data-id="${item.id}" aria-label="Remove ${item.name} from cart">❌ Remove</button></td>
         `;
-        cartContainer.appendChild(div);
+        tbody.appendChild(row);
       });
-      orderTotalDiv.textContent = `Total: $${total.toFixed(2)}`;
-      checkoutBtn.disabled = false;
 
-      // Attach remove button handlers
-      const removeButtons = cartContainer.querySelectorAll('.remove-btn');
-      removeButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const itemId = btn.getAttribute('data-id');
-          removeFromCart(itemId);
+      document.getElementById('total-price').textContent = 'Total: $' + total.toFixed(2);
+      enableCheckout();
+
+      // Add event listeners for remove buttons
+      tbody.querySelectorAll('button.remove-btn').forEach(button => {
+        button.addEventListener('click', async (e) => {
+          const itemId = e.target.getAttribute('data-id');
+          try {
+            const res = await fetch(`/api/cart/item/${itemId}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (res.ok) {
+              alert(result.message);
+              loadCart(); // refresh cart
+            } else {
+              alert('Error: ' + result.error);
+            }
+          } catch {
+            alert('Failed to remove item');
+          }
         });
       });
+
+    } catch {
+      alert('Please log in to view your cart.');
+      disableCheckout();
     }
+  }
 
-    // Remove item from cart via backend
-    async function removeFromCart(itemId) {
-      try {
-        await fetch(`/api/cart/item/${itemId}`, { method: 'DELETE' });
-        await loadCart(); // reload cart after removal
-      } catch (e) {
-        alert('Failed to remove item from cart.');
+  function enableCheckout() {
+    const btn = document.getElementById('checkout-btn');
+    btn.disabled = false;
+    btn.setAttribute('aria-disabled', 'false');
+  }
+  function disableCheckout() {
+    const btn = document.getElementById('checkout-btn');
+    btn.disabled = true;
+    btn.setAttribute('aria-disabled', 'true');
+  }
+
+  // Checkout handler
+  document.getElementById('checkout-btn').addEventListener('click', async () => {
+    try {
+      const res = await fetch('/api/checkout', { method: 'POST' });
+      const result = await res.json();
+      if (res.ok) {
+        alert('Order placed successfully! Your new balance is $' + result.balance.toFixed(2));
+        loadCart(); // refresh cart (empty now)
+      } else {
+        alert('Error: ' + result.error);
       }
+    } catch {
+      alert('Failed to checkout');
     }
+  });
 
-    // Checkout via backend
-    checkoutBtn.onclick = async () => {
-      try {
-        const resp = await fetch('/api/checkout', { method: 'POST' });
-        if (!resp.ok) throw new Error('Checkout failed');
-        alert('Order placed successfully!');
-        window.location.href = 'orders.html';
-      } catch (e) {
-        alert('Checkout failed. Please try again or add funds.');
-      }
-    };
+  // Initialize page logic
+  (async () => {
+    const user = await checkSession();
+    if (!user) return; // redirected to login
 
-    // New function you provided to fetch user cart and display in #cart-list
-    async function fetchUserCart() {
-      try {
-        const response = await fetch('/api/userdata');
-        if (!response.ok) throw new Error('Failed to fetch user data');
+    await loadProfile();
+    await loadCart();
+  })();
 
-        const data = await response.json();
+</script>
 
-        const cartList = document.getElementById('cart-list');
-        if (data.cart.length === 0) {
-          cartList.innerHTML = '<p>Your cart is empty.</p>';
-          return;
-        }
-
-        cartList.innerHTML = '';
-        data.cart.forEach((item, i) => {
-          const itemDiv = document.createElement('div');
-          itemDiv.className = 'cart-item';
-          itemDiv.textContent = `${item.name} - $${item.price.toFixed(2)}`;
-          cartList.appendChild(itemDiv);
-        });
-      } catch (error) {
-        console.error(error);
-        document.getElementById('cart-list').innerHTML = '<p>Error loading cart.</p>';
-      }
-    }
-
-    // Example function to add an item (you need to wire this to your UI buttons)
-    async function addItemToCart(item) {
-      try {
-        const response = await fetch('/api/cart/add', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ item }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          alert('Item added to cart');
-          fetchUserCart();  // refresh cart
-        } else {
-          alert(data.error || 'Failed to add item');
-        }
-      } catch (error) {
-        alert('Error connecting to server');
-        console.error(error);
-      }
-    }
-
-    // Initialize page
-    (async () => {
-      const user = await checkSession();
-      if (!user) return; // redirected to login
-
-      await loadProfile();
-      await loadCart();
-      fetchUserCart(); // Also fetch the cart via your new script
-    })();
-
-  </script>
 </body>
 </html>

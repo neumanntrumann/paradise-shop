@@ -39,18 +39,16 @@
       }
 
       try {
-        const response = await fetch('http://localhost:5000/register', {  // update URL if deployed
+        const response = await fetch('/signup', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = data.message || 'Registration failed';
+          message.textContent = data.error || 'Registration failed';
           return;
         }
 
@@ -68,12 +66,8 @@
     }
 
     signupButton.addEventListener('click', signup);
-
-    // Allow pressing Enter key to submit
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        signup();
-      }
+      if (e.key === 'Enter') signup();
     });
   </script>
 </body>

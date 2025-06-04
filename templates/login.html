@@ -1,68 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Login</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    input, button { margin: 5px 0; padding: 8px; width: 200px; }
-    button { background-color: black; color: white; border: none; cursor: pointer; }
-    #message { color: red; }
-  </style>
-</head>
-<body>
-  <h1>Login</h1>
-  <input type="text" id="username" placeholder="Username" oninput="clearMessage()" autofocus />
-  <br/>
-  <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
-  <br/>
-  <button onclick="login()">Login</button>
-  <p id="message"></p>
+<script>
+  const message = document.getElementById('message');
 
-  <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+  function clearMessage() {
+    message.textContent = '';
+  }
 
-  <script>
-    const message = document.getElementById('message');
+  async function login() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
 
-    function clearMessage() {
-      message.textContent = '';
+    if (!username || !password) {
+      message.textContent = 'Please enter username and password';
+      return;
     }
 
-    async function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
+    try {
+      // Use relative URL so it works on Render too
+      const response = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+        credentials: 'include'  // important to include cookies for session!
+      });
 
-      if (!username || !password) {
-        message.textContent = 'Please enter username and password';
+      const data = await response.json();
+
+      if (!response.ok) {
+        message.textContent = data.error || 'Login failed';
         return;
       }
 
-      try {
-        // Change URL to your backend login endpoint if different
-        const response = await fetch('http://localhost:5000/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password }),
-          // credentials: 'include' // Uncomment if your backend uses cookies for sessions
-        });
+      // On successful login, redirect to homepage
+      window.location.href = '/';
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          message.textContent = data.message || 'Login failed';
-          return;
-        }
-
-        // Save the JWT token in localStorage using key 'token' for consistency
-        localStorage.setItem('token', data.access_token);
-
-        // Redirect to homepage/dashboard
-        window.location.href = 'index.html';
-
-      } catch (error) {
-        message.textContent = 'Error connecting to server';
-        console.error('Login error:', error);
-      }
+    } catch (error) {
+      message.textContent = 'Error connecting to server';
+      console.error('Login error:', error);
     }
-  </script>
-</body>
-</html>
+  }
+</script>
