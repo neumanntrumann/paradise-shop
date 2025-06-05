@@ -56,6 +56,47 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
+# Decorator for API routes that require JWT (return JSON error)
+def token_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        if not token:
+            token = request.cookies.get('jwt')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Decorator for web routes that require login with redirect
+def login_required_redirect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+        if not token:
+            return redirect('/login')
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return redirect('/login')
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return redirect('/login')
+        return f(current_user, *args, **kwargs)
+    return decorated
+
 # Routes
 
 @app.route('/login', methods=['GET'])
@@ -88,6 +129,7 @@ def login():
 
     token = user.generate_jwt()
     resp = jsonify({'message': 'Login successful'})
+    # Set JWT cookie httponly for security
     resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
     return resp
 
@@ -111,38 +153,22 @@ def signup():
 
     return jsonify({'message': 'User created successfully'})
 
-# JWT protected route
-def token_required(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        auth_header = request.headers.get('Authorization')
-        if auth_header and auth_header.startswith('Bearer '):
-            token = auth_header[7:]
-        if not token:
-            token = request.cookies.get('jwt')
-        if not token:
-            return jsonify({'error': 'Token is missing'}), 401
-        try:
-            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
-            current_user = User.query.get(payload['user_id'])
-            if not current_user:
-                return jsonify({'error': 'User not found'}), 401
-        except jwt.ExpiredSignatureError:
-            return jsonify({'error': 'Token expired'}), 401
-        except jwt.InvalidTokenError:
-            return jsonify({'error': 'Invalid token'}), 401
-        return f(current_user, *args, **kwargs)
-    return decorated
-
 @app.route('/profile')
 @token_required
 def profile(current_user):
     return jsonify({'username': current_user.username})
 
 @app.route('/index')
-def index_page():
-    return render_template('index.html')
+@login_required_redirect
+def index_page(current_user):
+    # Optionally pass username to template if you want
+    return render_template('index.html', username=current_user.username)
+
+@app.route('/logout')
+def logout():
+    resp = redirect('/login')
+    resp.delete_cookie('jwt')
+    return resp
 
 # Initialize DB and run app
 if __name__ == '__main__':
