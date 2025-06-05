@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # reCAPTCHA secret
-RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', 'your_recaptcha_secret_key_here')
+RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
 
 # -------------------- MODELS -------------------- #
 
@@ -184,7 +184,7 @@ def signup():
         response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
         return response
 
-    return render_template('signup')
+    return render_template('signup.html')
 
 @app.route('/login', methods=['GET'])
 def login_page():
