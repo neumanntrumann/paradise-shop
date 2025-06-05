@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Sign Up</title>
   <style>
+    /* Same styles as login.html */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -146,15 +147,16 @@
   <button id="music-toggle">🔊 Music</button>
 
   <div class="login-container">
-    <h2>🌴 Create Your Paradise Account</h2>
+    <h2>🌴 Join Paradise</h2>
     <form id="signupForm" onsubmit="event.preventDefault(); signup();">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
+      <input type="email" id="email" name="email" placeholder="Email" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
       <button type="submit">Sign Up</button>
     </form>
 
     <p id="message"></p>
-    <p class="login-link">Already have an account? <a href="/login">Login here</a></p>
+    <p class="login-link">Already have an account? <a href="/login">Login</a></p>
   </div>
 
   <script>
@@ -173,10 +175,11 @@
       clearMessage();
 
       const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
 
-      if (!username || !password) {
-        message.textContent = 'Please enter username and password.';
+      if (!username || !email || !password) {
+        message.textContent = 'Please fill out all fields';
         return;
       }
 
@@ -184,22 +187,26 @@
         const response = await fetch('/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, email, password }),
+          credentials: 'include' // important for cookies like CSRF
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = data.error || 'Signup failed.';
+          message.textContent = data.error || 'Signup failed';
           return;
         }
 
-        message.style.color = 'lightgreen';
+        message.style.color = 'green';
         message.textContent = 'Account created! Redirecting to login...';
-        setTimeout(() => window.location.href = '/login', 2200);
+
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
       } catch (error) {
+        message.textContent = 'Error connecting to server';
         console.error('Signup error:', error);
-        message.textContent = 'Error connecting to server.';
       }
     }
 

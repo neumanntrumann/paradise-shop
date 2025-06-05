@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, g, make_response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, g, make_response, abort
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_cors import CORS  # ✅ ADDED CORS IMPORT
+from flask_cors import CORS
 import os
 import jwt
 import datetime
+import secrets
 
 app = Flask(__name__)
-CORS(app)  # ✅ ENABLED CORS FOR FRONTEND/BACKEND CONNECTION
+CORS(app, supports_credentials=True)  # enable cookies to be sent cross-origin
 
 # Configs
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh')
@@ -23,7 +24,7 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     balance = db.Column(db.Float, default=100.0)
-    join_date = db.Column(db.String(20), default=lambda: datetime.datetime.now().strftime('%Y-%m-%d'))
+    join_date = db.Column(db.Date, default=datetime.date.today)
 
     cart_items = db.relationship('CartItem', backref='user', lazy=True, cascade="all, delete-orphan")
     orders = db.relationship('Order', backref='user', lazy=True, cascade="all, delete-orphan")
@@ -51,7 +52,7 @@ class CartItem(db.Model):
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    order_date = db.Column(db.String(20), default=lambda: datetime.datetime.now().strftime('%Y-%m-%d'))
+    order_date = db.Column(db.Date, default=datetime.date.today)
     total_price = db.Column(db.Float, nullable=False)
     order_items = db.relationship('OrderItem', backref='order', lazy=True, cascade="all, delete-orphan")
 
@@ -123,7 +124,7 @@ def serialize_cart_item(cart_item):
 def serialize_order(order):
     return {
         'id': order.id,
-        'order_date': order.order_date,
+        'order_date': order.order_date.strftime('%Y-%m-%d'),
         'total_price': order.total_price,
         'items': [
             {
@@ -135,12 +136,36 @@ def serialize_order(order):
         ]
     }
 
+# -------------------- CSRF TOKEN HELPERS -------------------- #
+
+def generate_csrf_token():
+    token = secrets.token_urlsafe(32)
+    return token
+
+@app.before_request
+def verify_csrf():
+    # Only check CSRF on unsafe methods POST, DELETE, PUT, PATCH (except login/signup GET)
+    if request.method in ('POST', 'DELETE', 'PUT', 'PATCH'):
+        # Allow login/signup POST without CSRF for first time (optional, or add CSRF later)
+        exempt_paths = ['/login', '/signup', '/logout']
+        if request.path in exempt_paths:
+            return
+
+        csrf_token_cookie = request.cookies.get('csrf_token')
+        csrf_token_header = request.headers.get('X-CSRF-Token')
+        if not csrf_token_cookie or not csrf_token_header or csrf_token_cookie != csrf_token_header:
+            abort(400, description="CSRF token missing or invalid")
+
 # -------------------- ROUTES -------------------- #
 
 @app.route('/')
 @login_required
 def index():
-    return render_template('index.html')
+    # Generate CSRF token for frontend JS to use in API calls
+    csrf_token = generate_csrf_token()
+    response = make_response(render_template('index.html'))
+    response.set_cookie('csrf_token', csrf_token, samesite='Lax')
+    return response
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -164,38 +189,64 @@ def signup():
         db.session.commit()
 
         token = generate_jwt(new_user.id, new_user.username)
+        csrf_token = generate_csrf_token()
         response = jsonify({'message': 'Signup successful'})
-        response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
+        is_prod = os.environ.get('FLASK_ENV') == 'production'
+        response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600, secure=is_prod)
+        response.set_cookie('csrf_token', csrf_token, samesite='Lax', max_age=8*3600, secure=is_prod)
         return response
 
-    return render_template('signup.html')
+    csrf_token = generate_csrf_token()
+    response = make_response(render_template('signup.html'))
+    response.set_cookie('csrf_token', csrf_token, samesite='Lax')
+    return response
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    return render_template('login.html')
+    csrf_token = generate_csrf_token()
+    response = make_response(render_template('login.html'))
+    response.set_cookie('csrf_token', csrf_token, samesite='Lax')
+    return response
 
 @app.route('/login', methods=['POST'])
 def login():
+    # Handle JSON and form data login with consistent JSON error messages for frontend AJAX
     data = request.get_json() if request.is_json else request.form
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
 
     if not username or not password:
-        return render_template('login.html', error='Username and password are required'), 400
+        if request.is_json:
+            return jsonify({'error': 'Username and password are required'}), 400
+        else:
+            return render_template('login.html', error='Username and password are required'), 400
 
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        return render_template('login.html', error='Invalid username or password'), 401
+        if request.is_json:
+            return jsonify({'error': 'Invalid username or password'}), 401
+        else:
+            return render_template('login.html', error='Invalid username or password'), 401
 
     token = generate_jwt(user.id, user.username)
-    response = redirect(url_for('index'))
-    response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
-    return response
+    csrf_token = generate_csrf_token()
+    is_prod = os.environ.get('FLASK_ENV') == 'production'
+    if request.is_json:
+        response = jsonify({'message': 'Login successful'})
+        response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600, secure=is_prod)
+        response.set_cookie('csrf_token', csrf_token, samesite='Lax', max_age=8*3600, secure=is_prod)
+        return response
+    else:
+        response = redirect(url_for('index'))
+        response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600, secure=is_prod)
+        response.set_cookie('csrf_token', csrf_token, samesite='Lax', max_age=8*3600, secure=is_prod)
+        return response
 
 @app.route('/logout')
 def logout():
     response = make_response(redirect(url_for('login_page')))
     response.set_cookie('access_token', '', expires=0)
+    response.set_cookie('csrf_token', '', expires=0)
     return response
 
 @app.route('/balance')
@@ -234,7 +285,7 @@ def userdata():
     return jsonify({
         'username': g.user.username,
         'balance': g.user.balance,
-        'joinDate': g.user.join_date,
+        'joinDate': g.user.join_date.strftime('%Y-%m-%d'),
         'cart': [serialize_cart_item(ci) for ci in g.user.cart_items],
         'orders': [serialize_order(o) for o in g.user.orders]
     })
