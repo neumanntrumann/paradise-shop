@@ -163,6 +163,9 @@
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
 
+    // Change this to your deployed backend URL on Render:
+    const BACKEND_URL = 'https://your-app-name.onrender.com';
+
     bgMusic.volume = 0.15;
 
     function clearMessage() {
@@ -182,7 +185,7 @@
       }
 
       try {
-        const response = await fetch('/login', {
+        const response = await fetch(BACKEND_URL + '/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
@@ -197,7 +200,7 @@
         }
 
         // Redirect using replace to avoid login page in history
-        window.location.replace("/index");
+        window.location.replace(BACKEND_URL + "/index");
       } catch (error) {
         message.textContent = 'Error connecting to server';
         console.error('Login error:', error);
