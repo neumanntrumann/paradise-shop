@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PARADISE SHOP - Marketplace</title>
   <style>
+    /* Keep your existing CSS exactly as you provided */
     body {
       font-family: 'Segoe UI', sans-serif;
       padding: 20px;
@@ -13,7 +14,6 @@
       background: linear-gradient(to bottom, #f0f8ff, #e0f7fa);
       color: #333;
     }
-
     /* Hamburger menu styles */
     #menuToggle {
       position: fixed;
@@ -33,7 +33,6 @@
       background: #333;
       border-radius: 2px;
     }
-
     /* Sliding side menu */
     #sideMenu {
       position: fixed;
@@ -64,7 +63,6 @@
     #sideMenu a:hover {
       background-color: #f0f0f0;
     }
-
     /* Profile dropdown */
     #profileDropdownContainer {
       position: fixed;
@@ -118,14 +116,12 @@
     #profileDropdown a:hover {
       background-color: #f0f0f0;
     }
-
     h1 {
       margin-top: 80px;
       text-align: center;
       font-size: 2.4em;
       color: #00796b;
     }
-
     .item {
       background: white;
       border-radius: 10px;
@@ -138,7 +134,6 @@
     .item:hover {
       transform: scale(1.01);
     }
-
     button {
       padding: 8px 16px;
       background-color: #00796b;
@@ -154,12 +149,10 @@
     button:hover {
       background-color: #004d40;
     }
-
     a {
       color: #00796b;
       font-weight: bold;
     }
-
     .description {
       display: none;
       max-height: 150px;
@@ -343,102 +336,66 @@ Real, fresh, and verified dump + pin sets
   </p>
 
   <script>
-    // Check if user is logged in
-    const user = sessionStorage.getItem('loggedInUser');
-    if (!user) {
+    // Backend base URL
+    const API_BASE = 'https://paradise-shop-1.onrender.com';
+
+    // Get JWT token from localStorage (or cookie depending on your auth)
+    const token = localStorage.getItem('jwtToken');
+
+    if (!token) {
       alert('Please log in first.');
       window.location.href = 'login.html';
     }
 
-    // Load users data from localStorage
-    const users = JSON.parse(localStorage.getItem('users')) || {};
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
-
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-
-    // Hamburger menu toggle
-    function toggleMenu() {
-      sideMenu.classList.toggle('active');
+    // Setup common headers for fetch with JWT
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
     }
 
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
-    });
-
-    // Close side menu if clicked outside
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-      }
-    });
-
-    // Profile dropdown toggle
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
-    }
-
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-
-    // Close profile dropdown if clicked outside
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', false);
-      }
-    });
-
-    // Populate profile info
-    if (user && users[user]) {
-      const userData = users[user];
-      let totalSpent = 0;
-      if (userData.orders) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            totalSpent += parseFloat(item.price) || 0;
-          });
+    // Fetch user profile from backend and populate profile info
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/api/profile`, {
+          headers: authHeaders()
         });
-      }
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
 
-      let joinDate = userData.joinDate || 'Unknown';
-      profileInfoDiv.innerHTML = `
-        <strong>${user}</strong><br>
-        Balance: $${userData.balance ? userData.balance.toFixed(2) : '0.00'}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Total: $${userData.balance ? (userData.balance + totalSpent).toFixed(2) : totalSpent.toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${userData.orders ? userData.orders.length : 0}
-      `;
-    } else {
-      profileInfoDiv.textContent = 'No user data found';
+        const profileInfoDiv = document.getElementById('profileInfo');
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username}</strong><br>
+          Balance: $${data.balance.toFixed(2)}<br>
+          Spent: $${data.totalSpent.toFixed(2)}<br>
+          Total: $${(data.balance + data.totalSpent).toFixed(2)}<br>
+          Joined: ${data.joinDate}<br>
+          Orders: ${data.ordersCount}
+        `;
+      } catch (err) {
+        alert('Session expired or invalid token. Please log in again.');
+        window.location.href = 'login.html';
+      }
     }
 
-    // Add product to cart
-    function addToCart(name, price) {
-      const cart = JSON.parse(localStorage.getItem('cart_' + user)) || [];
-      cart.push({ name, price });
-      localStorage.setItem('cart_' + user, JSON.stringify(cart));
-      alert(name + ' added to cart');
+    // Add product to cart by calling backend API
+    async function addToCart(name, price) {
+      try {
+        const res = await fetch(`${API_BASE}/api/cart/add`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ name, price })
+        });
+        if (!res.ok) throw new Error('Failed to add to cart');
+        alert(`${name} added to cart.`);
+      } catch (err) {
+        alert('Error adding to cart. Please try again.');
+      }
     }
 
     // Toggle product details display
     function toggleDetails(button) {
-      // Description is the next sibling of the button's parent container
-      // But your structure is: button then next sibling is button then next sibling is description
-      // So we get nextElementSibling twice from the clicked button
       const desc = button.nextElementSibling.nextElementSibling;
       if (!desc) return;
       if (desc.style.display === 'none' || desc.style.display === '') {
@@ -449,6 +406,47 @@ Real, fresh, and verified dump + pin sets
         button.textContent = 'Details';
       }
     }
+
+    // Initialize
+    loadProfile();
+
+    // Hamburger menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+    menuToggle.addEventListener('click', () => sideMenu.classList.toggle('active'));
+    menuToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        sideMenu.classList.toggle('active');
+      }
+    });
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+      }
+    });
+
+    // Profile dropdown toggle
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+    profileIcon.addEventListener('click', () => {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileIcon.setAttribute('aria-expanded', isActive);
+    });
+    profileIcon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const isActive = profileDropdown.classList.toggle('active');
+        profileIcon.setAttribute('aria-expanded', isActive);
+      }
+    });
+    window.addEventListener('click', (e) => {
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
+
   </script>
 
 </body>
