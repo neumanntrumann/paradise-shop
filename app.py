@@ -70,8 +70,6 @@ def generate_jwt(user_id, username):
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=8)
     }
     token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-    if isinstance(token, bytes):
-        token = token.decode('utf-8')
     return token
 
 def decode_jwt(token):
@@ -144,31 +142,31 @@ def index():
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    if request.method == 'GET':
-        return render_template('signup.html')
+    if request.method == 'POST':
+        data = request.get_json() if request.is_json else request.form
+        username = data.get('username', '').strip()
+        password = data.get('password', '').strip()
 
-    # POST method
-    data = request.get_json()
-    if not data:
-        # fallback if form is sent as form-encoded (not JSON)
-        data = request.form
+        if not username or not password:
+            return jsonify({'error': 'Missing username or password'}), 400
 
-    username = data.get('username')
-    password = data.get('password')
+        if len(password) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters'}), 400
 
-    if not username or not password:
-        return jsonify({'error': 'Username and password required.'}), 400
+        if User.query.filter_by(username=username).first():
+            return jsonify({'error': 'Username already exists'}), 400
 
-    existing_user = User.query.filter_by(username=username).first()
-    if existing_user:
-        return jsonify({'error': 'Username already exists.'}), 409
+        new_user = User(username=username)
+        new_user.set_password(password)
+        db.session.add(new_user)
+        db.session.commit()
 
-    new_user = User(username=username)
-    new_user.set_password(password)
-    db.session.add(new_user)
-    db.session.commit()
+        token = generate_jwt(new_user.id, new_user.username)
+        response = jsonify({'message': 'Signup successful'})
+        response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
+        return response
 
-    return jsonify({'message': 'User created successfully.'}), 201
+    return render_template('signup.html')
 
 @app.route('/login', methods=['GET'])
 def login_page():
@@ -189,13 +187,13 @@ def login():
 
     token = generate_jwt(user.id, user.username)
     response = redirect(url_for('index'))
-    response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600, path='/')
+    response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
     return response
 
 @app.route('/logout')
 def logout():
     response = make_response(redirect(url_for('login_page')))
-    response.set_cookie('access_token', '', expires=0, path='/')
+    response.set_cookie('access_token', '', expires=0)
     return response
 
 @app.route('/balance')
