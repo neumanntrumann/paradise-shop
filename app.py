@@ -21,11 +21,10 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# User model
+# User model without email
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
     def check_password(self, password):
@@ -97,19 +96,16 @@ def login():
 def signup():
     data = request.get_json()
     username = data.get('username', '').strip()
-    email = data.get('email', '').strip()
     password = data.get('password', '').strip()
 
-    if not username or not email or not password:
-        return jsonify({'error': 'Username, email, and password required'}), 400
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
 
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already taken'}), 409
-    if User.query.filter_by(email=email).first():
-        return jsonify({'error': 'Email already registered'}), 409
 
     hashed_pw = generate_password_hash(password)
-    new_user = User(username=username, email=email, password_hash=hashed_pw)
+    new_user = User(username=username, password_hash=hashed_pw)
     db.session.add(new_user)
     db.session.commit()
 
@@ -142,7 +138,7 @@ def token_required(f):
 @app.route('/profile')
 @token_required
 def profile(current_user):
-    return jsonify({'username': current_user.username, 'email': current_user.email})
+    return jsonify({'username': current_user.username})
 
 @app.route('/index')
 def index_page():

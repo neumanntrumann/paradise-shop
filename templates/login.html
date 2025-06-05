@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Login</title>
   <style>
-    /* your existing styles here (unchanged) */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -170,7 +169,6 @@
       message.style.color = 'red';
     }
 
-    // Read cookie helper
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -206,7 +204,6 @@
           return;
         }
 
-        // Redirect on success
         window.location.replace("/index");
       } catch (error) {
         message.textContent = 'Error connecting to server';

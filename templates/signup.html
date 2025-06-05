@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Signup</title>
   <style>
-    /* exactly the same styles as login.html */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -171,7 +170,6 @@
       message.style.color = 'red';
     }
 
-    // Read cookie helper
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -191,7 +189,7 @@
       }
 
       try {
-        const response = await fetch('https://paradise-shop-1.onrender.com/signup', {
+        const response = await fetch('/signup', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
