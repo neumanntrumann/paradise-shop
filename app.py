@@ -53,7 +53,7 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
-# JWT verification (API)
+# JWT verification
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -103,7 +103,7 @@ def root():
 @app.route('/login', methods=['GET'])
 def login_page():
     csrf_token = generate_csrf_token()
-    resp = make_response(render_template('login.html'))
+    resp = make_response(render_template('index.html'))  # login page is now index.html
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
@@ -162,10 +162,10 @@ def signup():
 def profile(current_user):
     return jsonify({'username': current_user.username})
 
-@app.route('/index')
+@app.route('/home')  # updated from /index
 @login_required_redirect
-def index_page(current_user):
-    return render_template('index.html', username=current_user.username)
+def home_page(current_user):
+    return render_template('home.html', username=current_user.username)
 
 @app.route('/balance')
 @login_required_redirect

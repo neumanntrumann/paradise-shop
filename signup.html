@@ -160,7 +160,7 @@
     </form>
 
     <p id="message"></p>
-    <p class="signup-link">Already have an account? <a href="/login">Login</a></p>
+    <p class="signup-link">Already have an account? <a href="/index">Login</a></p>
   </div>
 
   <script>
@@ -220,7 +220,7 @@
         message.textContent = 'Signup successful! Redirecting to login...';
 
         setTimeout(() => {
-          window.location.replace('/login');
+          window.location.replace('/index');
         }, 1800);
       } catch (error) {
         message.textContent = 'Error connecting to server';

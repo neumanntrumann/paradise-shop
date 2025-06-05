@@ -3,340 +3,227 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PARADISE SHOP - Home</title>
+  <title>Paradise Shop - Login</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
       margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
       overflow-x: hidden;
-      background: linear-gradient(-45deg, #f0f8ff, #e0f7fa, #f0f8ff, #e0f7fa);
-      background-size: 400% 400%;
-      animation: ocean 20s ease infinite;
+      perspective: 1px;
+      height: 100vh;
+      overflow-y: auto;
+      background-attachment: fixed;
       color: #333;
-      position: relative;
-      min-height: 100vh;
     }
-    @keyframes ocean {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-    .fade-slide {
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeSlideIn 1s ease-out forwards;
-    }
-    @keyframes fadeSlideIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .wave-emoji {
-      display: inline-block;
-      animation: wave 2.5s infinite ease-in-out;
-    }
-    @keyframes wave {
-      0%, 100% { transform: rotate(0deg); }
-      25% { transform: rotate(10deg); }
-      75% { transform: rotate(-10deg); }
-    }
-    .floating {
-      position: absolute;
-      animation: float 10s infinite ease-in-out;
-      pointer-events: none;
-      opacity: 0.3;
-      font-size: 20px;
-      user-select: none;
-    }
-    @keyframes float {
-      0% { transform: translateY(0) translateX(0); }
-      50% { transform: translateY(-20px) translateX(10px); }
-      100% { transform: translateY(0) translateX(0); }
-    }
-    #menuToggle {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      width: 35px;
-      height: 30px;
-      cursor: pointer;
-      z-index: 1100;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    #menuToggle span {
-      display: block;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-    }
-    #sideMenu {
+
+    .parallax-bg {
       position: fixed;
       top: 0;
       left: 0;
-      width: 23vw;
-      max-width: 300px;
-      height: 100vh;
-      background: #ffffff;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 1050;
-      padding-top: 60px;
-      box-sizing: border-box;
-      overflow-y: auto;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
+      z-index: -1;
+      filter: brightness(0.75);
     }
-    #sideMenu.active {
-      transform: translateX(0);
-    }
-    #sideMenu a {
-      display: block;
-      padding: 15px 25px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 600;
-      border-bottom: 1px solid #eee;
-    }
-    #sideMenu a:hover,
-    #sideMenu a:focus {
-      background-color: #f0f0f0;
-      outline: none;
-    }
-    #profileDropdownContainer {
+
+    .logo {
       position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 1100;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      animation: floatPalm 4s ease-in-out infinite;
+      z-index: 10;
     }
-    #profileIcon {
-      width: 40px;
-      height: 40px;
-      background-color: #00796b;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
-      user-select: none;
-      font-weight: bold;
-      font-size: 20px;
-      outline: none;
+
+    @keyframes floatPalm {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
     }
-    #profileIcon:focus {
-      box-shadow: 0 0 0 3px #004d40aa;
+
+    .login-container {
+      margin: 120px auto;
+      width: 320px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
+      box-sizing: border-box;
+      color: #222;
     }
-    #profileDropdown {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      width: 220px;
-      border-radius: 5px;
-      font-size: 14px;
-      z-index: 1150;
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
     }
-    #profileDropdown.active {
-      display: block;
-    }
-    #profileDropdown div, #profileDropdown a {
-      padding: 10px 15px;
-      border-bottom: 1px solid #eee;
-      display: block;
-      text-decoration: none;
-      color: #333;
-      cursor: pointer;
-    }
-    #profileDropdown div {
-      user-select: none;
-    }
-    #profileDropdown a:hover,
-    #profileDropdown a:focus {
-      background-color: #f0f0f0;
-      outline: none;
-    }
-    h1 {
-      margin-top: 80px;
-      text-align: center;
-      font-size: 2.4em;
-      color: #00796b;
-      user-select: none;
-    }
-    button {
-      padding: 8px 16px;
-      background-color: #00796b;
-      color: white;
-      border: none;
+
+    input, button {
+      margin: 12px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1.5px solid #ccc;
       border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      outline-offset: 2px;
+    }
+
+    input:focus {
+      border-color: #00ffd0;
+      box-shadow: 0 0 8px #00ffd0;
+    }
+
+    button {
+      background-color: #00aaff;
+      color: white;
+      font-weight: 700;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00aaff;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      background-color: #008ecc;
+      box-shadow: 0 0 20px #008ecc;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: red;
       font-weight: 600;
-      transition: background-color 0.2s ease, transform 0.15s ease;
+      min-height: 22px;
+      text-align: center;
     }
-    button:hover,
-    button:focus {
-      background-color: #004d40;
-      outline: none;
+
+    p.signup-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1rem;
     }
-    button:active {
-      transform: scale(0.97);
+
+    p.signup-link a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
     }
-    a {
-      color: #00796b;
+
+    p.signup-link a:hover {
+      text-decoration: underline;
+      color: #004999;
+    }
+
+    #music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff8;
+      border: none;
+      padding: 10px 14px;
       font-weight: bold;
-      transition: text-shadow 0.2s;
-    }
-    a:hover,
-    a:focus {
-      text-shadow: 0 0 6px rgba(0, 137, 123, 0.5);
-      outline: none;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 0 12px #4444;
     }
   </style>
 </head>
 <body>
 
-  <!-- Floating emojis for vibe -->
-  <div class="floating" style="top: 100px; left: 20px;">🌺</div>
-  <div class="floating" style="top: 250px; right: 30px;">🌊</div>
-  <div class="floating" style="top: 400px; left: 50%;">🌴</div>
+  <div class="parallax-bg"></div>
+  <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
 
-  <!-- Hamburger menu toggle -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+  <audio id="bg-music" loop muted>
+    <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
+  </audio>
+  <button id="music-toggle">🔊 Music</button>
 
-  <!-- Side navigation menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="/index" tabindex="0">Home</a>
-    <a href="/balance" tabindex="0">Balance</a>
-    <a href="/marketplace" tabindex="0">Market</a>
-    <a href="/cart" tabindex="0">Cart</a>
-    <a href="/orders" tabindex="0">Orders</a>
-    <a href="/more" tabindex="0">More</a>
-    <a href="/logout" tabindex="0">Logout</a>
-  </nav>
+  <div class="login-container">
+    <h2>🌺 Welcome Back to Paradise</h2>
+    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+      <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
+      <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
+      <button type="submit">Login</button>
+    </form>
 
-  <!-- Profile dropdown -->
-  <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo">Loading...</div>
-      <a href="/balance" role="menuitem" tabindex="0">Load Funds</a>
-      <a href="/index" role="menuitem" tabindex="0">Shop</a>
-      <a href="/cart" role="menuitem" tabindex="0">Cart</a>
-      <a href="/orders" role="menuitem" tabindex="0">Orders</a>
-      <a href="/logout" role="menuitem" tabindex="0">Logout</a>
-    </div>
-  </div>
-
-  <h1 class="fade-slide">🌴 <span class="wave-emoji">WELCOME TO PARADISE SHOP</span> 🌴</h1>
-
-  <div class="fade-slide" style="max-width: 700px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); line-height: 1.6;">
-    <p>Thank you for stopping by! You’re now part of an exclusive community focused on premium products, reliable service, and a smooth shopping experience.</p>
-
-    <h3>🛍️ New Products Dropping Soon</h3>
-    <p>Fresh inventory, rare finds, and exciting updates — check back often!</p>
-
-    <h3>💬 Need Help?</h3>
-    <p>→ Telegram group: <a href="https://t.me/ParadiseShopGroup" target="_blank" rel="noopener noreferrer">t.me/ParadiseShopGroup</a><br>
-       → DM: <a href="https://t.me/ParadiseStoreOwner" target="_blank" rel="noopener noreferrer">@ParadiseStoreOwner</a></p>
-
-    <h3>⚠️ Stay Safe</h3>
-    <p>Only trust official links. We’ll never ask for info outside our verified channels.</p>
-
-    <h3>💸 Payments</h3>
-    <p>We accept Bitcoin. CashApp coming soon.</p>
+    <p id="message"></p>
+    <p class="signup-link">Don't have an account? <a href="/signup">Sign up</a></p>
   </div>
 
   <script>
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
+    const message = document.getElementById('message');
+    const bgMusic = document.getElementById('bg-music');
+    const musicToggle = document.getElementById('music-toggle');
 
-    // Toggle side menu open/close
-    function toggleMenu() {
-      sideMenu.classList.toggle('active');
+    bgMusic.volume = 0.15;
+
+    function clearMessage() {
+      message.textContent = '';
+      message.style.color = 'red';
     }
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-      }
-    });
 
-    // Toggle profile dropdown open/close
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
     }
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', false);
-      }
-    });
 
-    // Fetch user profile info from backend (/profile)
-    async function loadUserInfo() {
+    async function login() {
+      clearMessage();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        message.textContent = 'Please enter username and password';
+        return;
+      }
+
       try {
-        const response = await fetch('/profile', {
-          credentials: 'include', // important to send cookies for JWT auth
+        const response = await fetch('/login', {
+          method: 'POST',
           headers: {
-            'Accept': 'application/json'
-          }
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': getCookie('csrf_token'),
+          },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'
         });
-
-        if (!response.ok) throw new Error('Failed to fetch user info');
 
         const data = await response.json();
 
-        // Provide fallback values if any are missing
-        const username = data.username || 'User';
-        const balance = (data.balance ?? 0).toFixed(2);
-        const spent = (data.spent ?? 0).toFixed(2);
-        const joinDate = data.joinDate || 'Unknown';
-        const orders = data.orders ?? 0;
-
-        profileInfoDiv.innerHTML = `
-          <strong>${username}</strong><br>
-          Balance: $${balance}<br>
-          Spent: $${spent}<br>
-          Joined: ${joinDate}<br>
-          Orders: ${orders}
-        `;
-      } catch (err) {
-        console.warn('Could not load user info:', err);
-        profileInfoDiv.textContent = 'Not logged in';
-        // Redirect to login if unauthorized
-        if (err.message.includes('Failed')) {
-          window.location.href = '/login';
+        if (!response.ok) {
+          message.textContent = data.error || 'Login failed';
+          return;
         }
+
+        window.location.replace("/index");
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        console.error('Login error:', error);
       }
     }
 
-    loadUserInfo();
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    musicToggle.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.play();
+        musicToggle.textContent = '🔈 Mute';
+      } else {
+        bgMusic.pause();
+        musicToggle.textContent = '🔊 Music';
+      }
+    });
   </script>
 </body>
 </html>

@@ -177,7 +177,7 @@
 
   <!-- Sliding side menu -->
   <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="index.html">Home</a>
+    <a href="home.html">Home</a>
     <a href="balance.html">Balance</a>
     <a href="marketplace.html">Market</a>
     <a href="cart.html">Cart</a>
@@ -192,7 +192,7 @@
     <div id="profileDropdown" role="menu" aria-label="User profile menu">
       <div id="profileInfo">Loading...</div>
       <a href="balance.html">Load Funds</a>
-      <a href="index.html">Shop</a>
+      <a href="home.html">Shop</a>
       <a href="cart.html">Cart</a>
       <a href="orders.html">Orders</a>
       <a href="logout.html">Logout</a>
@@ -344,7 +344,7 @@ Real, fresh, and verified dump + pin sets
 
     if (!token) {
       alert('Please log in first.');
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
     }
 
     // Setup common headers for fetch with JWT
@@ -375,7 +375,7 @@ Real, fresh, and verified dump + pin sets
         `;
       } catch (err) {
         alert('Session expired or invalid token. Please log in again.');
-        window.location.href = 'login.html';
+        window.location.href = 'index.html';
       }
     }
 
