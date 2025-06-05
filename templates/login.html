@@ -134,16 +134,13 @@
       box-shadow: 0 0 12px #4444;
     }
   </style>
-
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
   <div class="parallax-bg"></div>
   <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
 
-  <!-- Background tropical music (muted by default) -->
-  <audio id="bg-music" loop>
+  <audio id="bg-music" loop muted>
     <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
   </audio>
   <button id="music-toggle">🔊 Music</button>
@@ -153,11 +150,6 @@
     <form id="loginForm" onsubmit="event.preventDefault(); login();">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
-
-      <div style="margin: 15px 0; text-align: center;">
-        <div class="g-recaptcha" data-sitekey="6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh"></div>
-      </div>
-
       <button type="submit">Login</button>
     </form>
 
@@ -180,12 +172,6 @@
     async function login() {
       clearMessage();
 
-      const recaptchaResponse = grecaptcha.getResponse();
-      if (!recaptchaResponse) {
-        message.textContent = 'Please verify you are not a robot.';
-        return;
-      }
-
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
 
@@ -198,7 +184,7 @@
         const response = await fetch('/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password, recaptcha: recaptchaResponse }),
+          body: JSON.stringify({ username, password }),
           credentials: 'include'
         });
 
@@ -206,25 +192,20 @@
 
         if (!response.ok) {
           message.textContent = data.error || 'Login failed';
-          grecaptcha.reset();
           return;
         }
 
-        // On success, redirect
         window.location.href = '/';
       } catch (error) {
         message.textContent = 'Error connecting to server';
-        grecaptcha.reset();
         console.error('Login error:', error);
       }
     }
 
-    // Enter key support
     document.addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
     });
 
-    // Music toggle button
     musicToggle.addEventListener('click', () => {
       if (bgMusic.paused) {
         bgMusic.play();
@@ -235,6 +216,5 @@
       }
     });
   </script>
-
 </body>
 </html>
