@@ -4,8 +4,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 import jwt
 import datetime
-import requests
-import logging
 
 app = Flask(__name__)
 
@@ -15,12 +13,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# reCAPTCHA secret key (for backend verification)
-RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
-
-# Setup logging for debugging reCAPTCHA
-logging.basicConfig(level=logging.DEBUG)
 
 # -------------------- MODELS -------------------- #
 
@@ -86,23 +78,6 @@ def decode_jwt(token):
         return payload
     except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
         return None
-
-def verify_recaptcha(token):
-    if not token:
-        logging.warning("No reCAPTCHA token provided.")
-        return False
-
-    url = 'https://www.google.com/recaptcha/api/siteverify'
-    data = {'secret': RECAPTCHA_SECRET_KEY, 'response': token}
-    try:
-        r = requests.post(url, data=data)
-        result = r.json()
-        logging.debug(f"reCAPTCHA token received: {token}")
-        logging.debug(f"reCAPTCHA verification response: {result}")
-        return result.get('success', False)
-    except Exception as e:
-        logging.error(f"Exception during reCAPTCHA verification: {e}")
-        return False
 
 @app.before_request
 def load_user():
@@ -171,19 +146,12 @@ def signup():
         data = request.get_json() if request.is_json else request.form
         username = data.get('username', '').strip()
         password = data.get('password', '').strip()
-        recaptcha_response = data.get('g-recaptcha-response') or data.get('recaptcha') or ''
 
         if not username or not password:
             return jsonify({'error': 'Missing username or password'}), 400
 
         if len(password) < 6:
             return jsonify({'error': 'Password must be at least 6 characters'}), 400
-
-        if not recaptcha_response:
-            return jsonify({'error': 'reCAPTCHA token missing. Please complete the CAPTCHA.'}), 400
-
-        if not verify_recaptcha(recaptcha_response):
-            return jsonify({'error': 'Invalid reCAPTCHA. Please try again.'}), 400
 
         if User.query.filter_by(username=username).first():
             return jsonify({'error': 'Username already exists'}), 400
@@ -209,16 +177,9 @@ def login():
     data = request.get_json() if request.is_json else request.form
     username = data.get('username', '').strip()
     password = data.get('password', '').strip()
-    recaptcha_response = data.get('g-recaptcha-response') or data.get('recaptcha') or ''
 
     if not username or not password:
         return jsonify({'error': 'Username and password are required'}), 400
-
-    if not recaptcha_response:
-        return jsonify({'error': 'reCAPTCHA token missing. Please complete the CAPTCHA.'}), 400
-
-    if not verify_recaptcha(recaptcha_response):
-        return jsonify({'error': 'Invalid reCAPTCHA. Please try again.'}), 400
 
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
@@ -367,4 +328,3 @@ if __name__ == '__main__':
         load_sample_marketplace_items()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
