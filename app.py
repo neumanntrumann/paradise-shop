@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# User model without email
+# User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -35,7 +35,7 @@ class User(db.Model):
             token = token.decode('utf-8')
         return token
 
-# CSRF protection helpers
+# CSRF protection
 def generate_csrf_token():
     return secrets.token_urlsafe(32)
 
@@ -53,7 +53,7 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
-# Decorator for API routes that require JWT (return JSON error)
+# JWT verification (API)
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -77,20 +77,20 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Decorator for web routes that require login with redirect
+# Web login required decorator
 def login_required_redirect(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
         token = request.cookies.get('jwt')
         if not token:
-            return redirect('/login')
+            return redirect(url_for('login_page'))
         try:
             payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
             current_user = User.query.get(payload['user_id'])
             if not current_user:
-                return redirect('/login')
+                return redirect(url_for('login_page'))
         except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
-            return redirect('/login')
+            return redirect(url_for('login_page'))
         return f(current_user, *args, **kwargs)
     return decorated
 
@@ -98,7 +98,7 @@ def login_required_redirect(f):
 
 @app.route('/')
 def root():
-    return redirect('/login')
+    return redirect(url_for('login_page'))
 
 @app.route('/login', methods=['GET'])
 def login_page():
@@ -106,6 +106,10 @@ def login_page():
     resp = make_response(render_template('login.html'))
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
+
+@app.route('/login.html')
+def login_html_redirect():
+    return redirect(url_for('login_page'))
 
 @app.route('/signup', methods=['GET'])
 def signup_page():
@@ -163,7 +167,6 @@ def profile(current_user):
 def index_page(current_user):
     return render_template('index.html', username=current_user.username)
 
-# Added routes for hamburger menu links, all require login:
 @app.route('/balance')
 @login_required_redirect
 def balance_page(current_user):
@@ -191,7 +194,7 @@ def more_page(current_user):
 
 @app.route('/logout')
 def logout():
-    resp = redirect('/login')
+    resp = redirect(url_for('login_page'))
     resp.delete_cookie('jwt')
     return resp
 
