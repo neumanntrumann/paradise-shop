@@ -31,7 +31,6 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        # PyJWT >= 2.0 returns str; older versions return bytes
         if isinstance(token, bytes):
             token = token.decode('utf-8')
         return token
@@ -105,7 +104,6 @@ def root():
 def login_page():
     csrf_token = generate_csrf_token()
     resp = make_response(render_template('login.html'))
-    # Set cookie for CSRF token accessible by JS (not HttpOnly)
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
@@ -164,6 +162,32 @@ def profile(current_user):
 @login_required_redirect
 def index_page(current_user):
     return render_template('index.html', username=current_user.username)
+
+# Added routes for hamburger menu links, all require login:
+@app.route('/balance')
+@login_required_redirect
+def balance_page(current_user):
+    return render_template('balance.html', username=current_user.username)
+
+@app.route('/marketplace')
+@login_required_redirect
+def marketplace_page(current_user):
+    return render_template('marketplace.html', username=current_user.username)
+
+@app.route('/cart')
+@login_required_redirect
+def cart_page(current_user):
+    return render_template('cart.html', username=current_user.username)
+
+@app.route('/orders')
+@login_required_redirect
+def orders_page(current_user):
+    return render_template('orders.html', username=current_user.username)
+
+@app.route('/more')
+@login_required_redirect
+def more_page(current_user):
+    return render_template('more.html', username=current_user.username)
 
 @app.route('/logout')
 def logout():
