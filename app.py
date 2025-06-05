@@ -9,6 +9,11 @@ import secrets
 
 app = Flask(__name__)
 
+# Redirect root '/' to '/login'
+@app.route('/')
+def root():
+    return redirect('/login')
+
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
@@ -34,7 +39,7 @@ class User(db.Model):
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
         return token
 
-# CSRF protection
+# CSRF protection helpers
 def generate_csrf_token():
     return secrets.token_urlsafe(32)
 
@@ -143,7 +148,7 @@ def profile(current_user):
 def index_page():
     return render_template('index.html')
 
-# Initialize DB when server starts and run app with correct host and port for Render.com
+# Initialize DB and run app
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
