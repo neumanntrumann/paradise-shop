@@ -5,120 +5,336 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Your Orders - Paradise Shop</title>
   <style>
-    body { 
-      font-family: 'Segoe UI', sans-serif; 
-      padding: 20px; 
-      background: #f9f9f9;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #f0f8ff, #e0f7fa, #f0f8ff, #e0f7fa);
+      background-size: 400% 400%;
+      animation: ocean 20s ease infinite;
       color: #333;
+      min-height: 100vh;
     }
+
+    @keyframes ocean {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+
     h1 {
-      margin-bottom: 20px;
+      margin: 80px 0 30px;
+      text-align: center;
+      font-size: 2.4em;
+      color: #00796b;
     }
-    .order { 
-      border: 1px solid #ccc; 
-      margin-bottom: 15px; 
-      padding: 10px; 
+
+    .order {
+      border: 1px solid #ccc;
       background: #fff;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgb(0 0 0 / 0.1);
+      border-radius: 10px;
+      margin: 15px auto;
+      padding: 15px 20px;
+      max-width: 700px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     }
-    .order-header { 
-      font-weight: bold; 
-      margin-bottom: 10px; 
+
+    .order-header {
+      font-weight: bold;
+      font-size: 1.2em;
       color: #007acc;
+      margin-bottom: 10px;
     }
-    .order-items { 
-      margin-left: 15px; 
+
+    .order-items ul {
+      padding-left: 20px;
     }
+
     #profileInfo {
       font-weight: bold;
-      margin-bottom: 20px;
-      padding: 10px;
       background: #e1f5fe;
-      border-radius: 6px;
+      padding: 15px;
+      border-radius: 10px;
+      max-width: 700px;
+      margin: auto;
+      margin-bottom: 20px;
       box-shadow: inset 0 0 5px #90caf9;
+      line-height: 1.6;
+    }
+
+    .floating {
+      position: absolute;
+      animation: float 10s infinite ease-in-out;
+      pointer-events: none;
+      opacity: 0.3;
+      font-size: 20px;
+      user-select: none;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+
+    #menuToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 35px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    #menuToggle span {
+      display: block;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 23vw;
+      max-width: 300px;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding-top: 60px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    #sideMenu.active {
+      transform: translateX(0);
+    }
+
+    #sideMenu a {
+      display: block;
+      padding: 15px 25px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+    }
+
+    #sideMenu a:hover,
+    #sideMenu a:focus {
+      background-color: #f0f0f0;
+      outline: none;
+    }
+
+    #profileDropdownContainer {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+    }
+
+    #profileIcon {
+      width: 40px;
+      height: 40px;
+      background-color: #00796b;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      font-size: 20px;
+      outline: none;
+    }
+
+    #profileIcon:focus {
+      box-shadow: 0 0 0 3px #004d40aa;
+    }
+
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 220px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 1150;
+    }
+
+    #profileDropdown.active {
+      display: block;
+    }
+
+    #profileDropdown div, #profileDropdown a {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      display: block;
+      text-decoration: none;
+      color: #333;
+      cursor: pointer;
+    }
+
+    #profileDropdown div {
+      user-select: none;
+    }
+
+    #profileDropdown a:hover,
+    #profileDropdown a:focus {
+      background-color: #f0f0f0;
+      outline: none;
     }
   </style>
 </head>
 <body>
 
-<h1>Your Orders</h1>
+<!-- Floating Emojis -->
+<div class="floating" style="top: 100px; left: 20px;">🌺</div>
+<div class="floating" style="top: 250px; right: 30px;">🌊</div>
+<div class="floating" style="top: 400px; left: 50%;">🌴</div>
 
-<!-- Profile Info -->
-<div id="profileInfo">Loading profile...</div>
+<!-- Hamburger menu -->
+<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <span></span>
+  <span></span>
+  <span></span>
+</div>
+
+<!-- Side Navigation -->
+<nav id="sideMenu" aria-label="Main navigation menu">
+  <a href="/index" tabindex="0">Home</a>
+  <a href="/balance" tabindex="0">Balance</a>
+  <a href="/marketplace" tabindex="0">Market</a>
+  <a href="/cart" tabindex="0">Cart</a>
+  <a href="/orders" tabindex="0">Orders</a>
+  <a href="/more" tabindex="0">More</a>
+  <a href="/logout" tabindex="0">Logout</a>
+</nav>
+
+<!-- Profile Dropdown -->
+<div id="profileDropdownContainer">
+  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+  <div id="profileDropdown" role="menu" aria-label="User profile menu">
+    <div id="profileInfo">Loading...</div>
+    <a href="/balance" role="menuitem" tabindex="0">Load Funds</a>
+    <a href="/index" role="menuitem" tabindex="0">Shop</a>
+    <a href="/cart" role="menuitem" tabindex="0">Cart</a>
+    <a href="/orders" role="menuitem" tabindex="0">Orders</a>
+    <a href="/logout" role="menuitem" tabindex="0">Logout</a>
+  </div>
+</div>
+
+<h1>🧾 Your Orders</h1>
 
 <!-- Orders List -->
 <div id="orders-list">Loading orders...</div>
 
 <script>
+  const profileIcon = document.getElementById('profileIcon');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const profileInfoDiv = document.getElementById('profileInfo');
+  const menuToggle = document.getElementById('menuToggle');
+  const sideMenu = document.getElementById('sideMenu');
   const ordersList = document.getElementById('orders-list');
-  const profileInfo = document.getElementById('profileInfo');
+
+  function toggleMenu() {
+    sideMenu.classList.toggle('active');
+  }
+
+  menuToggle.addEventListener('click', toggleMenu);
+  menuToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleMenu();
+    }
+  });
+
+  window.addEventListener('click', (e) => {
+    if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+      sideMenu.classList.remove('active');
+    }
+    if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+      profileDropdown.classList.remove('active');
+      profileIcon.setAttribute('aria-expanded', false);
+    }
+  });
+
+  function toggleProfileDropdown() {
+    const isActive = profileDropdown.classList.toggle('active');
+    profileIcon.setAttribute('aria-expanded', isActive);
+  }
+
+  profileIcon.addEventListener('click', toggleProfileDropdown);
+  profileIcon.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleProfileDropdown();
+    }
+  });
 
   async function loadOrders() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in to view your orders.');
-      window.location.href = 'login.html';
-      return;
-    }
-
     try {
-      const res = await fetch('/api/orders', {  // Adjust this endpoint if needed
+      const res = await fetch('/orders', {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
       });
 
-      if (res.status === 401) {
-        alert('Session expired or unauthorized. Please login again.');
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      if (!res.ok) throw new Error('Fetch failed');
+      if (!res.ok) throw new Error('Failed to fetch orders');
 
       const data = await res.json();
 
-      // Show Profile Info
-      profileInfo.innerHTML = `
-        ${data.username} <br>
-        Balance: $${data.balance.toFixed(2)} <br>
-        Orders: ${data.orders.length} <br>
-        Joined: ${data.joinDate || 'Unknown'}
+      const username = data.username || 'User';
+      const balance = (data.balance ?? 0).toFixed(2);
+      const joinDate = data.joinDate || 'Unknown';
+      const orders = data.orders ?? [];
+
+      profileInfoDiv.innerHTML = `
+        <strong>${username}</strong><br>
+        Balance: $${balance}<br>
+        Orders: ${orders.length}<br>
+        Joined: ${joinDate}
       `;
 
-      // Show Orders
-      if (!data.orders || data.orders.length === 0) {
-        ordersList.innerHTML = '<p>You have no orders yet.</p>';
+      if (orders.length === 0) {
+        ordersList.innerHTML = '<p style="text-align:center;">You have no orders yet.</p>';
         return;
       }
 
       ordersList.innerHTML = '';
-      data.orders.forEach((order, i) => {
+      orders.forEach((order, i) => {
         const div = document.createElement('div');
         div.className = 'order';
-
         let itemsHtml = '<ul>';
         order.items.forEach(item => {
           itemsHtml += `<li>${item.name} - $${item.price.toFixed(2)}</li>`;
         });
         itemsHtml += '</ul>';
-
         div.innerHTML = `
           <div class="order-header">Order #${order.id || i + 1}</div>
           <div class="order-items">${itemsHtml}</div>
         `;
-
         ordersList.appendChild(div);
       });
 
     } catch (err) {
       console.error(err);
-      ordersList.innerHTML = '<p>Error loading orders. Please try again later.</p>';
-      profileInfo.textContent = 'Error loading profile.';
+      profileInfoDiv.textContent = 'Error loading profile.';
+      ordersList.innerHTML = '<p style="text-align:center;">Error loading orders. Please try again later.</p>';
+      window.location.href = '/index';
     }
   }
 
