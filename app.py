@@ -1,11 +1,13 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, g, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_cors import CORS  # ✅ ADDED CORS IMPORT
 import os
 import jwt
 import datetime
 
 app = Flask(__name__)
+CORS(app)  # ✅ ENABLED CORS FOR FRONTEND/BACKEND CONNECTION
 
 # Configs
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh')
