@@ -17,7 +17,6 @@
       color: #333;
     }
 
-    /* Parallax Background */
     .parallax-bg {
       position: fixed;
       top: 0;
@@ -31,7 +30,6 @@
       filter: brightness(0.75);
     }
 
-    /* Floating Palm Logo */
     .logo {
       position: fixed;
       top: 20px;
@@ -46,7 +44,6 @@
       50% { transform: translateY(-12px); }
     }
 
-    /* Login container with neon pulse border */
     .login-container {
       margin: 120px auto;
       width: 320px;
@@ -91,6 +88,7 @@
       box-shadow: 0 0 10px #00aaff;
       text-transform: uppercase;
     }
+
     button:hover {
       background-color: #008ecc;
       box-shadow: 0 0 20px #008ecc;
@@ -104,65 +102,74 @@
       text-align: center;
     }
 
-    /* Link style */
     p.signup-link {
       text-align: center;
       margin-top: 20px;
       font-size: 1rem;
     }
+
     p.signup-link a {
       color: #0077cc;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
     }
+
     p.signup-link a:hover {
       text-decoration: underline;
       color: #004999;
     }
+
+    #music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff8;
+      border: none;
+      padding: 10px 14px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 0 12px #4444;
+    }
   </style>
 
-  <!-- Google reCAPTCHA v2 -->
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
 </head>
 <body>
 
-  <!-- Parallax Background -->
   <div class="parallax-bg"></div>
-
-  <!-- Floating Palm Logo -->
   <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
 
-  <!-- Background tropical music -->
-  <audio id="bg-music" autoplay loop>
+  <!-- Background tropical music (muted by default) -->
+  <audio id="bg-music" loop>
     <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
   </audio>
+  <button id="music-toggle">🔊 Music</button>
 
-  <!-- Login Form -->
   <div class="login-container">
     <h2>🌺 Welcome Back to Paradise</h2>
+    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+      <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
+      <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
 
-    <input type="text" id="username" placeholder="Username" oninput="clearMessage()" autofocus />
-    <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
+      <div style="margin: 15px 0; text-align: center;">
+        <div class="g-recaptcha" data-sitekey="6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh"></div>
+      </div>
 
-    <!-- reCAPTCHA -->
-    <div style="margin: 15px 0; text-align: center;">
-      <div class="g-recaptcha" data-sitekey="6LeFEFYrAAAAADtsjeNDwHOfrIIuC777r2jnN_rE"></div>
-    </div>
-
-    <button id="loginButton" type="button">Login</button>
+      <button type="submit">Login</button>
+    </form>
 
     <p id="message"></p>
-    <p class="signup-link">Don't have an account? <a href="signup.html">Sign up</a></p>
+    <p class="signup-link">Don't have an account? <a href="/signup">Sign up</a></p>
   </div>
 
   <script>
     const message = document.getElementById('message');
-    const loginButton = document.getElementById('loginButton');
     const bgMusic = document.getElementById('bg-music');
+    const musicToggle = document.getElementById('music-toggle');
 
-    // Soft background music volume
     bgMusic.volume = 0.15;
 
     function clearMessage() {
@@ -173,7 +180,6 @@
     async function login() {
       clearMessage();
 
-      // Check reCAPTCHA response
       const recaptchaResponse = grecaptcha.getResponse();
       if (!recaptchaResponse) {
         message.textContent = 'Please verify you are not a robot.';
@@ -204,9 +210,8 @@
           return;
         }
 
-        // On successful login, redirect home
+        // On success, redirect
         window.location.href = '/';
-
       } catch (error) {
         message.textContent = 'Error connecting to server';
         grecaptcha.reset();
@@ -214,9 +219,20 @@
       }
     }
 
-    loginButton.addEventListener('click', login);
+    // Enter key support
     document.addEventListener('keydown', e => {
       if (e.key === 'Enter') login();
+    });
+
+    // Music toggle button
+    musicToggle.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.play();
+        musicToggle.textContent = '🔈 Mute';
+      } else {
+        bgMusic.pause();
+        musicToggle.textContent = '🔊 Music';
+      }
     });
   </script>
 
