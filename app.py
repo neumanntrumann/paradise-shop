@@ -15,7 +15,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# reCAPTCHA secret
+# reCAPTCHA secret key (for backend verification)
 RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh')
 
 # -------------------- MODELS -------------------- #
@@ -348,6 +348,5 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         load_sample_marketplace_items()
-    import os
-port = int(os.environ.get("PORT", 5000))
-app.run(host='0.0.0.0', port=port)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
