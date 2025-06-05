@@ -5,132 +5,218 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Login</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
-
+    /* [same styles as yours — unchanged] */
     body {
       margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(to right, #6dd5fa, #2980b9);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      overflow-x: hidden;
+      perspective: 1px;
       height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      overflow: hidden;
-      color: white;
+      overflow-y: auto;
+      background-attachment: fixed;
+      color: #333;
     }
 
     .parallax-bg {
-      background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80') no-repeat center center fixed;
-      background-size: cover;
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      filter: brightness(0.5);
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
       z-index: -1;
+      filter: brightness(0.75);
     }
 
-    .login-container {
-      background: rgba(255 255 255 / 0.1);
-      border-radius: 12px;
-      padding: 40px;
-      width: 320px;
-      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-      text-align: center;
-    }
-
-    h2 {
-      margin-bottom: 24px;
-      font-weight: 700;
-      letter-spacing: 1.2px;
-      color: #fff;
-    }
-
-    form input {
-      width: 100%;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      outline: none;
-      box-sizing: border-box;
-    }
-
-    form input::placeholder {
-      color: #aaa;
-    }
-
-    form button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 6px;
-      background: #ff7e5f;
-      background: linear-gradient(to right, #feb47b, #ff7e5f);
-      color: white;
-      font-weight: 700;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-    }
-
-    form button:hover {
-      background: linear-gradient(to right, #ff7e5f, #feb47b);
-    }
-
-    #message {
-      margin-top: 12px;
-      min-height: 22px;
-      font-weight: 600;
-      color: #ffbaba; /* light red for errors */
-    }
-
-    .signup-link {
-      margin-top: 24px;
-      font-size: 14px;
-      color: #eee;
-    }
-
-    .signup-link a {
-      color: #ffcc80;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .signup-link a:hover {
-      text-decoration: underline;
-    }
-
-    /* Optional logo styling */
     .logo {
       position: fixed;
       top: 20px;
       left: 20px;
-      width: 48px;
-      height: 48px;
-      opacity: 0.9;
-      filter: drop-shadow(0 0 3px rgba(0,0,0,0.3));
+      width: 60px;
+      animation: floatPalm 4s ease-in-out infinite;
+      z-index: 10;
+    }
+
+    @keyframes floatPalm {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .login-container {
+      margin: 120px auto;
+      width: 320px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
+      box-sizing: border-box;
+      color: #222;
+    }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
+    }
+
+    input, button {
+      margin: 12px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      outline-offset: 2px;
+    }
+
+    input:focus {
+      border-color: #00ffd0;
+      box-shadow: 0 0 8px #00ffd0;
+    }
+
+    button {
+      background-color: #00aaff;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00aaff;
+      text-transform: uppercase;
+    }
+
+    button:hover {
+      background-color: #008ecc;
+      box-shadow: 0 0 20px #008ecc;
+    }
+
+    #message {
+      margin-top: 10px;
+      color: red;
+      font-weight: 600;
+      min-height: 22px;
+      text-align: center;
+    }
+
+    p.signup-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1rem;
+    }
+
+    p.signup-link a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+
+    p.signup-link a:hover {
+      text-decoration: underline;
+      color: #004999;
+    }
+
+    #music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff8;
+      border: none;
+      padding: 10px 14px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 0 12px #4444;
     }
   </style>
 </head>
 <body>
+
   <div class="parallax-bg"></div>
   <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
 
+  <audio id="bg-music" loop muted>
+    <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
+  </audio>
+  <button id="music-toggle">🔊 Music</button>
+
   <div class="login-container">
     <h2>🌺 Welcome Back to Paradise</h2>
-
-    <!-- Plain POST form -->
-    <form method="POST" action="{{ url_for('login') }}">
-      <input type="text" name="username" placeholder="Username" required
-        value="{{ request.form.username if request.method == 'POST' else '' }}" />
-      <input type="password" name="password" placeholder="Password" required />
+    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+      <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
+      <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
       <button type="submit">Login</button>
     </form>
 
-    <!-- Error message from Flask backend -->
-    <p id="message">{{ error or '' }}</p>
-
-    <p class="signup-link">Don't have an account? <a href="{{ url_for('signup') }}">Sign up</a></p>
+    <p id="message"></p>
+    <p class="signup-link">Don't have an account? <a href="/signup">Sign up</a></p>
   </div>
+
+  <script>
+    const message = document.getElementById('message');
+    const bgMusic = document.getElementById('bg-music');
+    const musicToggle = document.getElementById('music-toggle');
+
+    bgMusic.volume = 0.15;
+
+    function clearMessage() {
+      message.textContent = '';
+      message.style.color = 'red';
+    }
+
+    async function login() {
+      clearMessage();
+
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !password) {
+        message.textContent = 'Please enter username and password';
+        return;
+      }
+
+      try {
+        const response = await fetch('/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password }),
+          credentials: 'include' // Important for cookie-based JWT
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.error || 'Login failed';
+          return;
+        }
+
+        // Redirect using replace to avoid login page in history
+        window.location.replace("/index");
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        console.error('Login error:', error);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') login();
+    });
+
+    musicToggle.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.play();
+        musicToggle.textContent = '🔈 Mute';
+      } else {
+        bgMusic.pause();
+        musicToggle.textContent = '🔊 Music';
+      }
+    });
+  </script>
 </body>
 </html>
