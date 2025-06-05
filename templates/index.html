@@ -154,8 +154,8 @@
     </form>
 
     <p id="message"></p>
-    <p class="signup-link">Don't have an account? <a href="/signup">Sign up</a></p>
-  </div>
+    <p class="signup-link">Don't have an account? <a href="/signup.html">Sign up</a></p>
+   </div>
 
   <script>
     const message = document.getElementById('message');
@@ -187,7 +187,7 @@
       }
 
       try {
-        const response = await fetch('/login', {
+        const response = await fetch('/index', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
