@@ -143,8 +143,9 @@ def profile(current_user):
 def index_page():
     return render_template('index.html')
 
-# Initialize DB when server starts
+# Initialize DB when server starts and run app with correct host and port for Render.com
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
