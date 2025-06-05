@@ -85,13 +85,10 @@ def decode_jwt(token):
 def load_user():
     g.user = None
     token = request.cookies.get('access_token')
-    print("Token from cookie:", token)  # Debug print
     if token:
         payload = decode_jwt(token)
-        print("Decoded payload:", payload)  # Debug print
         if payload:
             user = User.query.filter_by(id=payload.get('user_id')).first()
-            print("User from DB:", user)  # Debug print
             if user:
                 g.user = user
 
@@ -145,9 +142,17 @@ def serialize_order(order):
 def index():
     return render_template('index.html')
 
-@app.route('/signup', methods=['POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if request.method == 'GET':
+        return render_template('signup.html')
+
+    # POST method
     data = request.get_json()
+    if not data:
+        # fallback if form is sent as form-encoded (not JSON)
+        data = request.form
+
     username = data.get('username')
     password = data.get('password')
 
@@ -158,8 +163,8 @@ def signup():
     if existing_user:
         return jsonify({'error': 'Username already exists.'}), 409
 
-    hashed_password = generate_password_hash(password, method='sha256')
-    new_user = User(username=username, password=hashed_password)
+    new_user = User(username=username)
+    new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
 
