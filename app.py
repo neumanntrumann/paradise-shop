@@ -5,6 +5,7 @@ import os
 import jwt
 import datetime
 import requests
+import logging
 
 app = Flask(__name__)
 
@@ -17,6 +18,9 @@ db = SQLAlchemy(app)
 
 # reCAPTCHA secret key (for backend verification)
 RECAPTCHA_SECRET_KEY = os.environ.get('RECAPTCHA_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
+
+# Setup logging for debugging reCAPTCHA
+logging.basicConfig(level=logging.DEBUG)
 
 # -------------------- MODELS -------------------- #
 
@@ -84,13 +88,20 @@ def decode_jwt(token):
         return None
 
 def verify_recaptcha(token):
+    if not token:
+        logging.warning("No reCAPTCHA token provided.")
+        return False
+
     url = 'https://www.google.com/recaptcha/api/siteverify'
     data = {'secret': RECAPTCHA_SECRET_KEY, 'response': token}
     try:
         r = requests.post(url, data=data)
         result = r.json()
+        logging.debug(f"reCAPTCHA token received: {token}")
+        logging.debug(f"reCAPTCHA verification response: {result}")
         return result.get('success', False)
-    except Exception:
+    except Exception as e:
+        logging.error(f"Exception during reCAPTCHA verification: {e}")
         return False
 
 @app.before_request
@@ -168,6 +179,9 @@ def signup():
         if len(password) < 6:
             return jsonify({'error': 'Password must be at least 6 characters'}), 400
 
+        if not recaptcha_response:
+            return jsonify({'error': 'reCAPTCHA token missing. Please complete the CAPTCHA.'}), 400
+
         if not verify_recaptcha(recaptcha_response):
             return jsonify({'error': 'Invalid reCAPTCHA. Please try again.'}), 400
 
@@ -199,6 +213,9 @@ def login():
 
     if not username or not password:
         return jsonify({'error': 'Username and password are required'}), 400
+
+    if not recaptcha_response:
+        return jsonify({'error': 'reCAPTCHA token missing. Please complete the CAPTCHA.'}), 400
 
     if not verify_recaptcha(recaptcha_response):
         return jsonify({'error': 'Invalid reCAPTCHA. Please try again.'}), 400
@@ -350,3 +367,4 @@ if __name__ == '__main__':
         load_sample_marketplace_items()
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
+
