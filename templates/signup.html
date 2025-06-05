@@ -1,276 +1,277 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Sign Up - Paradise Shop</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paradise Shop - Sign Up</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      overflow-x: hidden;
+      perspective: 1px;
+      height: 100vh;
+      overflow-y: auto;
+      background-attachment: fixed;
+      color: #333;
+    }
 
-  /* Body & Background */
-  body, html {
-    margin: 0; padding: 0; height: 100%;
-    font-family: 'Montserrat', sans-serif;
-    background: linear-gradient(135deg, #00b09b, #96c93d);
-    overflow-x: hidden;
-    color: #fff;
-  }
+    .parallax-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
+      z-index: -1;
+      filter: brightness(0.75);
+    }
 
-  /* Parallax container */
-  .parallax {
-    perspective: 1px;
-    height: 100vh;
-    overflow-x: hidden;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-  }
+    .logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 60px;
+      animation: floatPalm 4s ease-in-out infinite;
+      z-index: 10;
+    }
 
-  /* Background layers */
-  .parallax__layer--base {
-    position: relative;
-    z-index: 10;
-    padding: 30px 20px;
-  }
-  .parallax__layer--back {
-    transform: translateZ(-1px) scale(2);
-    background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1400&q=80') no-repeat center/cover;
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    filter: brightness(0.6);
-    z-index: 0;
-  }
+    @keyframes floatPalm {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
 
-  /* Floating Palm Tree Logo */
-  #palm-logo {
-    position: fixed;
-    top: 20px; left: 20px;
-    width: 60px;
-    animation: float 4s ease-in-out infinite;
-    z-index: 20;
-  }
-  @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-15px); }
-  }
+    .signup-container {
+      margin: 120px auto;
+      width: 320px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
+      box-sizing: border-box;
+      color: #222;
+    }
 
-  /* Signup Form */
-  form {
-    max-width: 360px;
-    margin: 120px auto 40px auto;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 0 15px #0ff, 0 0 30px #0ff inset;
-    border: 3px solid #0ff;
-    animation: neonPulse 3s infinite alternate;
-  }
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
+    }
 
-  @keyframes neonPulse {
-    from { box-shadow: 0 0 10px #0ff; border-color: #0ff; }
-    to { box-shadow: 0 0 25px #0ff, 0 0 50px #0ff inset; border-color: #0ff; }
-  }
+    input, button {
+      margin: 12px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+      outline-offset: 2px;
+    }
 
-  form h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 8px #0ff;
-  }
+    input:focus {
+      border-color: #00ffd0;
+      box-shadow: 0 0 8px #00ffd0;
+    }
 
-  input[type="text"],
-  input[type="password"] {
-    width: 100%;
-    padding: 12px 15px;
-    margin: 10px 0 15px 0;
-    border: none;
-    border-radius: 10px;
-    outline: none;
-    font-size: 1rem;
-  }
+    button {
+      background-color: #00aaff;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00aaff;
+      text-transform: uppercase;
+    }
 
-  input[type="text"]:focus,
-  input[type="password"]:focus {
-    box-shadow: 0 0 8px #0ff;
-  }
+    button:hover {
+      background-color: #008ecc;
+      box-shadow: 0 0 20px #008ecc;
+    }
 
-  button {
-    width: 100%;
-    padding: 14px;
-    background: #00b09b;
-    border: none;
-    border-radius: 12px;
-    color: white;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    text-transform: uppercase;
-    transition: background 0.3s ease;
-    box-shadow: 0 0 10px #00b09b;
-  }
-  button:hover {
-    background: #01987f;
-    box-shadow: 0 0 20px #00b09b;
-  }
+    #message {
+      margin-top: 10px;
+      color: red;
+      font-weight: 600;
+      min-height: 22px;
+      text-align: center;
+    }
 
-  #message {
-    margin-top: 10px;
-    text-align: center;
-    font-weight: bold;
-    min-height: 24px;
-  }
+    p.login-link {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 1rem;
+    }
 
-  /* Link below form */
-  .login-link {
-    text-align: center;
-    margin-top: 25px;
-    font-size: 1rem;
-  }
-  .login-link a {
-    color: #0ff;
-    text-decoration: none;
-    font-weight: 600;
-    transition: color 0.3s ease;
-  }
-  .login-link a:hover {
-    color: #fff;
-  }
+    p.login-link a {
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
 
-  /* reCAPTCHA container */
-  #recaptcha-container {
-    margin: 15px 0 10px 0;
-    text-align: center;
-  }
-</style>
+    p.login-link a:hover {
+      text-decoration: underline;
+      color: #004999;
+    }
 
-<!-- Google reCAPTCHA v2 -->
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    #music-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #fff8;
+      border: none;
+      padding: 10px 14px;
+      font-weight: bold;
+      border-radius: 10px;
+      cursor: pointer;
+      z-index: 1000;
+      box-shadow: 0 0 12px #4444;
+    }
+  </style>
+
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
 
-<!-- Parallax background -->
-<div class="parallax__layer--back"></div>
+  <div class="parallax-bg" aria-hidden="true"></div>
+  <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" aria-hidden="true" />
 
-<!-- Floating Palm Tree Logo -->
-<img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="Palm Tree Logo" id="palm-logo" />
+  <!-- Background tropical music (muted by default) -->
+  <audio id="bg-music" loop aria-label="Background tropical music">
+    <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
+  </audio>
+  <button id="music-toggle" aria-pressed="false" aria-label="Toggle background music">🔊 Music</button>
 
-<!-- Parallax container -->
-<div class="parallax">
-  <form id="signup-form" onsubmit="return false;">
-    <h1>🌴 Paradise Shop Sign Up</h1>
+  <div class="signup-container" role="main">
+    <h2>🌴 Paradise Shop Sign Up</h2>
+    <form id="signupForm" onsubmit="event.preventDefault(); signup();" aria-describedby="message" aria-live="polite" aria-label="Sign up form">
+      <input
+        type="text"
+        id="username"
+        name="username"
+        placeholder="Username"
+        oninput="clearMessage()"
+        required
+        autofocus
+        aria-required="true"
+        aria-describedby="usernameHelp"
+      />
+      <input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="Password"
+        oninput="clearMessage()"
+        required
+        aria-required="true"
+      />
 
-    <input type="text" id="username" placeholder="Username" autocomplete="off" oninput="clearMessage(); checkUsernameAvailability();" autofocus />
-    <div id="username-availability" style="height:18px; color:#0ff; font-weight: 600; margin-bottom: 10px;"></div>
+      <div style="margin: 15px 0; text-align: center;">
+        <div class="g-recaptcha" data-sitekey="6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh" aria-label="reCAPTCHA"></div>
+      </div>
 
-    <input type="password" id="password" placeholder="Password" oninput="clearMessage()" />
+      <button type="submit" aria-label="Submit Sign Up form">Sign Up</button>
+    </form>
 
-    <div id="recaptcha-container">
-      <div class="g-recaptcha" data-sitekey="6LeaIlYrAAAAAKMvAK061JHTnGXTXx7Hagh-NMJh"></div>
-    </div>
+    <p id="message" role="alert" aria-live="assertive"></p>
+    <p class="login-link">Already have an account? <a href="/login">Login here</a></p>
+  </div>
 
-    <button id="signupButton" type="submit">Sign Up</button>
+  <script>
+    const message = document.getElementById('message');
+    const bgMusic = document.getElementById('bg-music');
+    const musicToggle = document.getElementById('music-toggle');
 
-    <p id="message"></p>
+    bgMusic.volume = 0.15;
 
-    <p class="login-link">Already have an account? <a href="login.html">Login here</a></p>
-  </form>
-</div>
-
-<!-- Background tropical music -->
-<audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/03/25/audio_18226313f0.mp3?filename=tropical-beach-ambient-11219.mp3" autoplay loop></audio>
-
-<script>
-  const message = document.getElementById('message');
-  const signupButton = document.getElementById('signupButton');
-  const usernameInput = document.getElementById('username');
-  const availabilityMsg = document.getElementById('username-availability');
-  const bgMusic = document.getElementById('bg-music');
-
-  // Set background music volume low
-  bgMusic.volume = 0.15;
-
-  function clearMessage() {
-    message.textContent = '';
-    message.style.color = 'red';
-    availabilityMsg.textContent = '';
-  }
-
-  // Real-time username availability check
-  let usernameTimeout = null;
-  function checkUsernameAvailability() {
-    const username = usernameInput.value.trim();
-    availabilityMsg.textContent = '';
-    clearTimeout(usernameTimeout);
-    if (!username) return;
-    usernameTimeout = setTimeout(async () => {
-      try {
-        const response = await fetch('/check-username?username=' + encodeURIComponent(username));
-        const data = await response.json();
-        if (data.available) {
-          availabilityMsg.style.color = '#0ff';
-          availabilityMsg.textContent = 'Username is available!';
-        } else {
-          availabilityMsg.style.color = '#ff4d4d';
-          availabilityMsg.textContent = 'Username is taken.';
-        }
-      } catch {
-        availabilityMsg.style.color = '#ff4d4d';
-        availabilityMsg.textContent = 'Error checking username.';
-      }
-    }, 600);
-  }
-
-  async function signup() {
-    clearMessage();
-
-    // Check reCAPTCHA
-    const recaptchaResponse = grecaptcha.getResponse();
-    if (!recaptchaResponse) {
-      message.textContent = 'Please verify you are not a robot.';
-      return;
+    function clearMessage() {
+      message.textContent = '';
+      message.style.color = 'red';
     }
 
-    const username = usernameInput.value.trim();
-    const password = document.getElementById('password').value.trim();
+    async function signup() {
+      clearMessage();
 
-    if (!username || !password) {
-      message.textContent = 'Please enter username and password';
-      return;
-    }
-
-    try {
-      const response = await fetch('/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, recaptcha: recaptchaResponse })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        message.textContent = data.error || 'Registration failed';
-        grecaptcha.reset();
+      const recaptchaResponse = grecaptcha.getResponse();
+      if (!recaptchaResponse) {
+        message.textContent = 'Please verify you are not a robot.';
         return;
       }
 
-      message.style.color = 'lightgreen';
-      message.textContent = 'Account created! Redirecting to login...';
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
 
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 2200);
+      if (!username || !password) {
+        message.textContent = 'Please enter username and password';
+        return;
+      }
 
-    } catch (error) {
-      message.textContent = 'Error connecting to server';
-      grecaptcha.reset();
-      console.error(error);
+      try {
+        const response = await fetch('/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, recaptcha: recaptchaResponse })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          message.textContent = data.error || 'Signup failed';
+          grecaptcha.reset();
+          return;
+        }
+
+        message.style.color = 'lightgreen';
+        message.textContent = 'Account created! Redirecting to login...';
+
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2200);
+      } catch (error) {
+        message.textContent = 'Error connecting to server';
+        grecaptcha.reset();
+        console.error('Signup error:', error);
+      }
     }
-  }
 
-  signupButton.addEventListener('click', signup);
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') signup();
-  });
-</script>
+    // Only submit on Enter if focus is inside username or password inputs
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        const activeTag = document.activeElement.tagName.toLowerCase();
+        if (activeTag === 'input') {
+          signup();
+        }
+      }
+    });
+
+    // Music toggle button
+    function updateMusicToggle() {
+      if (bgMusic.paused) {
+        musicToggle.textContent = '🔊 Music';
+        musicToggle.setAttribute('aria-pressed', 'false');
+      } else {
+        musicToggle.textContent = '🔈 Mute';
+        musicToggle.setAttribute('aria-pressed', 'true');
+      }
+    }
+    musicToggle.addEventListener('click', () => {
+      if (bgMusic.paused) {
+        bgMusic.play();
+      } else {
+        bgMusic.pause();
+      }
+      updateMusicToggle();
+    });
+
+    // Initialize button text on load
+    updateMusicToggle();
+  </script>
 
 </body>
 </html>
