@@ -6,7 +6,6 @@ import jwt
 import datetime
 import functools
 import secrets
-from flask_cors import CORS
 
 app = Flask(__name__)
 
@@ -16,14 +15,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# Enable CORS for your frontend domains and allow cookies
-CORS(app, supports_credentials=True, origins=[
-    "https://paradise-shop-1.onrender.com",  # your backend domain itself (if serving frontend here)
-    "http://localhost:5000",  # localhost for testing
-    "http://localhost:3000",  # common frontend dev port
-    "*"  # for wide open (can be removed or replaced for production)
-])
 
 # User model
 class User(db.Model):
@@ -43,10 +34,9 @@ class User(db.Model):
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
         return token
 
-# CSRF protection helper
+# CSRF protection
 def generate_csrf_token():
-    token = secrets.token_urlsafe(32)
-    return token
+    return secrets.token_urlsafe(32)
 
 def verify_csrf():
     csrf_cookie = request.cookies.get('csrf_token')
@@ -62,11 +52,8 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
-@app.before_first_request
-def create_tables():
-    db.create_all()
+# Routes
 
-# Serve login page
 @app.route('/login', methods=['GET'])
 def login_page():
     csrf_token = generate_csrf_token()
@@ -74,7 +61,13 @@ def login_page():
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
-# Login API
+@app.route('/signup', methods=['GET'])
+def signup_page():
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('signup.html'))
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
+
 @app.route('/login', methods=['POST'])
 @csrf_protect
 def login():
@@ -90,20 +83,10 @@ def login():
         return jsonify({'error': 'Invalid username or password'}), 401
 
     token = user.generate_jwt()
-
-    resp = jsonify({'message': 'Login successful', 'token': token})
+    resp = jsonify({'message': 'Login successful'})
     resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
     return resp
 
-# Serve signup page
-@app.route('/signup', methods=['GET'])
-def signup_page():
-    csrf_token = generate_csrf_token()
-    resp = make_response(render_template('signup.html'))
-    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
-    return resp
-
-# Signup API
 @app.route('/signup', methods=['POST'])
 @csrf_protect
 def signup():
@@ -113,7 +96,7 @@ def signup():
     password = data.get('password', '').strip()
 
     if not username or not email or not password:
-        return jsonify({'error': 'Username, email and password required'}), 400
+        return jsonify({'error': 'Username, email, and password required'}), 400
 
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Username already taken'}), 409
@@ -127,7 +110,7 @@ def signup():
 
     return jsonify({'message': 'User created successfully'})
 
-# Token verification decorator
+# JWT protected route
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -135,6 +118,8 @@ def token_required(f):
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header[7:]
+        if not token:
+            token = request.cookies.get('jwt')
         if not token:
             return jsonify({'error': 'Token is missing'}), 401
         try:
@@ -154,10 +139,12 @@ def token_required(f):
 def profile(current_user):
     return jsonify({'username': current_user.username, 'email': current_user.email})
 
-# Serve index page
 @app.route('/index')
 def index_page():
     return render_template('index.html')
 
+# Initialize DB when server starts
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)

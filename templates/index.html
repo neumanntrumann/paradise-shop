@@ -199,7 +199,7 @@
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
     <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo"></div>
+      <div id="profileInfo">Loading...</div>
       <a href="balance.html">Load Funds</a>
       <a href="index.html">Shop</a>
       <a href="cart.html">Cart</a>
@@ -211,32 +211,20 @@
   <h1 class="fade-slide">🌴 <span class="wave-emoji">WELCOME TO PARADISE SHOP</span> 🌴</h1>
 
   <div class="fade-slide" style="max-width: 700px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); line-height: 1.6;">
-    <p>Thank you for stopping by! You’re now part of an exclusive community focused on premium products, reliable service, and a smooth shopping experience. Whether you’re here to browse, buy, or partner up — we got you covered.</p>
+    <p>Thank you for stopping by! You’re now part of an exclusive community focused on premium products, reliable service, and a smooth shopping experience.</p>
 
     <h3>🛍️ New Products Dropping Soon</h3>
-    <p>We’re always working behind the scenes to bring you fresh inventory. Expect new listings, rare finds, and exciting updates. Check back often — you don’t want to miss out.</p>
+    <p>Fresh inventory, rare finds, and exciting updates — check back often!</p>
 
-    <h3>💬 Need Help or Have Questions?</h3>
-    <p>We’re here for you.<br>
-    → Join our support group: <a href="https://t.me/ParadiseShopGroup">t.me/ParadiseShopGroup</a><br>
-    → Or DM: <a href="https://t.me/ParadiseStoreOwner">@ParadiseStoreOwner</a></p>
+    <h3>💬 Need Help?</h3>
+    <p>→ Telegram group: <a href="https://t.me/ParadiseShopGroup">t.me/ParadiseShopGroup</a><br>
+       → DM: <a href="https://t.me/ParadiseStoreOwner">@ParadiseStoreOwner</a></p>
 
-    <h3>⚠️ Watch Out for Fakes</h3>
-    <p>There are a lot of fake accounts out there. Always double-check usernames and links. We’ll never ask for your info outside of official channels.</p>
+    <h3>⚠️ Stay Safe</h3>
+    <p>Only trust official links. We’ll never ask for info outside our verified channels.</p>
 
-    <h3>💼 Interested in Selling With Us?</h3>
-    <p>We’re currently expanding and looking for trusted sellers.<br>
-    → Apply or inquire via: <a href="https://t.me/ParaRequests">@ParaRequests</a></p>
-
-    <h3>💸 Payment Info</h3>
-    <p>We currently accept Bitcoin only — it’s fast, secure, and reliable.<br>
-    CashApp and other payment options coming soon.</p>
-
-    <h3>🔐 Safe. Private. Reliable.</h3>
-    <p>Your privacy is our top priority. Orders are handled discreetly and professionally. No unnecessary questions — just straight business.</p>
-
-    <h3>🌐 Spread the Word</h3>
-    <p>If you enjoy our service, let others know. The best way to support us is through word-of-mouth and honest feedback.</p>
+    <h3>💸 Payments</h3>
+    <p>We accept Bitcoin. CashApp coming soon.</p>
   </div>
 
   <script>
@@ -283,34 +271,30 @@
     async function loadUserInfo() {
       const token = localStorage.getItem('token');
       if (!token) {
-        alert('Please log in first.');
         window.location.href = 'login.html';
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:5000/user-info', {
+        const response = await fetch('https://paradise-shop-1.onrender.com/', {
           headers: {
             'Authorization': 'Bearer ' + token
           }
         });
 
-        if (!response.ok) {
-          throw new Error('Invalid token or session expired');
-        }
+        if (!response.ok) throw new Error('Invalid token');
 
         const data = await response.json();
         profileInfoDiv.innerHTML = `
           <strong>${data.username}</strong><br>
           Balance: $${(data.balance || 0).toFixed(2)}<br>
           Spent: $${(data.spent || 0).toFixed(2)}<br>
-          Total: $${((data.balance || 0) + (data.spent || 0)).toFixed(2)}<br>
           Joined: ${data.joinDate || 'Unknown'}<br>
           Orders: ${data.orders || 0}
         `;
       } catch (err) {
-        console.error(err);
         alert('Session expired. Please log in again.');
+        localStorage.removeItem('token');
         window.location.href = 'login.html';
       }
     }
