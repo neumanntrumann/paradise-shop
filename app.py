@@ -9,11 +9,6 @@ import secrets
 
 app = Flask(__name__)
 
-# Redirect root '/' to '/login'
-@app.route('/')
-def root():
-    return redirect('/login')
-
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
@@ -36,6 +31,9 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        # PyJWT >= 2.0 returns str; older versions return bytes
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
         return token
 
 # CSRF protection helpers
@@ -99,10 +97,15 @@ def login_required_redirect(f):
 
 # Routes
 
+@app.route('/')
+def root():
+    return redirect('/login')
+
 @app.route('/login', methods=['GET'])
 def login_page():
     csrf_token = generate_csrf_token()
     resp = make_response(render_template('login.html'))
+    # Set cookie for CSRF token accessible by JS (not HttpOnly)
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
@@ -129,7 +132,6 @@ def login():
 
     token = user.generate_jwt()
     resp = jsonify({'message': 'Login successful'})
-    # Set JWT cookie httponly for security
     resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
     return resp
 
@@ -161,7 +163,6 @@ def profile(current_user):
 @app.route('/index')
 @login_required_redirect
 def index_page(current_user):
-    # Optionally pass username to template if you want
     return render_template('index.html', username=current_user.username)
 
 @app.route('/logout')
@@ -170,7 +171,6 @@ def logout():
     resp.delete_cookie('jwt')
     return resp
 
-# Initialize DB and run app
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
