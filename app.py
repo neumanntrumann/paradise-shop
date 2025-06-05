@@ -179,14 +179,14 @@ def login():
     password = data.get('password', '').strip()
 
     if not username or not password:
-        return jsonify({'error': 'Username and password are required'}), 400
+        return render_template('login.html', error='Username and password are required'), 400
 
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
-        return jsonify({'error': 'Invalid username or password'}), 401
+        return render_template('login.html', error='Invalid username or password'), 401
 
     token = generate_jwt(user.id, user.username)
-    response = jsonify({'message': 'Login successful'})
+    response = redirect(url_for('index'))
     response.set_cookie('access_token', token, httponly=True, samesite='Lax', max_age=8*3600)
     return response
 
