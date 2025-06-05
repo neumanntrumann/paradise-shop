@@ -89,9 +89,15 @@
       text-transform: uppercase;
     }
 
-    button:hover {
+    button:hover:enabled {
       background-color: #008ecc;
       box-shadow: 0 0 20px #008ecc;
+    }
+
+    button:disabled {
+      background-color: #7ec8ea;
+      cursor: not-allowed;
+      box-shadow: none;
     }
 
     #message {
@@ -186,6 +192,10 @@
         return;
       }
 
+      const submitBtn = document.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Signing up...';
+
       try {
         const response = await fetch('/signup', {
           method: 'POST',
@@ -201,17 +211,22 @@
 
         if (!response.ok) {
           message.textContent = data.error || 'Signup failed';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign Up';
           return;
         }
 
         message.style.color = 'green';
         message.textContent = 'Signup successful! Redirecting to login...';
+
         setTimeout(() => {
           window.location.replace('/login');
         }, 1800);
       } catch (error) {
         message.textContent = 'Error connecting to server';
         console.error('Signup error:', error);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Sign Up';
       }
     }
 
