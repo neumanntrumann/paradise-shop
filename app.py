@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-import os, jwt, datetime, functools, secrets
+import os
+import jwt
+import datetime
+import functools
+import secrets
 
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -31,6 +35,7 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        # PyJWT 2.x returns string, PyJWT 1.x returns bytes, handle both:
         return token.decode('utf-8') if isinstance(token, bytes) else token
 
 class CartItem(db.Model):
@@ -57,7 +62,9 @@ def generate_csrf_token():
     return secrets.token_urlsafe(32)
 
 def verify_csrf():
-    return request.cookies.get('csrf_token') == request.headers.get('X-CSRF-Token')
+    csrf_cookie = request.cookies.get('csrf_token')
+    csrf_header = request.headers.get('X-CSRF-Token')
+    return csrf_cookie and csrf_header and csrf_cookie == csrf_header
 
 def csrf_protect(f):
     @functools.wraps(f)
@@ -67,7 +74,7 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
-# Token Authentication
+# Token Authentication Decorator
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -90,6 +97,7 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+# Login-required decorator that redirects (for page routes)
 def login_required_redirect(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -106,33 +114,8 @@ def login_required_redirect(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Your requested login_required decorator with redirects using flask's wraps and jwt decode
-from functools import wraps
-from flask import request, redirect, url_for, render_template, make_response
-import jwt
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        token = request.cookies.get('token')
-        if not token:
-            return redirect(url_for('login_page'))
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-        except jwt.ExpiredSignatureError:
-            return redirect(url_for('login_page'))
-        except jwt.InvalidTokenError:
-            return redirect(url_for('login_page'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-# Route to serve checkout.html, protected by login_required
-@app.route('/checkout')
-@login_required
-def checkout_page():
-    return render_template('checkout.html')
-
 # Routes
+
 @app.route('/')
 def root():
     return redirect(url_for('login_page'))
@@ -192,7 +175,7 @@ def logout():
     resp.delete_cookie('jwt')
     return resp
 
-# HTML PAGES
+# Protected HTML pages
 @app.route('/home')
 @login_required_redirect
 def home_page(current_user):
@@ -223,7 +206,12 @@ def orders_page(current_user):
 def more_page(current_user):
     return render_template('more.html', username=current_user.username)
 
-# API ENDPOINTS
+@app.route('/checkout')
+@login_required_redirect
+def checkout_page(current_user):
+    return render_template('checkout.html')
+
+# API Endpoints
 @app.route('/api/user/profile')
 @token_required
 def profile(current_user):
