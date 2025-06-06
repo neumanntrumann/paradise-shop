@@ -130,7 +130,14 @@ def login():
 
     token = user.generate_jwt()
     resp = jsonify({'message': 'Login successful'})
-    resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
+    # Set cookie with samesite=None and secure=True for HTTPS cross-site
+    resp.set_cookie(
+        'jwt',
+        token,
+        httponly=True,
+        samesite='None',
+        secure=True
+    )
     return resp
 
 @app.route('/signup', methods=['POST'])
