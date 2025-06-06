@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Login</title>
+
   <style>
+    /* Your existing styles here (same as you provided) */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -16,7 +18,6 @@
       background-attachment: fixed;
       color: #333;
     }
-
     .parallax-bg {
       position: fixed;
       top: 0;
@@ -29,7 +30,6 @@
       z-index: -1;
       filter: brightness(0.75);
     }
-
     .logo {
       position: fixed;
       top: 20px;
@@ -38,12 +38,10 @@
       animation: floatPalm 4s ease-in-out infinite;
       z-index: 10;
     }
-
     @keyframes floatPalm {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-12px); }
     }
-
     .login-container {
       margin: 120px auto;
       width: 320px;
@@ -56,13 +54,11 @@
       box-sizing: border-box;
       color: #222;
     }
-
     @keyframes pulseBorder {
       0% { box-shadow: 0 0 15px #00ffd0; }
       50% { box-shadow: 0 0 35px #00fff2; }
       100% { box-shadow: 0 0 15px #00ffd0; }
     }
-
     input, button {
       margin: 12px 0;
       padding: 12px;
@@ -73,12 +69,10 @@
       box-sizing: border-box;
       outline-offset: 2px;
     }
-
     input:focus {
       border-color: #00ffd0;
       box-shadow: 0 0 8px #00ffd0;
     }
-
     button {
       background-color: #00aaff;
       color: white;
@@ -88,12 +82,10 @@
       box-shadow: 0 0 10px #00aaff;
       text-transform: uppercase;
     }
-
     button:hover {
       background-color: #008ecc;
       box-shadow: 0 0 20px #008ecc;
     }
-
     #message {
       margin-top: 10px;
       color: red;
@@ -101,25 +93,21 @@
       min-height: 22px;
       text-align: center;
     }
-
     p.signup-link {
       text-align: center;
       margin-top: 20px;
       font-size: 1rem;
     }
-
     p.signup-link a {
       color: #0077cc;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
     }
-
     p.signup-link a:hover {
       text-decoration: underline;
       color: #004999;
     }
-
     #music-toggle {
       position: fixed;
       bottom: 20px;
@@ -169,6 +157,14 @@
       message.style.color = 'red';
     }
 
+    // Helper to read csrf_token cookie value
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
     async function login() {
       clearMessage();
 
@@ -180,11 +176,15 @@
         return;
       }
 
+      // Get CSRF token from cookie
+      const csrfToken = getCookie('csrf_token');
+
       try {
         const response = await fetch('/login', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
           },
           body: JSON.stringify({ username, password }),
           credentials: 'include'
@@ -197,7 +197,7 @@
           return;
         }
 
-        // Success: redirect to /home
+        // Success: redirect to home
         window.location.href = '/home';
       } catch (error) {
         message.textContent = 'Error connecting to server';
