@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PARADISE SHOP - Marketplace</title>
   <style>
-    /* Keep your existing CSS exactly as you provided */
     body {
       font-family: 'Segoe UI', sans-serif;
       padding: 20px;
@@ -60,8 +59,10 @@
       font-weight: 600;
       border-bottom: 1px solid #eee;
     }
-    #sideMenu a:hover {
+    #sideMenu a:hover,
+    #sideMenu a:focus {
       background-color: #f0f0f0;
+      outline: none;
     }
     /* Profile dropdown */
     #profileDropdownContainer {
@@ -113,8 +114,10 @@
       border-top: 1px solid #eee;
       font-weight: 600;
     }
-    #profileDropdown a:hover {
+    #profileDropdown a:hover,
+    #profileDropdown a:focus {
       background-color: #f0f0f0;
+      outline: none;
     }
     h1 {
       margin-top: 80px;
@@ -131,7 +134,8 @@
       max-width: 500px;
       transition: transform 0.2s ease;
     }
-    .item:hover {
+    .item:hover,
+    .item:focus-within {
       transform: scale(1.01);
     }
     button {
@@ -146,12 +150,18 @@
       margin-right: 10px;
       margin-top: 5px;
     }
-    button:hover {
+    button:hover,
+    button:focus {
       background-color: #004d40;
+      outline: none;
     }
     a {
       color: #00796b;
       font-weight: bold;
+    }
+    a:focus {
+      outline: 2px solid #00796b;
+      outline-offset: 2px;
     }
     .description {
       display: none;
@@ -169,14 +179,14 @@
 <body>
 
   <!-- Hamburger menu -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0" aria-pressed="false">
     <span></span>
     <span></span>
     <span></span>
   </div>
 
   <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu">
+  <nav id="sideMenu" aria-label="Main navigation menu" hidden>
     <a href="home.html">Home</a>
     <a href="balance.html">Balance</a>
     <a href="marketplace.html">Market</a>
@@ -189,7 +199,7 @@
   <!-- Profile Dropdown -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+    <div id="profileDropdown" role="menu" aria-label="User profile menu" hidden>
       <div id="profileInfo">Loading...</div>
       <a href="balance.html">Load Funds</a>
       <a href="home.html">Shop</a>
@@ -202,131 +212,131 @@
   <h1>Marketplace</h1>
 
   <!-- Product 1 -->
-  <div class="item">
+  <div class="item" tabindex="0">
     <p><strong>🌴 Spammed CC – $15</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spammed CC', 15)">Add to Cart</button>
-    <div class="description">
-90% Validity — Restocked fresh every day
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Spammed CC', 15)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      90% Validity — Restocked fresh every day
     </div>
   </div>
 
   <!-- Product 2 -->
-  <div class="item">
+  <div class="item" tabindex="0">
     <p><strong>🏝️ X2 EMV Software – Full Breakdown</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('X2 EMV Software', 400)">Add to Cart</button>
-    <div class="description">
-Everything you need to know about EMV software:
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('X2 EMV Software', 400)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      Everything you need to know about EMV software:
 
-What type of card can I read/write with this EMV software?
-SDA and DDA (Static/Dynamic) — includes Visa, Visa Electron, MasterCard, Maestro, Amex, UnionPay, Diners, Discover, JCB.
+      What type of card can I read/write with this EMV software?
+      SDA and DDA (Static/Dynamic) — includes Visa, Visa Electron, MasterCard, Maestro, Amex, UnionPay, Diners, Discover, JCB.
 
-Will this EMV software work in any country?
-Yes — it works anywhere EMV technology is used.
+      Will this EMV software work in any country?
+      Yes — it works anywhere EMV technology is used.
 
-What data is needed to make an ATM transaction?
-You’ll need to write the Track 2 data.
+      What data is needed to make an ATM transaction?
+      You’ll need to write the Track 2 data.
 
-Can I use any PIN at an ATM?
-No — you’ll need the original PIN code.
+      Can I use any PIN at an ATM?
+      No — you’ll need the original PIN code.
 
-Can I use any PIN at POS?
-Yes — any PIN can be used at most point-of-sale terminals.
+      Can I use any PIN at POS?
+      Yes — any PIN can be used at most point-of-sale terminals.
 
-Can I check balance and withdraw money from ATM?
-Yes — if you have a valid Track 2 and the correct PIN, you can perform all standard card functions.
+      Can I check balance and withdraw money from ATM?
+      Yes — if you have a valid Track 2 and the correct PIN, you can perform all standard card functions.
 
-Where can I find smart cards?
-Message: @paradisestoreowner
+      Where can I find smart cards?
+      Message: @paradisestoreowner
 
-Where can I get the hardware?
-Search for Omnikey 3121 or check our website.
+      Where can I get the hardware?
+      Search for Omnikey 3121 or check our website.
 
-What if I lose my PC with the EMV software?
-There are no replacements or re-sends. You lose it, it’s gone.
+      What if I lose my PC with the EMV software?
+      There are no replacements or re-sends. You lose it, it’s gone.
 
-What is the price for the EMV software?
-$400 USD — Bitcoin only.
+      What is the price for the EMV software?
+      $400 USD — Bitcoin only.
 
-What will I receive?
-You’ll receive the full version of X2 software, a license key, and a user manual.
+      What will I receive?
+      You’ll receive the full version of X2 software, a license key, and a user manual.
 
-Does the EMV software expire?
-No — once purchased, it’s yours permanently.
+      Does the EMV software expire?
+      No — once purchased, it’s yours permanently.
 
-Will there be future updates?
-Yes — NFC reader/writer support is coming.
+      Will there be future updates?
+      Yes — NFC reader/writer support is coming.
     </div>
   </div>
 
   <!-- Product 3 -->
-  <div class="item">
+  <div class="item" tabindex="0">
     <p><strong>🌺 Spamming Bundle – What’s Included</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spamming Bundle', 150)">Add to Cart</button>
-    <div class="description">
-1. Email Spammer Tool
-Mass email sender
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Spamming Bundle', 150)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      1. Email Spammer Tool
+      Mass email sender
 
-SMTP support or fake mail server
+      SMTP support or fake mail server
 
-Phishing email templates
+      Phishing email templates
 
-Email spoofing (fake “From” fields)
+      Email spoofing (fake “From” fields)
 
-Proxy integration
+      Proxy integration
 
-2. Phishing Templates
-Fake login pages (Google, Microsoft, banking)
+      2. Phishing Templates
+      Fake login pages (Google, Microsoft, banking)
 
-Prize or reward scams
+      Prize or reward scams
 
-Malicious files or links
+      Malicious files or links
 
-3. SMS Spammer
-Auto-senders for WhatsApp, Telegram, SMS
+      3. SMS Spammer
+      Auto-senders for WhatsApp, Telegram, SMS
 
-Phone number databases
+      Phone number databases
 
-Shortened malicious URLs
+      Shortened malicious URLs
 
-4. Spoofing Tools
-Fake headers, spoofed IPs, and domain masking
+      4. Spoofing Tools
+      Fake headers, spoofed IPs, and domain masking
 
-5. Scripts / Bots
-Python or PowerShell automation
+      5. Scripts / Bots
+      Python or PowerShell automation
 
-Captcha bypass bots
+      Captcha bypass bots
 
-Malicious Office document macros
+      Malicious Office document macros
 
-6. Bypass Tools
-Anti-spam evasion methods
+      6. Bypass Tools
+      Anti-spam evasion methods
 
-Email warming tools
+      Email warming tools
 
-IP rotation / VPN tools
+      IP rotation / VPN tools
 
-7. Instructions & Tutorials
-PDF or video guide
+      7. Instructions & Tutorials
+      PDF or video guide
 
-Full setup walkthrough
+      Full setup walkthrough
 
-Tips on staying undetected
+      Tips on staying undetected
     </div>
   </div>
 
   <!-- Product 4 -->
-  <div class="item">
+  <div class="item" tabindex="0">
     <p><strong>💳 D+P: $150</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('D+P', 150)">Add to Cart</button>
-    <div class="description">
-Real, fresh, and verified dump + pin sets
-✅ 100% valid
-👨‍💻 Selling since 2020 — check 5 years of vouches
-🔢 201 code only
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('D+P', 150)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      Real, fresh, and verified dump + pin sets
+      ✅ 100% valid
+      👨‍💻 Selling since 2020 — check 5 years of vouches
+      🔢 201 code only
     </div>
   </div>
 
@@ -336,10 +346,7 @@ Real, fresh, and verified dump + pin sets
   </p>
 
   <script>
-    // Backend base URL
     const API_BASE = 'https://paradise-shop-1.onrender.com';
-
-    // Get JWT token from localStorage (or cookie depending on your auth)
     const token = localStorage.getItem('jwtToken');
 
     if (!token) {
@@ -347,7 +354,6 @@ Real, fresh, and verified dump + pin sets
       window.location.href = 'index.html';
     }
 
-    // Setup common headers for fetch with JWT
     function authHeaders() {
       return {
         'Content-Type': 'application/json',
@@ -355,7 +361,6 @@ Real, fresh, and verified dump + pin sets
       };
     }
 
-    // Fetch user profile from backend and populate profile info
     async function loadProfile() {
       try {
         const res = await fetch(`${API_BASE}/api/profile`, {
@@ -379,7 +384,6 @@ Real, fresh, and verified dump + pin sets
       }
     }
 
-    // Add product to cart by calling backend API
     async function addToCart(name, price) {
       try {
         const res = await fetch(`${API_BASE}/api/cart/add`, {
@@ -394,59 +398,67 @@ Real, fresh, and verified dump + pin sets
       }
     }
 
-    // Toggle product details display
     function toggleDetails(button) {
       const desc = button.nextElementSibling.nextElementSibling;
       if (!desc) return;
-      if (desc.style.display === 'none' || desc.style.display === '') {
-        desc.style.display = 'block';
-        button.textContent = 'Hide Details';
-      } else {
-        desc.style.display = 'none';
-        button.textContent = 'Details';
-      }
+      const isHidden = desc.style.display === 'none' || desc.style.display === '';
+      desc.style.display = isHidden ? 'block' : 'none';
+      button.textContent = isHidden ? 'Hide Details' : 'Details';
+      desc.setAttribute('aria-hidden', !isHidden);
     }
 
-    // Initialize
     loadProfile();
 
     // Hamburger menu toggle
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
-    menuToggle.addEventListener('click', () => sideMenu.classList.toggle('active'));
+
+    menuToggle.addEventListener('click', () => {
+      const active = sideMenu.classList.toggle('active');
+      sideMenu.hidden = !active;
+      menuToggle.setAttribute('aria-pressed', active);
+    });
     menuToggle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        sideMenu.classList.toggle('active');
+        const active = sideMenu.classList.toggle('active');
+        sideMenu.hidden = !active;
+        menuToggle.setAttribute('aria-pressed', active);
       }
     });
     window.addEventListener('click', (e) => {
       if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
         sideMenu.classList.remove('active');
+        sideMenu.hidden = true;
+        menuToggle.setAttribute('aria-pressed', false);
       }
     });
 
     // Profile dropdown toggle
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
-    profileIcon.addEventListener('click', () => {
+
+    function toggleProfileDropdown() {
       const isActive = profileDropdown.classList.toggle('active');
+      profileDropdown.hidden = !isActive;
       profileIcon.setAttribute('aria-expanded', isActive);
-    });
+    }
+
+    profileIcon.addEventListener('click', toggleProfileDropdown);
     profileIcon.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        const isActive = profileDropdown.classList.toggle('active');
-        profileIcon.setAttribute('aria-expanded', isActive);
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', false);
+        toggleProfileDropdown();
       }
     });
 
+    window.addEventListener('click', (e) => {
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileDropdown.hidden = true;
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
   </script>
 
 </body>

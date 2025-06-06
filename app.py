@@ -5,12 +5,11 @@ import os
 import jwt
 import datetime
 import functools
-import secrets
 
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -35,7 +34,8 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        return token.decode('utf-8') if isinstance(token, bytes) else token
+        # jwt.encode returns str in PyJWT>=2.0, so just return token
+        return token if isinstance(token, str) else token.decode('utf-8')
 
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -56,7 +56,7 @@ class OrderItem(db.Model):
     price = db.Column(db.Float)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
 
-# Token Authentication Decorator
+# JWT Decorators
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -79,7 +79,6 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Login-required decorator that redirects (for page routes)
 def login_required_redirect(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -97,14 +96,23 @@ def login_required_redirect(f):
     return decorated
 
 # Routes
-
 @app.route('/')
 def root():
+    # Redirect logged-in users to /home, others to /login
+    token = request.cookies.get('jwt')
+    if token:
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            user = User.query.get(payload['user_id'])
+            if user:
+                return redirect(url_for('home_page'))
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            pass
     return redirect(url_for('login_page'))
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    return render_template('index.html')
+    return render_template('login.html')
 
 @app.route('/signup', methods=['GET'])
 def signup_page():
@@ -119,7 +127,7 @@ def login():
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
         token = user.generate_jwt()
-        resp = jsonify({'message': 'Login successful'})
+        resp = jsonify({'message': 'Login successful', 'redirect': url_for('home_page')})
         resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
         return resp
     return jsonify({'error': 'Invalid username or password'}), 401
@@ -134,11 +142,8 @@ def signup():
         return jsonify({'error': 'Username already taken'}), 409
 
     hashed_pw = generate_password_hash(password)
-    new_user = User(
-        username=username,
-        password_hash=hashed_pw,
-        join_date=datetime.datetime.utcnow().strftime('%Y-%m-%d')
-    )
+    new_user = User(username=username, password_hash=hashed_pw,
+                    join_date=datetime.datetime.utcnow().strftime('%Y-%m-%d'))
     db.session.add(new_user)
     db.session.commit()
     return jsonify({'message': 'User created successfully'})
@@ -149,11 +154,11 @@ def logout():
     resp.delete_cookie('jwt')
     return resp
 
-# Protected HTML pages
+# Protected Pages
 @app.route('/home')
 @login_required_redirect
 def home_page(current_user):
-    return render_template('home.html', username=current_user.username)
+    return render_template('index.html', username=current_user.username)
 
 @app.route('/balance')
 @login_required_redirect
@@ -174,11 +179,6 @@ def cart_page(current_user):
 @login_required_redirect
 def orders_page(current_user):
     return render_template('orders.html', username=current_user.username)
-
-@app.route('/more')
-@login_required_redirect
-def more_page(current_user):
-    return render_template('more.html', username=current_user.username)
 
 @app.route('/checkout')
 @login_required_redirect
@@ -250,10 +250,7 @@ def get_orders(current_user):
         'joinDate': current_user.join_date,
         'orders': [{
             'id': order.id,
-            'items': [{
-                'name': item.name,
-                'price': item.price
-            } for item in order.items]
+            'items': [{'name': item.name, 'price': item.price} for item in order.items]
         } for order in orders]
     })
 
