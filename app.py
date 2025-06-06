@@ -6,8 +6,12 @@ import jwt
 import datetime
 import functools
 import secrets
+from flask_cors import CORS  # <--- Import flask-cors
 
 app = Flask(__name__)
+
+# Enable CORS, allow your frontend origin, support cookies (credentials)
+CORS(app, supports_credentials=True, origins=["http://localhost:5000"])
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
