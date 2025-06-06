@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# User model
+# User model without email
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -31,9 +31,12 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        return token.decode('utf-8') if isinstance(token, bytes) else token
+        # PyJWT >= 2.0 returns str; older versions return bytes
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+        return token
 
-# CSRF protection
+# CSRF protection helpers
 def generate_csrf_token():
     return secrets.token_urlsafe(32)
 
@@ -51,7 +54,7 @@ def csrf_protect(f):
         return f(*args, **kwargs)
     return decorated
 
-# JWT-required for APIs
+# Decorator for API routes that require JWT (return JSON error)
 def token_required(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -75,7 +78,7 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Login-required for web pages
+# Decorator for web routes that require login with redirect
 def login_required_redirect(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
@@ -92,17 +95,17 @@ def login_required_redirect(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-# ----------------- Routes -----------------
+# Routes
 
 @app.route('/')
-@login_required_redirect
-def home_page(current_user):
-    return render_template('index.html', username=current_user.username)
+def root():
+    return redirect('/login')
 
 @app.route('/login', methods=['GET'])
 def login_page():
     csrf_token = generate_csrf_token()
     resp = make_response(render_template('login.html'))
+    # Set cookie for CSRF token accessible by JS (not HttpOnly)
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
@@ -155,41 +158,18 @@ def signup():
 @app.route('/profile')
 @token_required
 def profile(current_user):
-    return jsonify({
-        'username': current_user.username,
-        'balance': 100.00,
-        'spent': 42.50,
-        'joinDate': '2024-01-01',
-        'orders': 3
-    })
+    return jsonify({'username': current_user.username})
 
-@app.route('/marketplace')
+@app.route('/index')
 @login_required_redirect
-def marketplace_page(current_user):
-    return render_template('marketplace.html', username=current_user.username)
-
-@app.route('/balance')
-@login_required_redirect
-def balance_page(current_user):
-    return render_template('balance.html', username=current_user.username)
-
-@app.route('/orders')
-@login_required_redirect
-def orders_page(current_user):
-    return render_template('orders.html', username=current_user.username)
-
-@app.route('/cart')
-@login_required_redirect
-def cart_page(current_user):
-    return render_template('cart.html', username=current_user.username)
+def index_page(current_user):
+    return render_template('index.html', username=current_user.username)
 
 @app.route('/logout')
 def logout():
     resp = redirect('/login')
     resp.delete_cookie('jwt')
     return resp
-
-# ------------------------------------------
 
 if __name__ == '__main__':
     with app.app_context():
