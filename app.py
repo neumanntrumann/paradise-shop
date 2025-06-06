@@ -10,7 +10,7 @@ import secrets
 app = Flask(__name__)
 
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -130,7 +130,7 @@ def login():
 
     token = user.generate_jwt()
     resp = jsonify({'message': 'Login successful'})
-    # Set cookie with samesite=None and secure=True for HTTPS cross-site
+    # Production: secure and samesite=None for HTTPS cross-site cookie
     resp.set_cookie(
         'jwt',
         token,

@@ -157,7 +157,6 @@
       message.style.color = 'red';
     }
 
-    // Helper to read csrf token cookie
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -170,12 +169,6 @@
 
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value.trim();
-
-      if (!username || !password) {
-        message.textContent = 'Please enter username and password';
-        return;
-      }
-
       const csrfToken = getCookie('csrf_token');
 
       try {
@@ -196,7 +189,7 @@
           return;
         }
 
-        // Redirect after successful login
+        // ✅ Redirect to /index after login
         window.location.href = '/index';
 
       } catch (error) {
