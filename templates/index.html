@@ -4,12 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Login</title>
-
-  <!-- CSRF token embedded here -->
-  <meta name="csrf-token" content="{{ csrf_token }}">
-
   <style>
-    /* Your existing styles here (same as you provided) */
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
@@ -171,18 +166,11 @@
         return;
       }
 
-      // Get CSRF token from meta tag
-      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
       try {
         const response = await fetch('/login', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
-          credentials: 'include'
         });
 
         const data = await response.json();
@@ -192,11 +180,14 @@
           return;
         }
 
-        // Success: redirect to home
+        // Save JWT token in localStorage
+        localStorage.setItem('token', data.token);
+
+        // Redirect to home page after login
         window.location.href = '/home';
       } catch (error) {
         message.textContent = 'Error connecting to server';
-        console.error('Login error:', error);
+        console.error(error);
       }
     }
 
