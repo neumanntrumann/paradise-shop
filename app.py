@@ -86,7 +86,7 @@ def login():
     }, app.config['SECRET_KEY'], algorithm="HS256")
 
     resp = make_response(jsonify({'message': 'Logged in successfully.'}))
-    resp.set_cookie('token', token, httponly=True, samesite='Lax')  # add secure=True if HTTPS
+    resp.set_cookie('token', token, httponly=True, samesite='Lax')  # secure=True if HTTPS
     return resp
 
 @app.route('/logout', methods=['POST'])
@@ -156,10 +156,7 @@ def index():
 def home(current_user):
     return jsonify({'message': f'Welcome, {current_user.username}! Your balance is ${current_user.balance:.2f}.'})
 
-# Initialize DB (run once on first request)
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
