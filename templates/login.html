@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -134,7 +134,7 @@
 
   <div class="login-container">
     <h2>🌺 Welcome Back to Paradise</h2>
-    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+    <form id="loginForm">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
       <button type="submit">Login</button>
@@ -148,6 +148,7 @@
     const message = document.getElementById('message');
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
+    const loginForm = document.getElementById('loginForm');
 
     bgMusic.volume = 0.15;
 
@@ -163,7 +164,8 @@
       if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
-    async function login() {
+    async function login(event) {
+      event.preventDefault();
       clearMessage();
 
       const username = document.getElementById('username').value.trim();
@@ -194,14 +196,7 @@
           return;
         }
 
-        // Assuming your backend sends the JWT token as data.token
-        if (data.token) {
-          localStorage.setItem('jwt_token', data.token);
-        } else {
-          console.warn('No token received from login response');
-        }
-
-        // Redirect after successful login & token save
+        // Redirect after successful login
         window.location.href = '/index';
 
       } catch (error) {
@@ -209,6 +204,8 @@
         console.error('Login error:', error);
       }
     }
+
+    loginForm.addEventListener('submit', login);
 
     musicToggle.addEventListener('click', () => {
       if (bgMusic.paused) {

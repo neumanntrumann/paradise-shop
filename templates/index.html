@@ -177,6 +177,14 @@
   </div>
 
   <script>
+    // Helper: Read cookie by name
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
     const profileInfoDiv = document.getElementById('profileInfo');
@@ -223,10 +231,14 @@
     });
 
     async function loadUserInfo() {
+      const csrfToken = getCookie('csrf_token');
       try {
         const response = await fetch('/profile', {
           credentials: 'include',
-          headers: { 'Accept': 'application/json' }
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrfToken  // <-- Added CSRF token here
+          }
         });
         if (!response.ok) throw new Error('Unauthorized');
         const data = await response.json();

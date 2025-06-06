@@ -266,10 +266,22 @@
   <script>
     const API_BASE = 'https://paradise-shop-1.onrender.com';
 
+    // Helper to read a cookie by name
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
     async function loadProfile() {
       try {
+        const csrfToken = getCookie('csrf_token');
         const res = await fetch(`${API_BASE}/profile`, {
-          credentials: 'include'
+          credentials: 'include',
+          headers: {
+            'X-CSRF-Token': csrfToken || '',
+          },
         });
         if (!res.ok) throw new Error('Not authenticated');
         const data = await res.json();
@@ -291,13 +303,15 @@
 
     async function addToCart(name, price) {
       try {
+        const csrfToken = getCookie('csrf_token');
         const res = await fetch(`${API_BASE}/cart/add`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken || '',
           },
           credentials: 'include',
-          body: JSON.stringify({ name, price })
+          body: JSON.stringify({ name, price }),
         });
         if (!res.ok) {
           const errData = await res.json();

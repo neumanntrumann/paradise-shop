@@ -21,7 +21,7 @@
     @keyframes ocean {
       0% {background-position: 0% 50%;}
       50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
+      100% {background-position: 0 50%;}
     }
 
     h1 {
@@ -285,7 +285,7 @@
     try {
       const res = await fetch('/orders', {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include',  // send cookies for auth
         headers: { 'Accept': 'application/json' }
       });
 
@@ -298,6 +298,7 @@
       const joinDate = data.joinDate || 'Unknown';
       const orders = data.orders ?? [];
 
+      // Update profile info dropdown
       profileInfoDiv.innerHTML = `
         <strong>${username}</strong><br>
         Balance: $${balance}<br>
@@ -310,6 +311,7 @@
         return;
       }
 
+      // Clear old list
       ordersList.innerHTML = '';
       orders.forEach((order, i) => {
         const div = document.createElement('div');
@@ -322,7 +324,7 @@
         itemsHtml += '</ul>';
 
         div.innerHTML = `
-          <div class="order-header">Order #${order.id || i + 1}</div>
+          <div class="order-header">Order #${order.id || (i + 1)}</div>
           <div class="order-items">${itemsHtml}</div>
         `;
 
@@ -333,6 +335,7 @@
       console.error(err);
       profileInfoDiv.textContent = 'Error loading profile.';
       ordersList.innerHTML = '<p style="text-align:center;">Error loading orders. Please try again later.</p>';
+      // Redirect to login if unauthorized or fetch failed
       if (err.message.includes('Failed to fetch')) {
         window.location.href = '/login';
       }

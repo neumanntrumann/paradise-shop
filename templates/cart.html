@@ -247,7 +247,6 @@
     };
     const res = await fetch(url, options);
     if (!res.ok) {
-      // Try to parse error JSON if possible
       let errorMsg = `HTTP error ${res.status}`;
       try {
         const errorData = await res.json();
