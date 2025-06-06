@@ -1,55 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Logging Out...</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #f0f8ff;
-      color: #333;
-      margin: 0;
-    }
-  </style>
+  <title>Logout</title>
+  <script>
+    // Clear JWT token from localStorage and redirect to login page
+    localStorage.removeItem('token');
+    window.location.href = 'login.html';
+  </script>
 </head>
 <body>
   <p>Logging out...</p>
-
-  <script>
-    const API_BASE = 'https://paradise-shop-1.onrender.com';
-
-    async function logout() {
-      // Get token key consistent with your app
-      const token = localStorage.getItem('jwtToken');
-
-      // Clear local token immediately
-      localStorage.removeItem('jwtToken');
-
-      try {
-        // Optional: Notify backend to invalidate session/token if your API supports this
-        if (token) {
-          await fetch(`${API_BASE}/api/logout`, {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + token
-            }
-          });
-        }
-      } catch (err) {
-        // Ignore errors here - just proceed to redirect
-        console.warn('Logout API call failed or not implemented:', err);
-      }
-
-      // Redirect to login or homepage
-      window.location.href = 'index.html';
-    }
-
-    logout();
-  </script>
 </body>
 </html>
