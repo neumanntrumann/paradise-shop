@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response, redirect
+from flask import Flask, request, jsonify, make_response, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -155,6 +155,32 @@ def index():
 @token_required
 def home(current_user):
     return jsonify({'message': f'Welcome, {current_user.username}! Your balance is ${current_user.balance:.2f}.'})
+
+# Serve frontend pages (add these routes if your frontend uses templates)
+
+@app.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET'])
+def signup_page():
+    return render_template('signup.html')
+
+@app.route('/profile_page')
+@token_required
+def profile_page(current_user):
+    return render_template('profile.html', user=current_user)
+
+@app.route('/hamburger_menu')
+@token_required
+def hamburger_menu(current_user):
+    menu_items = [
+        {"name": "Home", "url": "/home"},
+        {"name": "Orders", "url": "/orders"},
+        {"name": "Balance", "url": "/balance"},
+        {"name": "Logout", "url": "/logout"}
+    ]
+    return jsonify(menu_items)
 
 if __name__ == '__main__':
     with app.app_context():
