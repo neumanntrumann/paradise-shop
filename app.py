@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, make_response, redirect
+from flask import Flask, request, jsonify, make_response, redirect, render_template, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
@@ -6,7 +6,7 @@ import datetime
 from functools import wraps
 import os
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # Configuration
 app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
@@ -34,42 +34,44 @@ class Order(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
-# Utility decorator to require login via JWT cookie
+# Token Decorator
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.cookies.get('token')
         if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
+            return redirect('/login')
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
             current_user = User.query.filter_by(id=data['user_id']).first()
             if not current_user:
-                return jsonify({'message': 'User not found!'}), 401
+                return redirect('/login')
         except jwt.ExpiredSignatureError:
-            return jsonify({'message': 'Token expired!'}), 401
+            return redirect('/login')
         except Exception:
-            return jsonify({'message': 'Token is invalid!'}), 401
+            return redirect('/login')
         return f(current_user, *args, **kwargs)
     return decorated
 
-# Routes
+# ROUTES
+@app.route('/')
+def index():
+    token = request.cookies.get('token')
+    if token:
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+            return render_template('index.html')
+        except:
+            pass
+    return redirect('/login')
 
-@app.route('/signup', methods=['POST'])
-def signup():
-    data = request.get_json()
-    username = data.get('username', '').strip()
-    password = data.get('password', '')
-    if not username or not password:
-        return jsonify({'message': 'Username and password required.'}), 400
-    if User.query.filter_by(username=username).first():
-        return jsonify({'message': 'Username already exists.'}), 409
+@app.route('/login', methods=['GET'])
+def login_page():
+    return render_template('login.html')
 
-    hashed_password = generate_password_hash(password)
-    new_user = User(username=username, password_hash=hashed_password)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'User created successfully.'}), 201
+@app.route('/signup', methods=['GET'])
+def signup_page():
+    return render_template('signup.html')
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -86,8 +88,24 @@ def login():
     }, app.config['SECRET_KEY'], algorithm="HS256")
 
     resp = make_response(jsonify({'message': 'Logged in successfully.'}))
-    resp.set_cookie('token', token, httponly=True, samesite='Lax')  # secure=True if HTTPS
+    resp.set_cookie('token', token, httponly=True, samesite='Lax')  # secure=True for HTTPS
     return resp
+
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '')
+    if not username or not password:
+        return jsonify({'message': 'Username and password required.'}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({'message': 'Username already exists.'}), 409
+
+    hashed_password = generate_password_hash(password)
+    new_user = User(username=username, password_hash=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User created successfully.'}), 201
 
 @app.route('/logout', methods=['POST'])
 def logout():
@@ -140,23 +158,14 @@ def orders(current_user):
         db.session.commit()
         return jsonify({'message': 'Order placed successfully.'})
 
-@app.route('/')
-def index():
-    token = request.cookies.get('token')
-    if token:
-        try:
-            jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            return redirect('/home')
-        except Exception:
-            pass
-    return redirect('/login')
+# Optional static route if needed for custom assets
+@app.route('/static/<path:path>')
+def send_static(path):
+    return send_from_directory('static', path)
 
-@app.route('/home')
-@token_required
-def home(current_user):
-    return jsonify({'message': f'Welcome, {current_user.username}! Your balance is ${current_user.balance:.2f}.'})
-
+# Run
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
