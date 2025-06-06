@@ -1,148 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Your Cart - Paradise Shop</title>
-<style>
-  /* Combined styles */
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    padding: 20px;
-    margin: 0;
-    background: linear-gradient(-45deg, #f0f8ff, #e0f2ff);
-  }
-  #menuToggle {
-    cursor: pointer;
-    width: 30px;
-    margin-bottom: 20px;
-  }
-  #menuToggle span {
-    display: block;
-    height: 3px;
-    background: #333;
-    margin: 5px 0;
-  }
-  nav#sideMenu {
-    position: fixed;
-    top: 0;
-    left: -250px;
-    width: 250px;
-    height: 100%;
-    background: #004d99;
-    color: white;
-    padding: 20px;
-    box-sizing: border-box;
-    transition: left 0.3s ease;
-    overflow-y: auto;
-    z-index: 1000;
-  }
-  nav#sideMenu.active {
-    left: 0;
-  }
-  nav#sideMenu a {
-    display: block;
-    padding: 10px 0;
-    color: white;
-    text-decoration: none;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
-  }
-  nav#sideMenu a:hover {
-    background: rgba(255,255,255,0.1);
-  }
-  #profileDropdownContainer {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 20px;
-  }
-  #profileIcon {
-    font-size: 24px;
-    cursor: pointer;
-    user-select: none;
-  }
-  #profileDropdown {
-    display: none;
-    position: absolute;
-    top: 30px;
-    right: 0;
-    background: white;
-    border: 1px solid #ccc;
-    padding: 10px;
-    width: 200px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    z-index: 1001;
-  }
-  #profileDropdown.active {
-    display: block;
-  }
-  #profileDropdown a {
-    display: block;
-    margin: 5px 0;
-    color: #004d99;
-    text-decoration: none;
-  }
-  #profileDropdown a:hover {
-    text-decoration: underline;
-  }
-
-  /* Table styles from original cart */
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-  }
-  th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
-    text-align: left;
-  }
-  th {
-    background-color: #00b894;
-    color: white;
-  }
-  button.remove-btn {
-    padding: 6px 10px;
-    background: #d63031;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  button.remove-btn:hover {
-    background: #b02020;
-  }
-  #total-price {
-    font-weight: bold;
-    font-size: 1.2em;
-  }
-  #checkout-btn {
-    padding: 10px 15px;
-    background: #0984e3;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1em;
-  }
-  #checkout-btn:disabled {
-    background: #cccccc;
-    cursor: not-allowed;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Cart - Paradise Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: linear-gradient(-45deg, #f0f8ff, #e0f2ff);
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    /* Hamburger menu */
+    #menuToggle {
+      cursor: pointer;
+      width: 30px;
+      margin-bottom: 20px;
+    }
+    #menuToggle span {
+      display: block;
+      height: 3px;
+      background: #333;
+      margin: 5px 0;
+    }
+    nav#sideMenu {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      width: 250px;
+      height: 100%;
+      background: #004d99;
+      color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      transition: left 0.3s ease;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+    nav#sideMenu.active {
+      left: 0;
+    }
+    nav#sideMenu a {
+      display: block;
+      padding: 10px 0;
+      color: white;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+    nav#sideMenu a:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    #profileDropdownContainer {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+    #profileIcon {
+      font-size: 24px;
+      cursor: pointer;
+      user-select: none;
+    }
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      top: 30px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      padding: 10px;
+      width: 200px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      z-index: 1001;
+    }
+    #profileDropdown.active {
+      display: block;
+    }
+    #profileDropdown a {
+      display: block;
+      margin: 5px 0;
+      color: #004d99;
+      text-decoration: none;
+    }
+    #profileDropdown a:hover {
+      text-decoration: underline;
+    }
+    /* Table Styles */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background-color: #00b894;
+      color: white;
+    }
+    button.remove-btn {
+      padding: 6px 10px;
+      background: #d63031;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.remove-btn:hover {
+      background: #b02020;
+    }
+    #total-price {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+    #checkout-btn {
+      padding: 10px 15px;
+      background: #0984e3;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+    #checkout-btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+    }
+  </style>
 </head>
 <body>
 
-<!-- Hamburger menu -->
+<!-- Hamburger Menu -->
 <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
   <span></span>
   <span></span>
   <span></span>
 </div>
 
-<!-- Sliding side menu -->
-<nav id="sideMenu" aria-label="Main navigation menu">
-  <a href="index.html">Home</a>
+<!-- Sliding Menu -->
+<nav id="sideMenu" aria-label="Main navigation">
+  <a href="home.html">Home</a>
   <a href="balance.html">Balance</a>
   <a href="marketplace.html">Market</a>
   <a href="cart.html" aria-current="page">Cart</a>
@@ -154,10 +156,10 @@
 <!-- Profile Dropdown -->
 <div id="profileDropdownContainer">
   <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-  <div id="profileDropdown" role="menu" aria-label="User profile menu">
-    <div id="profileInfo"></div>
+  <div id="profileDropdown" role="menu" aria-label="User profile">
+    <div id="profileInfo">Loading...</div>
     <a href="balance.html">Load Funds</a>
-    <a href="index.html">Shop</a>
+    <a href="home.html">Shop</a>
     <a href="cart.html">Cart</a>
     <a href="orders.html">Orders</a>
     <a href="logout.html">Logout</a>
@@ -186,70 +188,89 @@
 <button id="checkout-btn" disabled aria-disabled="true">💰 Proceed to Checkout</button>
 
 <script>
-  // Hamburger toggle logic
+  // Toggle hamburger menu
   const menuToggle = document.getElementById('menuToggle');
   const sideMenu = document.getElementById('sideMenu');
+  const profileIcon = document.getElementById('profileIcon');
+  const profileDropdown = document.getElementById('profileDropdown');
 
   function toggleMenu() {
     sideMenu.classList.toggle('active');
   }
+
   menuToggle.addEventListener('click', toggleMenu);
-  menuToggle.addEventListener('keydown', (e) => {
+  menuToggle.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleMenu();
     }
   });
-  window.addEventListener('click', (e) => {
+
+  window.addEventListener('click', e => {
     if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
       sideMenu.classList.remove('active');
     }
   });
 
-  // Profile dropdown toggle
-  const profileIcon = document.getElementById('profileIcon');
-  const profileDropdown = document.getElementById('profileDropdown');
-
+  // Toggle profile dropdown
   function toggleProfileDropdown() {
     const isActive = profileDropdown.classList.toggle('active');
     profileIcon.setAttribute('aria-expanded', isActive);
   }
+
   profileIcon.addEventListener('click', toggleProfileDropdown);
-  profileIcon.addEventListener('keydown', (e) => {
+  profileIcon.addEventListener('keydown', e => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleProfileDropdown();
     }
   });
-  window.addEventListener('click', (e) => {
+
+  window.addEventListener('click', e => {
     if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
       profileDropdown.classList.remove('active');
       profileIcon.setAttribute('aria-expanded', false);
     }
   });
 
-  // Helper: fetch JSON with error handling
-  async function fetchJson(url, options = {}) {
-    const resp = await fetch(url, options);
-    if (!resp.ok) {
-      throw new Error(`HTTP error! Status: ${resp.status}`);
-    }
-    return await resp.json();
+  // Helper to get JWT token from localStorage
+  function getToken() {
+    return localStorage.getItem('token');
   }
 
-  // Check session; redirect to login if none
+  // Helper fetch with Authorization header
+  async function fetchJson(url, options = {}) {
+    const token = getToken();
+    options.headers = {
+      ...(options.headers || {}),
+      'Authorization': token ? 'Bearer ' + token : ''
+    };
+    const res = await fetch(url, options);
+    if (!res.ok) {
+      // Try to parse error JSON if possible
+      let errorMsg = `HTTP error ${res.status}`;
+      try {
+        const errorData = await res.json();
+        if (errorData.error) errorMsg = errorData.error;
+      } catch {}
+      throw new Error(errorMsg);
+    }
+    return await res.json();
+  }
+
+  // Check session by calling backend, redirect if unauthorized
   async function checkSession() {
     try {
       const session = await fetchJson('/api/session');
-      return session.user; // expecting { user: 'username' }
+      return session.user;
     } catch {
       alert('Please log in to view your cart.');
-      window.location.href = 'login.html';
+      window.location.href = 'index.html';
       return null;
     }
   }
 
-  // Load user profile info for dropdown
+  // Load profile info into dropdown
   async function loadProfile() {
     try {
       const profile = await fetchJson('/api/user/profile');
@@ -265,10 +286,10 @@
     }
   }
 
-  // Load and render cart items from backend
+  // Load cart and render in table
   async function loadCart() {
     try {
-      const data = await fetchJson('/api/userdata'); // Using your original cart endpoint
+      const data = await fetchJson('/api/userdata');
       const cartItems = data.cart || [];
       const tbody = document.querySelector('#cart-table tbody');
       tbody.innerHTML = '';
@@ -300,66 +321,58 @@
       enableCheckout();
 
       // Add event listeners for remove buttons
-      tbody.querySelectorAll('button.remove-btn').forEach(button => {
-        button.addEventListener('click', async (e) => {
-          const itemId = e.target.getAttribute('data-id');
+      document.querySelectorAll('.remove-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const itemId = btn.getAttribute('data-id');
           try {
-            const res = await fetch(`/api/cart/item/${itemId}`, { method: 'DELETE' });
-            const result = await res.json();
-            if (res.ok) {
-              alert(result.message);
-              loadCart(); // refresh cart
-            } else {
-              alert('Error: ' + result.error);
-            }
-          } catch {
-            alert('Failed to remove item');
+            const res = await fetchJson(`/api/cart/item/${itemId}`, { method: 'DELETE' });
+            alert(res.message);
+            loadCart();
+          } catch (e) {
+            alert('Failed to remove item: ' + e.message);
           }
         });
       });
 
-    } catch {
-      alert('Please log in to view your cart.');
+    } catch (e) {
+      alert('Failed to load cart. Please log in.');
       disableCheckout();
     }
   }
 
+  // Enable and disable checkout button
   function enableCheckout() {
     const btn = document.getElementById('checkout-btn');
     btn.disabled = false;
     btn.setAttribute('aria-disabled', 'false');
   }
+
   function disableCheckout() {
     const btn = document.getElementById('checkout-btn');
     btn.disabled = true;
     btn.setAttribute('aria-disabled', 'true');
   }
 
-  // Checkout handler
+  // Checkout button click handler
   document.getElementById('checkout-btn').addEventListener('click', async () => {
     try {
-      const res = await fetch('/api/checkout', { method: 'POST' });
-      const result = await res.json();
-      if (res.ok) {
-        alert('Order placed successfully! Your new balance is $' + result.balance.toFixed(2));
-        loadCart(); // refresh cart (empty now)
-      } else {
-        alert('Error: ' + result.error);
-      }
-    } catch {
-      alert('Failed to checkout');
+      const res = await fetchJson('/api/checkout', { method: 'POST' });
+      alert('Order placed successfully! Your new balance is $' + res.balance.toFixed(2));
+      loadCart();
+      loadProfile(); // Update balance display
+    } catch (e) {
+      alert('Checkout failed: ' + e.message);
     }
   });
 
-  // Initialize page logic
+  // On page load, verify session and load data
   (async () => {
     const user = await checkSession();
-    if (!user) return; // redirected to login
+    if (!user) return;
 
     await loadProfile();
     await loadCart();
   })();
-
 </script>
 
 </body>
