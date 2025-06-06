@@ -31,7 +31,6 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        # PyJWT >= 2.0 returns str; older versions return bytes
         if isinstance(token, bytes):
             token = token.decode('utf-8')
         return token
@@ -105,7 +104,6 @@ def root():
 def login_page():
     csrf_token = generate_csrf_token()
     resp = make_response(render_template('login.html'))
-    # Set cookie for CSRF token accessible by JS (not HttpOnly)
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 
@@ -132,6 +130,7 @@ def login():
 
     token = user.generate_jwt()
     resp = jsonify({'message': 'Login successful'})
+    # Add path='/' so cookie is sent on all paths
     resp.set_cookie('jwt', token, httponly=True, samesite='Lax', path='/')
     return resp
 
@@ -168,30 +167,30 @@ def index_page(current_user):
 @app.route('/logout')
 def logout():
     resp = redirect('/login')
-    resp.delete_cookie('jwt')
+    resp.delete_cookie('jwt', path='/')
     return resp
 
-# --- Added hamburger menu routes below ---
+# Added routes matching hamburger menu
+
+@app.route('/home')
+@login_required_redirect
+def home_page(current_user):
+    return render_template('index.html', username=current_user.username)
 
 @app.route('/balance')
 @login_required_redirect
 def balance_page(current_user):
     return render_template('balance.html', username=current_user.username)
 
-@app.route('/cart')
-@login_required_redirect
-def cart_page(current_user):
-    return render_template('cart.html', username=current_user.username)
-
-@app.route('/checkout')
-@login_required_redirect
-def checkout_page(current_user):
-    return render_template('checkout.html', username=current_user.username)
-
 @app.route('/marketplace')
 @login_required_redirect
 def marketplace_page(current_user):
     return render_template('marketplace.html', username=current_user.username)
+
+@app.route('/cart')
+@login_required_redirect
+def cart_page(current_user):
+    return render_template('cart.html', username=current_user.username)
 
 @app.route('/orders')
 @login_required_redirect
