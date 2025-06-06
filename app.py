@@ -35,7 +35,7 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        # PyJWT 2.x returns string, PyJWT 1.x returns bytes, handle both:
+        # PyJWT 2.x returns str, 1.x returns bytes:
         return token.decode('utf-8') if isinstance(token, bytes) else token
 
 class CartItem(db.Model):
