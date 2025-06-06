@@ -31,7 +31,6 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        # PyJWT >= 2.0 returns str; older versions return bytes
         if isinstance(token, bytes):
             token = token.decode('utf-8')
         return token
@@ -105,7 +104,6 @@ def root():
 def login_page():
     csrf_token = generate_csrf_token()
     resp = make_response(render_template('login.html'))
-    # Set cookie for CSRF token accessible by JS (not HttpOnly)
     resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
     return resp
 

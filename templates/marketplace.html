@@ -13,7 +13,6 @@
       background: linear-gradient(to bottom, #f0f8ff, #e0f7fa);
       color: #333;
     }
-
     /* Hamburger menu styles */
     #menuToggle {
       position: fixed;
@@ -33,7 +32,6 @@
       background: #333;
       border-radius: 2px;
     }
-
     /* Sliding side menu */
     #sideMenu {
       position: fixed;
@@ -61,10 +59,11 @@
       font-weight: 600;
       border-bottom: 1px solid #eee;
     }
-    #sideMenu a:hover {
+    #sideMenu a:hover,
+    #sideMenu a:focus {
       background-color: #f0f0f0;
+      outline: none;
     }
-
     /* Profile dropdown */
     #profileDropdownContainer {
       position: fixed;
@@ -115,17 +114,17 @@
       border-top: 1px solid #eee;
       font-weight: 600;
     }
-    #profileDropdown a:hover {
+    #profileDropdown a:hover,
+    #profileDropdown a:focus {
       background-color: #f0f0f0;
+      outline: none;
     }
-
     h1 {
       margin-top: 80px;
       text-align: center;
       font-size: 2.4em;
       color: #00796b;
     }
-
     .item {
       background: white;
       border-radius: 10px;
@@ -135,10 +134,10 @@
       max-width: 500px;
       transition: transform 0.2s ease;
     }
-    .item:hover {
+    .item:hover,
+    .item:focus-within {
       transform: scale(1.01);
     }
-
     button {
       padding: 8px 16px;
       background-color: #00796b;
@@ -151,15 +150,19 @@
       margin-right: 10px;
       margin-top: 5px;
     }
-    button:hover {
+    button:hover,
+    button:focus {
       background-color: #004d40;
+      outline: none;
     }
-
     a {
       color: #00796b;
       font-weight: bold;
     }
-
+    a:focus {
+      outline: 2px solid #00796b;
+      outline-offset: 2px;
+    }
     .description {
       display: none;
       max-height: 150px;
@@ -176,212 +179,184 @@
 <body>
 
   <!-- Hamburger menu -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0" aria-pressed="false">
     <span></span>
     <span></span>
     <span></span>
   </div>
 
   <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="index.html">Home</a>
-    <a href="balance.html">Balance</a>
-    <a href="marketplace.html">Market</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="more.html">More</a>
-    <a href="logout.html">Logout</a>
+  <nav id="sideMenu" aria-label="Main navigation menu" hidden>
+    <a href="/home">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Market</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/more">More</a>
+    <a href="/logout">Logout</a>
   </nav>
 
   <!-- Profile Dropdown -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+    <div id="profileDropdown" role="menu" aria-label="User profile menu" hidden>
       <div id="profileInfo">Loading...</div>
-      <a href="balance.html">Load Funds</a>
-      <a href="index.html">Shop</a>
-      <a href="cart.html">Cart</a>
-      <a href="orders.html">Orders</a>
-      <a href="logout.html">Logout</a>
+      <a href="/balance">Load Funds</a>
+      <a href="/home">Shop</a>
+      <a href="/cart">Cart</a>
+      <a href="/orders">Orders</a>
+      <a href="/logout">Logout</a>
     </div>
   </div>
 
   <h1>Marketplace</h1>
 
   <!-- Product 1 -->
-  <div class="item">
-    <p><strong>🌴 Spammed CC – $15</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spammed CC', 15)">Add to Cart</button>
-    <div class="description">
-90% Validity — Restocked fresh every day
+  <div class="item" tabindex="0">
+    <p><strong>🌴 Pineapple VPN – $15</strong></p>
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Pineapple VPN', 15)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      Secure, fast, and private VPN service with global servers.
     </div>
   </div>
 
   <!-- Product 2 -->
-  <div class="item">
-    <p><strong>🏝️ X2 EMV Software – Full Breakdown</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('X2 EMV Software', 400)">Add to Cart</button>
-    <div class="description">
-Everything you need to know about EMV software:
-
-What type of card can I read/write with this EMV software?
-SDA and DDA (Static/Dynamic) — includes Visa, Visa Electron, MasterCard, Maestro, Amex, UnionPay, Diners, Discover, JCB.
-
-Will this EMV software work in any country?
-Yes — it works anywhere EMV technology is used.
-
-What data is needed to make an ATM transaction?
-You’ll need to write the Track 2 data.
-
-Can I use any PIN at an ATM?
-No — you’ll need the original PIN code.
-
-Can I use any PIN at POS?
-Yes — any PIN can be used at most point-of-sale terminals.
-
-Can I check balance and withdraw money from ATM?
-Yes — if you have a valid Track 2 and the correct PIN, you can perform all standard card functions.
-
-Where can I find smart cards?
-Message: @paradisestoreowner
-
-Where can I get the hardware?
-Search for Omnikey 3121 or check our website.
-
-What if I lose my PC with the EMV software?
-There are no replacements or re-sends. You lose it, it’s gone.
-
-What is the price for the EMV software?
-$400 USD — Bitcoin only.
-
-What will I receive?
-You’ll receive the full version of X2 software, a license key, and a user manual.
-
-Does the EMV software expire?
-No — once purchased, it’s yours permanently.
-
-Will there be future updates?
-Yes — NFC reader/writer support is coming.
+  <div class="item" tabindex="0">
+    <p><strong>🏝️ Island Proxy Pass – $400</strong></p>
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Island Proxy Pass', 400)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      Premium proxy service supporting multiple protocols and locations.
+      Unlimited bandwidth, zero logs, and 24/7 support.
     </div>
   </div>
 
   <!-- Product 3 -->
-  <div class="item">
-    <p><strong>🌺 Spamming Bundle – What’s Included</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spamming Bundle', 150)">Add to Cart</button>
-    <div class="description">
-1. Email Spammer Tool
-Mass email sender
-
-SMTP support or fake mail server
-
-Phishing email templates
-
-Email spoofing (fake “From” fields)
-
-Proxy integration
-
-2. Phishing Templates
-Fake login pages (Google, Microsoft, banking)
-
-Prize or reward scams
-
-Malicious files or links
-
-3. SMS Spammer
-Auto-senders for WhatsApp, Telegram, SMS
-
-Phone number databases
-
-Shortened malicious URLs
-
-4. Spoofing Tools
-Fake headers, spoofed IPs, and domain masking
-
-5. Scripts / Bots
-Python or PowerShell automation
-
-Captcha bypass bots
-
-Malicious Office document macros
-
-6. Bypass Tools
-Anti-spam evasion methods
-
-Email warming tools
-
-IP rotation / VPN tools
-
-7. Instructions & Tutorials
-PDF or video guide
-
-Full setup walkthrough
-
-Tips on staying undetected
+  <div class="item" tabindex="0">
+    <p><strong>🌺 Tropical Software Suite – $150</strong></p>
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Tropical Software Suite', 150)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      A collection of productivity and security tools designed for island living.
+      Includes email clients, password managers, and more.
     </div>
   </div>
 
   <!-- Product 4 -->
-  <div class="item">
-    <p><strong>💳 D+P: $150</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('D+P', 150)">Add to Cart</button>
-    <div class="description">
-Real, fresh, and verified dump + pin sets
-✅ 100% valid
-👨‍💻 Selling since 2020 — check 5 years of vouches
-🔢 201 code only
+  <div class="item" tabindex="0">
+    <p><strong>💳 Paradise Access Pass – $150</strong></p>
+    <button type="button" onclick="toggleDetails(this)">Details</button>
+    <button type="button" onclick="addToCart('Paradise Access Pass', 150)">Add to Cart</button>
+    <div class="description" aria-hidden="true">
+      Exclusive membership offering special discounts, early access, and VIP support.
     </div>
   </div>
 
   <p style="text-align: center;">
-    <a href="cart.html">Go to Cart</a> | 
-    <a href="orders.html">View Your Orders</a>
+    <a href="/cart">Go to Cart</a> | 
+    <a href="/orders">View Your Orders</a>
   </p>
 
   <script>
-    // Check if user is logged in
-    const user = sessionStorage.getItem('loggedInUser');
-    if (!user) {
+    const API_BASE = 'https://paradise-shop-1.onrender.com';
+    const token = localStorage.getItem('jwtToken');
+
+    if (!token) {
       alert('Please log in first.');
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }
 
-    // Load users data from localStorage
-    const users = JSON.parse(localStorage.getItem('users')) || {};
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
+    function authHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      };
+    }
 
+    async function loadProfile() {
+      try {
+        const res = await fetch(`${API_BASE}/api/profile`, {
+          headers: authHeaders()
+        });
+        if (!res.ok) throw new Error('Not authenticated');
+        const data = await res.json();
+
+        const profileInfoDiv = document.getElementById('profileInfo');
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username}</strong><br>
+          Balance: $${data.balance.toFixed(2)}<br>
+          Spent: $${data.totalSpent.toFixed(2)}<br>
+          Total: $${(data.balance + data.totalSpent).toFixed(2)}<br>
+          Joined: ${data.joinDate}<br>
+          Orders: ${data.ordersCount}
+        `;
+      } catch (err) {
+        alert('Session expired or invalid token. Please log in again.');
+        window.location.href = '/login';
+      }
+    }
+
+    async function addToCart(name, price) {
+      try {
+        const res = await fetch(`${API_BASE}/api/cart/add`, {
+          method: 'POST',
+          headers: authHeaders(),
+          body: JSON.stringify({ name, price })
+        });
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.message || 'Failed to add to cart');
+        }
+        alert(`${name} added to cart.`);
+      } catch (err) {
+        alert('Error adding to cart. Please try again.');
+      }
+    }
+
+    function toggleDetails(button) {
+      const desc = button.nextElementSibling.nextElementSibling;
+      if (!desc) return;
+      const isHidden = desc.style.display === 'none' || desc.style.display === '';
+      desc.style.display = isHidden ? 'block' : 'none';
+      button.textContent = isHidden ? 'Hide Details' : 'Details';
+      desc.setAttribute('aria-hidden', !isHidden);
+    }
+
+    loadProfile();
+
+    // Hamburger menu toggle
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
-    // Hamburger menu toggle
-    function toggleMenu() {
-      sideMenu.classList.toggle('active');
-    }
-
-    menuToggle.addEventListener('click', toggleMenu);
+    menuToggle.addEventListener('click', () => {
+      const active = sideMenu.classList.toggle('active');
+      sideMenu.hidden = !active;
+      menuToggle.setAttribute('aria-pressed', active);
+    });
     menuToggle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
-        toggleMenu();
+        const active = sideMenu.classList.toggle('active');
+        sideMenu.hidden = !active;
+        menuToggle.setAttribute('aria-pressed', active);
       }
     });
-
-    // Close side menu if clicked outside
     window.addEventListener('click', (e) => {
       if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
         sideMenu.classList.remove('active');
+        sideMenu.hidden = true;
+        menuToggle.setAttribute('aria-pressed', false);
       }
     });
 
     // Profile dropdown toggle
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+
     function toggleProfileDropdown() {
       const isActive = profileDropdown.classList.toggle('active');
+      profileDropdown.hidden = !isActive;
       profileIcon.setAttribute('aria-expanded', isActive);
     }
 
@@ -393,62 +368,13 @@ Real, fresh, and verified dump + pin sets
       }
     });
 
-    // Close profile dropdown if clicked outside
     window.addEventListener('click', (e) => {
       if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
         profileDropdown.classList.remove('active');
+        profileDropdown.hidden = true;
         profileIcon.setAttribute('aria-expanded', false);
       }
     });
-
-    // Populate profile info
-    if (user && users[user]) {
-      const userData = users[user];
-      let totalSpent = 0;
-      if (userData.orders) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            totalSpent += parseFloat(item.price) || 0;
-          });
-        });
-      }
-
-      let joinDate = userData.joinDate || 'Unknown';
-      profileInfoDiv.innerHTML = `
-        <strong>${user}</strong><br>
-        Balance: $${userData.balance ? userData.balance.toFixed(2) : '0.00'}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Total: $${userData.balance ? (userData.balance + totalSpent).toFixed(2) : totalSpent.toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${userData.orders ? userData.orders.length : 0}
-      `;
-    } else {
-      profileInfoDiv.textContent = 'No user data found';
-    }
-
-    // Add product to cart
-    function addToCart(name, price) {
-      const cart = JSON.parse(localStorage.getItem('cart_' + user)) || [];
-      cart.push({ name, price });
-      localStorage.setItem('cart_' + user, JSON.stringify(cart));
-      alert(name + ' added to cart');
-    }
-
-    // Toggle product details display
-    function toggleDetails(button) {
-      // Description is the next sibling of the button's parent container
-      // But your structure is: button then next sibling is button then next sibling is description
-      // So we get nextElementSibling twice from the clicked button
-      const desc = button.nextElementSibling.nextElementSibling;
-      if (!desc) return;
-      if (desc.style.display === 'none' || desc.style.display === '') {
-        desc.style.display = 'block';
-        button.textContent = 'Hide Details';
-      } else {
-        desc.style.display = 'none';
-        button.textContent = 'Details';
-      }
-    }
   </script>
 
 </body>
