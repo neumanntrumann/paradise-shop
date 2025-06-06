@@ -1,3 +1,99 @@
+from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
+import jwt
+import datetime
+import functools
+
+app = Flask(__name__)
+
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+db = SQLAlchemy(app)
+
+# Models
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
+    balance = db.Column(db.Float, default=0.0)
+    join_date = db.Column(db.String(50))
+    cart_items = db.relationship('CartItem', backref='user', lazy=True)
+    orders = db.relationship('Order', backref='user', lazy=True)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def generate_jwt(self):
+        payload = {
+            'user_id': self.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        return token if isinstance(token, str) else token.decode('utf-8')
+
+class CartItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    price = db.Column(db.Float)
+    quantity = db.Column(db.Integer)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    items = db.relationship('OrderItem', backref='order', lazy=True)
+
+class OrderItem(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+    price = db.Column(db.Float)
+    order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
+
+# JWT Decorators
+def token_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if token and token.startswith('Bearer '):
+            token = token[7:]
+        else:
+            token = request.cookies.get('jwt')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+def login_required_redirect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+        if not token:
+            return redirect(url_for('login_page'))
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return redirect(url_for('login_page'))
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return redirect(url_for('login_page'))
+        return f(current_user, *args, **kwargs)
+    return decorated
+
 # Routes
 @app.route('/')
 def root():
@@ -61,12 +157,6 @@ def logout():
 @app.route('/home')
 @login_required_redirect
 def home_page(current_user):
-    return render_template('index.html', username=current_user.username)
-
-# <-- NEW ROUTE to fix /index 404 -->
-@app.route('/index')
-@login_required_redirect
-def index_page(current_user):
     return render_template('index.html', username=current_user.username)
 
 @app.route('/balance')
@@ -168,4 +258,3 @@ if __name__ == '__main__':
         db.create_all()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
