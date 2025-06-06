@@ -171,6 +171,33 @@ def logout():
     resp.delete_cookie('jwt')
     return resp
 
+# --- Added hamburger menu routes below ---
+
+@app.route('/balance')
+@login_required_redirect
+def balance_page(current_user):
+    return render_template('balance.html', username=current_user.username)
+
+@app.route('/cart')
+@login_required_redirect
+def cart_page(current_user):
+    return render_template('cart.html', username=current_user.username)
+
+@app.route('/checkout')
+@login_required_redirect
+def checkout_page(current_user):
+    return render_template('checkout.html', username=current_user.username)
+
+@app.route('/marketplace')
+@login_required_redirect
+def marketplace_page(current_user):
+    return render_template('marketplace.html', username=current_user.username)
+
+@app.route('/orders')
+@login_required_redirect
+def orders_page(current_user):
+    return render_template('orders.html', username=current_user.username)
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
