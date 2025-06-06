@@ -157,7 +157,7 @@
       message.style.color = 'red';
     }
 
-    // Helper to read csrf_token cookie value
+    // Helper to read csrf_token cookie value (optional, remove if not used)
     function getCookie(name) {
       const value = `; ${document.cookie}`;
       const parts = value.split(`; ${name}=`);
@@ -176,7 +176,7 @@
         return;
       }
 
-      // Get CSRF token from cookie
+      // If you use CSRF token, include it here, else remove the header below
       const csrfToken = getCookie('csrf_token');
 
       try {
@@ -184,10 +184,10 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken
+            //'X-CSRF-Token': csrfToken // uncomment if you have CSRF protection
           },
-          body: JSON.stringify({ username, password }),
-          credentials: 'include'
+          credentials: 'include',
+          body: JSON.stringify({ username, password })
         });
 
         const data = await response.json();
