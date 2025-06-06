@@ -35,7 +35,6 @@ class User(db.Model):
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
         }
         token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
-        # PyJWT 2.x returns str, 1.x returns bytes:
         return token.decode('utf-8') if isinstance(token, bytes) else token
 
 class CartItem(db.Model):
@@ -56,23 +55,6 @@ class OrderItem(db.Model):
     name = db.Column(db.String(100))
     price = db.Column(db.Float)
     order_id = db.Column(db.Integer, db.ForeignKey('order.id'))
-
-# CSRF Protection
-def generate_csrf_token():
-    return secrets.token_urlsafe(32)
-
-def verify_csrf():
-    csrf_cookie = request.cookies.get('csrf_token')
-    csrf_header = request.headers.get('X-CSRF-Token')
-    return csrf_cookie and csrf_header and csrf_cookie == csrf_header
-
-def csrf_protect(f):
-    @functools.wraps(f)
-    def decorated(*args, **kwargs):
-        if request.method == "POST" and not verify_csrf():
-            return jsonify({'error': 'CSRF token missing or invalid'}), 403
-        return f(*args, **kwargs)
-    return decorated
 
 # Token Authentication Decorator
 def token_required(f):
@@ -122,20 +104,13 @@ def root():
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    csrf_token = generate_csrf_token()
-    resp = make_response(render_template('index.html'))
-    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
-    return resp
+    return render_template('index.html')
 
 @app.route('/signup', methods=['GET'])
 def signup_page():
-    csrf_token = generate_csrf_token()
-    resp = make_response(render_template('signup.html'))
-    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
-    return resp
+    return render_template('signup.html')
 
 @app.route('/login', methods=['POST'])
-@csrf_protect
 def login():
     data = request.get_json()
     username = data.get('username', '').strip()
@@ -150,7 +125,6 @@ def login():
     return jsonify({'error': 'Invalid username or password'}), 401
 
 @app.route('/signup', methods=['POST'])
-@csrf_protect
 def signup():
     data = request.get_json()
     username = data.get('username', '').strip()
@@ -288,4 +262,3 @@ if __name__ == '__main__':
         db.create_all()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
-
