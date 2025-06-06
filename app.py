@@ -140,7 +140,6 @@ def orders(current_user):
         db.session.commit()
         return jsonify({'message': 'Order placed successfully.'})
 
-# Optional: redirect root to login or home (if logged in)
 @app.route('/')
 def index():
     token = request.cookies.get('token')
@@ -152,16 +151,13 @@ def index():
             pass
     return redirect('/login')
 
-# Example home route serving a simple message (replace with your actual frontend serving)
 @app.route('/home')
 @token_required
 def home(current_user):
     return jsonify({'message': f'Welcome, {current_user.username}! Your balance is ${current_user.balance:.2f}.'})
 
-# Initialize DB (only run once or in your startup script)
-@app.before_first_request
-def create_tables():
-    db.create_all()
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=True, host='0.0.0.0', port=port)
