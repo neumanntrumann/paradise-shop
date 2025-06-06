@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PARADISE SHOP - Marketplace</title>
   <style>
+    /* (keep all your existing CSS as is) */
     body {
       font-family: 'Segoe UI', sans-serif;
       padding: 20px;
@@ -260,24 +261,14 @@
 
   <script>
     const API_BASE = 'https://paradise-shop-1.onrender.com';
-    const token = localStorage.getItem('jwtToken');
 
-    if (!token) {
-      alert('Please log in first.');
-      window.location.href = '/login';
-    }
-
-    function authHeaders() {
-      return {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
-      };
-    }
+    // We no longer use localStorage token, because token is HttpOnly cookie
+    // To check if logged in, attempt profile fetch and catch failures
 
     async function loadProfile() {
       try {
-        const res = await fetch(`${API_BASE}/api/profile`, {
-          headers: authHeaders()
+        const res = await fetch(`${API_BASE}/profile`, {
+          credentials: 'include'  // IMPORTANT: send cookies with request
         });
         if (!res.ok) throw new Error('Not authenticated');
         const data = await res.json();
@@ -299,9 +290,12 @@
 
     async function addToCart(name, price) {
       try {
-        const res = await fetch(`${API_BASE}/api/cart/add`, {
+        const res = await fetch(`${API_BASE}/cart/add`, {
           method: 'POST',
-          headers: authHeaders(),
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          credentials: 'include',  // send cookie with request
           body: JSON.stringify({ name, price })
         });
         if (!res.ok) {
