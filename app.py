@@ -106,6 +106,32 @@ def login_required_redirect(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
+# Your requested login_required decorator with redirects using flask's wraps and jwt decode
+from functools import wraps
+from flask import request, redirect, url_for, render_template, make_response
+import jwt
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get('token')
+        if not token:
+            return redirect(url_for('login_page'))
+        try:
+            jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return redirect(url_for('login_page'))
+        except jwt.InvalidTokenError:
+            return redirect(url_for('login_page'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Route to serve checkout.html, protected by login_required
+@app.route('/checkout')
+@login_required
+def checkout_page():
+    return render_template('checkout.html')
+
 # Routes
 @app.route('/')
 def root():

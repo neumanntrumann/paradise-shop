@@ -44,7 +44,7 @@
       50% { transform: translateY(-12px); }
     }
 
-    .login-container {
+    .signup-container {
       margin: 120px auto;
       width: 320px;
       padding: 30px;
@@ -89,15 +89,9 @@
       text-transform: uppercase;
     }
 
-    button:hover:enabled {
+    button:hover {
       background-color: #008ecc;
       box-shadow: 0 0 20px #008ecc;
-    }
-
-    button:disabled {
-      background-color: #7ec8ea;
-      cursor: not-allowed;
-      box-shadow: none;
     }
 
     #message {
@@ -108,20 +102,20 @@
       text-align: center;
     }
 
-    p.signup-link {
+    p.login-link {
       text-align: center;
       margin-top: 20px;
       font-size: 1rem;
     }
 
-    p.signup-link a {
+    p.login-link a {
       color: #0077cc;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
     }
 
-    p.signup-link a:hover {
+    p.login-link a:hover {
       text-decoration: underline;
       color: #004999;
     }
@@ -151,8 +145,8 @@
   </audio>
   <button id="music-toggle">🔊 Music</button>
 
-  <div class="login-container">
-    <h2>🌴 Join Paradise Today</h2>
+  <div class="signup-container">
+    <h2>🏝️ Join Paradise</h2>
     <form id="signupForm" onsubmit="event.preventDefault(); signup();">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
@@ -160,7 +154,7 @@
     </form>
 
     <p id="message"></p>
-    <p class="signup-link">Already have an account? <a href="/index.html">Login</a></p>
+    <p class="login-link">Already have an account? <a href="/index">Log in</a></p>
   </div>
 
   <script>
@@ -175,12 +169,6 @@
       message.style.color = 'red';
     }
 
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-    }
-
     async function signup() {
       clearMessage();
 
@@ -188,45 +176,28 @@
       const password = document.getElementById('password').value.trim();
 
       if (!username || !password) {
-        message.textContent = 'Please fill out all fields';
+        message.textContent = 'Please fill in all fields';
         return;
       }
-
-      const submitBtn = document.querySelector('button[type="submit"]');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Signing up...';
 
       try {
         const response = await fetch('/signup', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': getCookie('csrf_token'),
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),
-          credentials: 'include'
         });
 
         const data = await response.json();
 
         if (!response.ok) {
           message.textContent = data.error || 'Signup failed';
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Sign Up';
           return;
         }
 
-        message.style.color = 'green';
-        message.textContent = 'Signup successful! Redirecting to login...';
-
-        setTimeout(() => {
-          window.location.replace('/index');
-        }, 1800);
+        window.location.href = '/index';
       } catch (error) {
         message.textContent = 'Error connecting to server';
-        console.error('Signup error:', error);
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Sign Up';
+        console.error(error);
       }
     }
 
