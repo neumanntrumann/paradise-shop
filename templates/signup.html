@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -171,6 +171,13 @@
       message.style.color = 'red';
     }
 
+    // Helper to read csrf token cookie
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
     async function signup() {
       clearMessage();
 
@@ -183,11 +190,14 @@
         return;
       }
 
+      const csrfToken = getCookie('csrf_token');
+
       try {
         const response = await fetch('/signup', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
           },
           body: JSON.stringify({ username, email, password }),
           credentials: 'include'

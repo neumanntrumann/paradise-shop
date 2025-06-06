@@ -26,6 +26,9 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      background: none;
+      border: none;
+      padding: 0;
     }
     #menuToggle span {
       display: block;
@@ -85,6 +88,7 @@
       user-select: none;
       font-weight: bold;
       font-size: 20px;
+      border: none;
     }
     #profileDropdown {
       display: none;
@@ -180,33 +184,33 @@
 <body>
 
   <!-- Hamburger menu -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0" aria-pressed="false">
+  <button id="menuToggle" aria-label="Toggle navigation menu" aria-pressed="false" aria-controls="sideMenu">
     <span></span>
     <span></span>
     <span></span>
-  </div>
+  </button>
 
   <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu" hidden>
-    <a href="/home">Home</a>
-    <a href="/balance">Balance</a>
-    <a href="/marketplace">Market</a>
-    <a href="/cart">Cart</a>
-    <a href="/orders">Orders</a>
-    <a href="/more">More</a>
-    <a href="/logout">Logout</a>
+  <nav id="sideMenu" aria-label="Main navigation menu" role="menu" hidden>
+    <a href="/home" role="menuitem">Home</a>
+    <a href="/balance" role="menuitem">Balance</a>
+    <a href="/marketplace" role="menuitem">Market</a>
+    <a href="/cart" role="menuitem">Cart</a>
+    <a href="/orders" role="menuitem">Orders</a>
+    <a href="/more" role="menuitem">More</a>
+    <a href="/logout" role="menuitem">Logout</a>
   </nav>
 
   <!-- Profile Dropdown -->
   <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+    <button id="profileIcon" aria-label="User profile menu" aria-expanded="false" aria-controls="profileDropdown" title="Profile">👤</button>
     <div id="profileDropdown" role="menu" aria-label="User profile menu" hidden>
       <div id="profileInfo">Loading...</div>
-      <a href="/balance">Load Funds</a>
-      <a href="/home">Shop</a>
-      <a href="/cart">Cart</a>
-      <a href="/orders">Orders</a>
-      <a href="/logout">Logout</a>
+      <a href="/balance" role="menuitem">Load Funds</a>
+      <a href="/home" role="menuitem">Shop</a>
+      <a href="/cart" role="menuitem">Cart</a>
+      <a href="/orders" role="menuitem">Orders</a>
+      <a href="/logout" role="menuitem">Logout</a>
     </div>
   </div>
 
@@ -262,13 +266,10 @@
   <script>
     const API_BASE = 'https://paradise-shop-1.onrender.com';
 
-    // We no longer use localStorage token, because token is HttpOnly cookie
-    // To check if logged in, attempt profile fetch and catch failures
-
     async function loadProfile() {
       try {
         const res = await fetch(`${API_BASE}/profile`, {
-          credentials: 'include'  // IMPORTANT: send cookies with request
+          credentials: 'include'
         });
         if (!res.ok) throw new Error('Not authenticated');
         const data = await res.json();
@@ -295,7 +296,7 @@
           headers: {
             'Content-Type': 'application/json'
           },
-          credentials: 'include',  // send cookie with request
+          credentials: 'include',
           body: JSON.stringify({ name, price })
         });
         if (!res.ok) {
@@ -323,24 +324,42 @@
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
+    function closeSideMenu() {
+      sideMenu.classList.remove('active');
+      sideMenu.hidden = true;
+      menuToggle.setAttribute('aria-pressed', 'false');
+      menuToggle.focus();
+    }
+
     menuToggle.addEventListener('click', () => {
       const active = sideMenu.classList.toggle('active');
       sideMenu.hidden = !active;
-      menuToggle.setAttribute('aria-pressed', active);
+      menuToggle.setAttribute('aria-pressed', active.toString());
+      if (active) {
+        // Focus first link in sideMenu
+        const firstLink = sideMenu.querySelector('a');
+        if (firstLink) firstLink.focus();
+      } else {
+        menuToggle.focus();
+      }
     });
     menuToggle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         const active = sideMenu.classList.toggle('active');
         sideMenu.hidden = !active;
-        menuToggle.setAttribute('aria-pressed', active);
+        menuToggle.setAttribute('aria-pressed', active.toString());
+        if (active) {
+          const firstLink = sideMenu.querySelector('a');
+          if (firstLink) firstLink.focus();
+        } else {
+          menuToggle.focus();
+        }
       }
     });
     window.addEventListener('click', (e) => {
       if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-        sideMenu.hidden = true;
-        menuToggle.setAttribute('aria-pressed', false);
+        closeSideMenu();
       }
     });
 
@@ -348,10 +367,24 @@
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
 
+    function closeProfileDropdown() {
+      profileDropdown.classList.remove('active');
+      profileDropdown.hidden = true;
+      profileIcon.setAttribute('aria-expanded', 'false');
+      profileIcon.focus();
+    }
+
     function toggleProfileDropdown() {
       const isActive = profileDropdown.classList.toggle('active');
       profileDropdown.hidden = !isActive;
-      profileIcon.setAttribute('aria-expanded', isActive);
+      profileIcon.setAttribute('aria-expanded', isActive.toString());
+      if (isActive) {
+        // Focus first menu item inside profile dropdown
+        const firstItem = profileDropdown.querySelector('a');
+        if (firstItem) firstItem.focus();
+      } else {
+        profileIcon.focus();
+      }
     }
 
     profileIcon.addEventListener('click', toggleProfileDropdown);
@@ -364,9 +397,7 @@
 
     window.addEventListener('click', (e) => {
       if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileDropdown.hidden = true;
-        profileIcon.setAttribute('aria-expanded', false);
+        closeProfileDropdown();
       }
     });
   </script>

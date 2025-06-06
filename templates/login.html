@@ -194,7 +194,16 @@
           return;
         }
 
+        // Assuming your backend sends the JWT token as data.token
+        if (data.token) {
+          localStorage.setItem('jwt_token', data.token);
+        } else {
+          console.warn('No token received from login response');
+        }
+
+        // Redirect after successful login & token save
         window.location.href = '/index';
+
       } catch (error) {
         message.textContent = 'Error connecting to server';
         console.error('Login error:', error);
