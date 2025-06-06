@@ -174,16 +174,17 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ username, password }),
-          credentials: 'include'
+          credentials: 'include' // crucial to send and receive cookie
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = data.error || 'Login failed';
+          message.textContent = data.message || 'Login failed';
           return;
         }
 
+        // Success - redirect to home
         window.location.href = '/home';
       } catch (error) {
         message.textContent = 'Error connecting to server';
