@@ -69,7 +69,7 @@
     const email = sessionStorage.getItem('loggedInUser');
     if (!email) {
       alert('Please log in to view your cart.');
-      window.location.href = '/login';
+      window.location.href = '/index';
     }
 
     const cartContainer = document.getElementById('cart-items');
