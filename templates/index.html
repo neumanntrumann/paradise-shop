@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Login</title>
 
+  <!-- CSRF token embedded here -->
+  <meta name="csrf-token" content="{{ csrf_token }}">
+
   <style>
     /* Your existing styles here (same as you provided) */
     body {
@@ -157,14 +160,6 @@
       message.style.color = 'red';
     }
 
-    // Helper to read csrf_token cookie value (optional, remove if not used)
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
-
     async function login() {
       clearMessage();
 
@@ -176,18 +171,18 @@
         return;
       }
 
-      // If you use CSRF token, include it here, else remove the header below
-      const csrfToken = getCookie('csrf_token');
+      // Get CSRF token from meta tag
+      const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
       try {
         const response = await fetch('/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            //'X-CSRF-Token': csrfToken // uncomment if you have CSRF protection
+            'X-CSRFToken': csrfToken
           },
-          credentials: 'include',
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({ username, password }),
+          credentials: 'include'
         });
 
         const data = await response.json();
