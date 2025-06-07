@@ -1,101 +1,200 @@
-from flask import Flask, render_template, request, redirect, url_for, session, g
+from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from functools import wraps
 import os
+import jwt
+import datetime
+import functools
+import secrets
 
 app = Flask(__name__, template_folder='website_files/zip')
-app.secret_key = os.urandom(24)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# User model
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(150), nullable=False, unique=True)
-    email = db.Column(db.String(150), nullable=False, unique=True)
-    password = db.Column(db.String(150), nullable=False)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password_hash = db.Column(db.String(128), nullable=False)
 
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def generate_jwt(self):
+        payload = {
+            'user_id': self.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+        return token
+
+# CSRF protection
+
+def generate_csrf_token():
+    return secrets.token_urlsafe(32)
+
+def verify_csrf():
+    csrf_cookie = request.cookies.get('csrf_token')
+    csrf_header = request.headers.get('X-CSRF-Token')
+    return csrf_cookie and csrf_header and csrf_cookie == csrf_header
+
+def csrf_protect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if request.method == "POST":
+            if not verify_csrf():
+                return jsonify({'error': 'CSRF token missing or invalid'}), 403
         return f(*args, **kwargs)
-    return decorated_function
+    return decorated
 
-@app.before_request
-def load_user():
-    g.user = None
-    if 'user_id' in session:
-        g.user = User.query.get(session['user_id'])
+# JWT decorators
 
+def token_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        if not token:
+            token = request.cookies.get('jwt')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+def login_required_redirect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+        if not token:
+            return redirect('/login')
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return redirect('/login')
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return redirect('/login')
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Auth routes
 @app.route('/')
-def index():
-    return render_template('index.html')
+def root():
+    return redirect('/login')
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['GET'])
+def login_page():
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('login.html'))
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
+
+@app.route('/signup', methods=['GET'])
+def signup_page():
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('signup.html'))
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
+
+@app.route('/login', methods=['POST'])
+@csrf_protect
 def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            return redirect(url_for('marketplace'))
-        return 'Invalid credentials'
-    return render_template('login.html')
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid username or password'}), 401
+    token = user.generate_jwt()
+    resp = jsonify({'message': 'Login successful'})
+    resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
+    return resp
 
-@app.route('/signup', methods=['GET', 'POST'])
+@app.route('/signup', methods=['POST'])
+@csrf_protect
 def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        password = generate_password_hash(request.form['password'])
-        new_user = User(username=username, email=email, password=password)
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('login'))
-    return render_template('signup.html')
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already taken'}), 409
+    hashed_pw = generate_password_hash(password)
+    new_user = User(username=username, password_hash=hashed_pw)
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'message': 'User created successfully'})
+
+@app.route('/profile')
+@token_required
+def profile(current_user):
+    return jsonify({'username': current_user.username})
 
 @app.route('/logout')
-@login_required
 def logout():
-    session.pop('user_id', None)
-    return render_template('logout.html')
+    resp = redirect('/login')
+    resp.delete_cookie('jwt')
+    return resp
+
+# Page routes
+@app.route('/index')
+@login_required_redirect
+def index_page(current_user):
+    return render_template('index.html', username=current_user.username)
 
 @app.route('/marketplace')
-@login_required
-def marketplace():
-    return render_template('marketplace.html')
+@login_required_redirect
+def marketplace(current_user):
+    return render_template('marketplace.html', username=current_user.username)
 
 @app.route('/more')
-@login_required
-def more():
-    return render_template('more.html')
+@login_required_redirect
+def more(current_user):
+    return render_template('more.html', username=current_user.username)
 
 @app.route('/cart')
-@login_required
-def cart():
-    return render_template('cart.html')
+@login_required_redirect
+def cart(current_user):
+    return render_template('cart.html', username=current_user.username)
 
 @app.route('/checkout')
-@login_required
-def checkout():
-    return render_template('checkout.html')
+@login_required_redirect
+def checkout(current_user):
+    return render_template('checkout.html', username=current_user.username)
 
 @app.route('/balance')
-@login_required
-def balance():
-    return render_template('balance.html')
+@login_required_redirect
+def balance(current_user):
+    return render_template('balance.html', username=current_user.username)
 
 @app.route('/orders')
-@login_required
-def orders():
-    return render_template('orders.html')
+@login_required_redirect
+def orders(current_user):
+    return render_template('orders.html', username=current_user.username)
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)
