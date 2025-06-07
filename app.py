@@ -29,7 +29,8 @@ class Order(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-def create_tables_and_seed():
+def create_tables_and_seed()  # ensures tables + seed data setup inside app context:
+    with app.app_context():
     db.create_all()
     if not User.query.filter_by(username='admin').first():
         db.session.add(User(username='admin', password='admin', balance=100.0))
@@ -110,7 +111,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-create_tables_and_seed()
+create_tables_and_seed()  # ensures tables + seed data setup inside app context
 
 if __name__ == '__main__':
     app.run(debug=True)
