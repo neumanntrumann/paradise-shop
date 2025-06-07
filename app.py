@@ -169,10 +169,8 @@ def deposit():
     except (TypeError, ValueError):
         return jsonify({'error': 'Invalid amount'}), 400
 
-    # For simplicity, simulate verification of deposit via BlockCypher
-    # You can expand this with actual blockchain tx verification using BlockCypher API and webhooks
+    # Simulate deposit verification with BlockCypher API here if needed
 
-    # Add amount to user balance
     user.balance += amount
     db.session.commit()
     return jsonify({'message': f'Deposited ${amount:.2f}', 'new_balance': user.balance})
@@ -183,9 +181,9 @@ def get_csrf_token():
     token = csrf.generate_csrf()
     return jsonify({'csrf_token': token})
 
-# --- Init DB and Products ---
-@app.before_first_request
-def setup():
+# --- Manual DB Initialization Route ---
+@app.route('/init_db')
+def init_db():
     db.create_all()
     if not Product.query.first():
         db.session.add_all([
@@ -194,6 +192,7 @@ def setup():
             Product(name='Orange', price=0.75)
         ])
         db.session.commit()
+    return "Database initialized!"
 
 if __name__ == '__main__':
     app.run(debug=True)
