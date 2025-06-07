@@ -3,157 +3,236 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Paradise Shop - Home</title>
+  <title>PARADISE SHOP - Home</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #d0f0fd;
+      padding: 20px;
       margin: 0;
-      padding: 0 20px 40px;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #f0f8ff, #e0f7fa, #f0f8ff, #e0f7fa);
+      background-size: 400% 400%;
+      animation: ocean 20s ease infinite;
       color: #333;
-    }
-
-    #menuToggle {
-      display: inline-block;
-      cursor: pointer;
-      margin: 20px 0;
-      width: 30px;
-      height: 25px;
       position: relative;
+      min-height: 100vh;
     }
-
+    @keyframes ocean {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+    .fade-slide {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeSlideIn 1s ease-out forwards;
+    }
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .wave-emoji {
+      display: inline-block;
+      animation: wave 2.5s infinite ease-in-out;
+    }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg); }
+      75% { transform: rotate(-10deg); }
+    }
+    .floating {
+      position: absolute;
+      animation: float 10s infinite ease-in-out;
+      pointer-events: none;
+      opacity: 0.3;
+      font-size: 20px;
+      user-select: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+    #menuToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 35px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1100;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
     #menuToggle span {
       display: block;
-      height: 3px;
+      height: 4px;
       background: #333;
-      margin-bottom: 5px;
       border-radius: 2px;
-      transition: 0.3s ease;
     }
-
     #sideMenu {
       position: fixed;
-      left: -220px;
       top: 0;
-      width: 200px;
-      height: 100%;
-      background: #fff;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      padding-top: 60px;
-      transition: left 0.3s ease;
-      z-index: 1000;
-    }
-
-    #sideMenu.active {
       left: 0;
+      width: 23vw;
+      max-width: 300px;
+      height: 100vh;
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding-top: 60px;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
-
+    #sideMenu.active {
+      transform: translateX(0);
+    }
     #sideMenu a {
       display: block;
-      padding: 12px 20px;
+      padding: 15px 25px;
       text-decoration: none;
       color: #333;
       font-weight: 600;
       border-bottom: 1px solid #eee;
     }
-
-    #sideMenu a:hover {
-      background: #d0f0fd;
+    #sideMenu a:hover,
+    #sideMenu a:focus {
+      background-color: #f0f0f0;
+      outline: none;
     }
-
     #profileDropdownContainer {
       position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      user-select: none;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
     }
-
     #profileIcon {
+      width: 40px;
+      height: 40px;
+      background-color: #00796b;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      font-size: 20px;
+      outline: none;
     }
-
+    #profileIcon:focus {
+      box-shadow: 0 0 0 3px #004d40aa;
+    }
     #profileDropdown {
       display: none;
       position: absolute;
+      top: 50px;
       right: 0;
-      top: 35px;
       background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 10px;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       width: 220px;
+      border-radius: 5px;
       font-size: 14px;
-      z-index: 1001;
+      z-index: 1150;
     }
-
     #profileDropdown.active {
       display: block;
     }
-
-    #profileDropdown a {
+    #profileDropdown div, #profileDropdown a {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
       display: block;
-      padding: 6px 8px;
-      color: #333;
       text-decoration: none;
-      border-radius: 4px;
+      color: #333;
+      cursor: pointer;
     }
-
-    #profileDropdown a:hover {
-      background: #d0f0fd;
+    #profileDropdown div {
+      user-select: none;
     }
-
-    h1.fade-slide {
+    #profileDropdown a:hover,
+    #profileDropdown a:focus {
+      background-color: #f0f0f0;
+      outline: none;
+    }
+    h1 {
+      margin-top: 80px;
       text-align: center;
-      margin-top: 50px;
-      font-size: 2.5rem;
-      animation: fadeSlideIn 1s ease forwards;
+      font-size: 2.4em;
+      color: #00796b;
+      user-select: none;
     }
-
-    .wave-emoji {
-      animation: wave 2.5s infinite;
-      display: inline-block;
+    button {
+      padding: 8px 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease, transform 0.15s ease;
     }
-
-    @keyframes fadeSlideIn {
-      0% {opacity: 0; transform: translateY(20px);}
-      100% {opacity: 1; transform: translateY(0);}
+    button:hover,
+    button:focus {
+      background-color: #004d40;
+      outline: none;
     }
-
-    @keyframes wave {
-      0%, 100% { transform: rotate(0deg);}
-      50% { transform: rotate(15deg);}
+    button:active {
+      transform: scale(0.97);
+    }
+    a {
+      color: #00796b;
+      font-weight: bold;
+      transition: text-shadow 0.2s;
+    }
+    a:hover,
+    a:focus {
+      text-shadow: 0 0 6px rgba(0, 137, 123, 0.5);
+      outline: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Burger Menu -->
-  <div id="menuToggle" tabindex="0" role="button" aria-label="Toggle menu" aria-expanded="false">
-    <span></span><span></span><span></span>
+  <!-- Floating emojis for vibe -->
+  <div class="floating" style="top: 100px; left: 20px;">🌺</div>
+  <div class="floating" style="top: 250px; right: 30px;">🌊</div>
+  <div class="floating" style="top: 400px; left: 50%;">🌴</div>
+
+  <!-- Hamburger menu toggle -->
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span>
+    <span></span>
+    <span></span>
   </div>
 
-  <!-- Side Navigation -->
-  <nav id="sideMenu" aria-label="Main navigation">
-    <a href="/">Home</a>
-    <a href="/balance">Balance</a>
-    <a href="/marketplace">Marketplace</a>
-    <a href="/cart">Cart</a>
-    <a href="/orders">Orders</a>
-    <a href="/logout">Logout</a>
+  <!-- Side navigation menu -->
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="/index" tabindex="0">Home</a>
+    <a href="/balance" tabindex="0">Balance</a>
+    <a href="/marketplace" tabindex="0">Market</a>
+    <a href="/cart" tabindex="0">Cart</a>
+    <a href="/orders" tabindex="0">Orders</a>
+    <a href="/more" tabindex="0">More</a>
+    <a href="/logout" tabindex="0">Logout</a>
   </nav>
 
-  <!-- Profile Dropdown -->
+  <!-- Profile dropdown -->
   <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">👤</div>
-    <div id="profileDropdown" role="menu" aria-hidden="true">
-      <div id="profileInfo" role="none">Loading...</div>
-      <a href="/balance" role="menuitem">Load Funds</a>
-      <a href="/marketplace" role="menuitem">Shop</a>
-      <a href="/cart" role="menuitem">Cart</a>
-      <a href="/orders" role="menuitem">Orders</a>
-      <a href="/logout" role="menuitem">Logout</a>
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+      <div id="profileInfo">Loading...</div>
+      <a href="/balance" role="menuitem" tabindex="0">Load Funds</a>
+      <a href="/index" role="menuitem" tabindex="0">Shop</a>
+      <a href="/cart" role="menuitem" tabindex="0">Cart</a>
+      <a href="/orders" role="menuitem" tabindex="0">Orders</a>
+      <a href="/logout" role="menuitem" tabindex="0">Logout</a>
     </div>
   </div>
 
@@ -166,7 +245,7 @@
     <p>Fresh inventory, rare finds, and exciting updates — check back often!</p>
 
     <h3>💬 Need Help?</h3>
-    <p>→ Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank" rel="noopener noreferrer">@ParadiseShopGroup</a><br>
+    <p>→ Telegram group: <a href="https://t.me/ParadiseShopGroup" target="_blank" rel="noopener noreferrer">t.me/ParadiseShopGroup</a><br>
        → DM: <a href="https://t.me/ParadiseStoreOwner" target="_blank" rel="noopener noreferrer">@ParadiseStoreOwner</a></p>
 
     <h3>⚠️ Stay Safe</h3>
@@ -177,30 +256,16 @@
   </div>
 
   <script>
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
-
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
     const profileInfoDiv = document.getElementById('profileInfo');
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
+    // Toggle side menu open/close
     function toggleMenu() {
-      const isActive = sideMenu.classList.toggle('active');
-      menuToggle.setAttribute('aria-expanded', isActive);
+      sideMenu.classList.toggle('active');
     }
-
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileDropdown.setAttribute('aria-hidden', !isActive);
-      profileIcon.setAttribute('aria-expanded', isActive);
-    }
-
     menuToggle.addEventListener('click', toggleMenu);
     menuToggle.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -208,7 +273,17 @@
         toggleMenu();
       }
     });
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+      }
+    });
 
+    // Toggle profile dropdown open/close
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileIcon.setAttribute('aria-expanded', isActive);
+    }
     profileIcon.addEventListener('click', toggleProfileDropdown);
     profileIcon.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -216,46 +291,52 @@
         toggleProfileDropdown();
       }
     });
-
     window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', false);
-      }
       if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
         profileDropdown.classList.remove('active');
-        profileDropdown.setAttribute('aria-hidden', true);
         profileIcon.setAttribute('aria-expanded', false);
       }
     });
 
+    // Fetch user profile info from backend (/profile)
     async function loadUserInfo() {
-      const csrfToken = getCookie('csrf_token');
       try {
         const response = await fetch('/profile', {
-          credentials: 'include',
+          credentials: 'include', // important to send cookies for JWT auth
           headers: {
-            'Accept': 'application/json',
-            'X-CSRF-Token': csrfToken
+            'Accept': 'application/json'
           }
         });
-        if (!response.ok) throw new Error('Unauthorized');
+
+        if (!response.ok) throw new Error('Failed to fetch user info');
+
         const data = await response.json();
+
+        // Provide fallback values if any are missing
+        const username = data.username || 'User';
+        const balance = (data.balance ?? 0).toFixed(2);
+        const spent = (data.spent ?? 0).toFixed(2);
+        const joinDate = data.joinDate || 'Unknown';
+        const orders = data.orders ?? 0;
+
         profileInfoDiv.innerHTML = `
-          <strong>${data.username || 'User'}</strong><br>
-          Balance: $${(data.balance ?? 0).toFixed(2)}<br>
-          Spent: $${(data.spent ?? 0).toFixed(2)}<br>
-          Joined: ${data.joinDate || 'Unknown'}<br>
-          Orders: ${data.orders ?? 0}
+          <strong>${username}</strong><br>
+          Balance: $${balance}<br>
+          Spent: $${spent}<br>
+          Joined: ${joinDate}<br>
+          Orders: ${orders}
         `;
-      } catch {
+      } catch (err) {
+        console.warn('Could not load user info:', err);
         profileInfoDiv.textContent = 'Not logged in';
-        window.location.href = '/login';
+        // Redirect to login if unauthorized
+        if (err.message.includes('Failed')) {
+          window.location.href = '/login';
+        }
       }
     }
 
     loadUserInfo();
   </script>
-
 </body>
 </html>

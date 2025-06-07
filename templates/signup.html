@@ -44,7 +44,7 @@
       50% { transform: translateY(-12px); }
     }
 
-    .signup-container {
+    .login-container {
       margin: 120px auto;
       width: 320px;
       padding: 30px;
@@ -102,20 +102,20 @@
       text-align: center;
     }
 
-    p.login-link {
+    p.signup-link {
       text-align: center;
       margin-top: 20px;
       font-size: 1rem;
     }
 
-    p.login-link a {
+    p.signup-link a {
       color: #0077cc;
       text-decoration: none;
       font-weight: 600;
       transition: color 0.3s ease;
     }
 
-    p.login-link a:hover {
+    p.signup-link a:hover {
       text-decoration: underline;
       color: #004999;
     }
@@ -145,24 +145,22 @@
   </audio>
   <button id="music-toggle">🔊 Music</button>
 
-  <div class="signup-container">
-    <h2>🏝️ Join Paradise</h2>
-    <form id="signupForm">
+  <div class="login-container">
+    <h2>🌴 Join Paradise Today</h2>
+    <form id="signupForm" onsubmit="event.preventDefault(); signup();">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
-      <input type="email" id="email" name="email" placeholder="Email" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
       <button type="submit">Sign Up</button>
     </form>
 
     <p id="message"></p>
-    <p class="login-link">Already have an account? <a href="/login">Log in</a></p>
+    <p class="signup-link">Already have an account? <a href="/login">Login</a></p>
   </div>
 
   <script>
     const message = document.getElementById('message');
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
-    const signupForm = document.getElementById('signupForm');
 
     bgMusic.volume = 0.15;
 
@@ -177,17 +175,14 @@
       if (parts.length === 2) return parts.pop().split(';').shift();
     }
 
-    async function signup(event) {
-      event.preventDefault();
+    async function signup() {
       clearMessage();
 
       const username = document.getElementById('username').value.trim();
-      const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
-      const csrfToken = getCookie('csrf_token');
 
-      if (!username || !email || !password) {
-        message.textContent = 'Please fill out all fields.';
+      if (!username || !password) {
+        message.textContent = 'Please fill out all fields';
         return;
       }
 
@@ -196,27 +191,33 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken
+            'X-CSRF-Token': getCookie('csrf_token'),
           },
-          body: JSON.stringify({ username, email, password }),
+          body: JSON.stringify({ username, password }),
           credentials: 'include'
         });
 
         const data = await response.json();
 
         if (!response.ok) {
-          message.textContent = data.message || 'Signup failed';
+          message.textContent = data.error || 'Signup failed';
           return;
         }
 
-        window.location.href = '/login';
+        message.style.color = 'green';
+        message.textContent = 'Signup successful! Redirecting to login...';
+        setTimeout(() => {
+          window.location.replace('/login');
+        }, 1800);
       } catch (error) {
         message.textContent = 'Error connecting to server';
         console.error('Signup error:', error);
       }
     }
 
-    signupForm.addEventListener('submit', signup);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter') signup();
+    });
 
     musicToggle.addEventListener('click', () => {
       if (bgMusic.paused) {

@@ -1,76 +1,99 @@
-from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response, session
+from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_cors import CORS
 import os
+import jwt
+import datetime
 import functools
-import json
-from datetime import datetime
+import secrets
 
 app = Flask(__name__)
 
-# Enable CORS, allow your frontend origin, support cookies (credentials)
-CORS(app, supports_credentials=True, origins=["http://localhost:5000"])
-
 # Configuration
-app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', '6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ')
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SESSION_COOKIE_HTTPONLY'] = True
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = False  # Set True in production (https)
 
 db = SQLAlchemy(app)
 
-# User model
+# User model without email
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
 
-    balance = db.Column(db.Float, default=100.0)  # default balance for demo
-    total_spent = db.Column(db.Float, default=0.0)
-    join_date = db.Column(db.String(20), default=datetime.utcnow().strftime('%Y-%m-%d'))
-    order_count = db.Column(db.Integer, default=0)
-
-    cart_json = db.Column(db.Text, default='[]')  # JSON string for cart items [{id, name, price, quantity}]
-    orders_json = db.Column(db.Text, default='[]')  # JSON string for past orders
-
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
-    def get_cart(self):
-        try:
-            return json.loads(self.cart_json)
-        except Exception:
-            return []
+    def generate_jwt(self):
+        payload = {
+            'user_id': self.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        # PyJWT >= 2.0 returns str; older versions return bytes
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+        return token
 
-    def set_cart(self, cart):
-        self.cart_json = json.dumps(cart)
+# CSRF protection helpers
+def generate_csrf_token():
+    return secrets.token_urlsafe(32)
 
-    def get_orders(self):
-        try:
-            return json.loads(self.orders_json)
-        except Exception:
-            return []
+def verify_csrf():
+    csrf_cookie = request.cookies.get('csrf_token')
+    csrf_header = request.headers.get('X-CSRF-Token')
+    return csrf_cookie and csrf_header and csrf_cookie == csrf_header
 
-    def set_orders(self, orders):
-        self.orders_json = json.dumps(orders)
-
-
-# Login required decorator for web routes
-def login_required(f):
+def csrf_protect(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
-        user_id = session.get('user_id')
-        if not user_id:
-            return redirect('/login')
-        user = User.query.get(user_id)
-        if not user:
-            return redirect('/login')
-        return f(user, *args, **kwargs)
+        if request.method == "POST":
+            if not verify_csrf():
+                return jsonify({'error': 'CSRF token missing or invalid'}), 403
+        return f(*args, **kwargs)
     return decorated
 
+# Decorator for API routes that require JWT (return JSON error)
+def token_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        if not token:
+            token = request.cookies.get('jwt')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+# Decorator for web routes that require login with redirect
+def login_required_redirect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+        if not token:
+            return redirect('/login')
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return redirect('/login')
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return redirect('/login')
+        return f(current_user, *args, **kwargs)
+    return decorated
 
 # Routes
 
@@ -80,13 +103,21 @@ def root():
 
 @app.route('/login', methods=['GET'])
 def login_page():
-    return render_template('login.html')
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('login.html'))
+    # Set cookie for CSRF token accessible by JS (not HttpOnly)
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
 
 @app.route('/signup', methods=['GET'])
 def signup_page():
-    return render_template('signup.html')
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('signup.html'))
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
 
 @app.route('/login', methods=['POST'])
+@csrf_protect
 def login():
     data = request.get_json()
     username = data.get('username', '').strip()
@@ -99,10 +130,13 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({'error': 'Invalid username or password'}), 401
 
-    session['user_id'] = user.id
-    return jsonify({'message': 'Login successful'})
+    token = user.generate_jwt()
+    resp = jsonify({'message': 'Login successful'})
+    resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
+    return resp
 
 @app.route('/signup', methods=['POST'])
+@csrf_protect
 def signup():
     data = request.get_json()
     username = data.get('username', '').strip()
@@ -122,128 +156,20 @@ def signup():
     return jsonify({'message': 'User created successfully'})
 
 @app.route('/profile')
-@login_required
+@token_required
 def profile(current_user):
     return jsonify({'username': current_user.username})
 
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/login')
-
-
-# Protected pages
-
 @app.route('/index')
-@login_required
+@login_required_redirect
 def index_page(current_user):
     return render_template('index.html', username=current_user.username)
 
-@app.route('/home')
-@login_required
-def home_page(current_user):
-    return render_template('index.html', username=current_user.username)
-
-@app.route('/balance')
-@login_required
-def balance_page(current_user):
-    return render_template('balance.html', username=current_user.username)
-
-@app.route('/marketplace')
-@login_required
-def marketplace_page(current_user):
-    return render_template('marketplace.html', username=current_user.username)
-
-@app.route('/cart')
-@login_required
-def cart_page(current_user):
-    return render_template('cart.html', username=current_user.username)
-
-@app.route('/checkout')
-@login_required
-def checkout_page(current_user):
-    return render_template('checkout.html', username=current_user.username)
-
-@app.route('/orders')
-@login_required
-def orders_page(current_user):
-    return render_template('orders.html', username=current_user.username)
-
-
-# API endpoints
-
-@app.route('/api/session')
-def api_session():
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'Unauthorized'}), 401
-    return jsonify({'user': {'id': user.id, 'username': user.username}})
-
-@app.route('/api/user/profile')
-@login_required
-def api_user_profile(current_user):
-    return jsonify({
-        'username': current_user.username,
-        'balance': current_user.balance,
-        'totalSpent': current_user.total_spent,
-        'joinDate': current_user.join_date,
-        'orderCount': current_user.order_count
-    })
-
-@app.route('/api/userdata')
-@login_required
-def api_userdata(current_user):
-    cart = current_user.get_cart()
-    return jsonify({'cart': cart})
-
-@app.route('/api/cart/item/<int:item_id>', methods=['DELETE'])
-@login_required
-def api_delete_cart_item(current_user, item_id):
-    cart = current_user.get_cart()
-    new_cart = [item for item in cart if item.get('id') != item_id]
-    if len(cart) == len(new_cart):
-        return jsonify({'error': 'Item not found in cart'}), 404
-    current_user.set_cart(new_cart)
-    db.session.commit()
-    return jsonify({'message': 'Item removed from cart'})
-
-@app.route('/api/checkout', methods=['POST'])
-@login_required
-def api_checkout(current_user):
-    cart = current_user.get_cart()
-    if not cart:
-        return jsonify({'error': 'Cart is empty'}), 400
-
-    total_cost = sum(item['price'] * item['quantity'] for item in cart)
-    if current_user.balance < total_cost:
-        return jsonify({'error': 'Insufficient balance'}), 400
-
-    # Deduct balance
-    current_user.balance -= total_cost
-    current_user.total_spent += total_cost
-    current_user.order_count += 1
-
-    # Add order to orders_json
-    orders = current_user.get_orders()
-    new_order = {
-        'order_id': current_user.order_count,
-        'items': cart,
-        'total': total_cost,
-        'date': datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-    }
-    orders.append(new_order)
-    current_user.set_orders(orders)
-
-    # Clear cart
-    current_user.set_cart([])
-
-    db.session.commit()
-
-    return jsonify({'message': 'Order placed', 'balance': current_user.balance})
-
+@app.route('/logout')
+def logout():
+    resp = redirect('/login')
+    resp.delete_cookie('jwt')
+    return resp
 
 if __name__ == '__main__':
     with app.app_context():

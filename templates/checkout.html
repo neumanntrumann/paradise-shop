@@ -43,7 +43,7 @@
       👤
     </div>
     <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo" aria-live="polite" aria-atomic="true">Loading...</div>
+      <div id="profileInfo" aria-live="polite" aria-atomic="true"></div>
       <a href="/balance" role="menuitem" tabindex="-1">Load Funds</a>
       <a href="/" role="menuitem" tabindex="-1">Shop</a>
       <a href="/cart" role="menuitem" tabindex="-1">Cart</a>
@@ -66,125 +66,23 @@
   </main>
 
   <script>
-    // Check for JWT token in localStorage
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in first.');
+    const email = sessionStorage.getItem('loggedInUser');
+    if (!email) {
+      alert('Please log in to view your cart.');
       window.location.href = '/login';
     }
 
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-    const checkoutButton = document.getElementById('checkoutButton');
     const cartContainer = document.getElementById('cart-items');
     const orderTotalDiv = document.getElementById('orderTotal');
+    const checkoutButton = document.getElementById('checkoutButton');
 
-    // Hamburger menu toggle
-    function toggleMenu() {
-      const isActive = sideMenu.style.display === 'block';
-      sideMenu.style.display = isActive ? 'none' : 'block';
-      menuToggle.setAttribute('aria-expanded', !isActive);
-    }
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.style.display = 'none';
-        menuToggle.setAttribute('aria-expanded', false);
-      }
-    });
-
-    // Profile dropdown toggle
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
-    }
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', false);
-      }
-    });
-
-    // Fetch user profile data from backend
-    async function loadProfile() {
-      try {
-        const res = await fetch('/api/profile', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (res.status === 401) {
-          alert('Session expired or unauthorized. Please log in again.');
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-          return;
-        }
-        const data = await res.json();
-
-        // Calculate total spent from orders
-        let totalSpent = 0;
-        if (data.orders && Array.isArray(data.orders)) {
-          data.orders.forEach(order => {
-            order.forEach(item => {
-              const priceNum = parseFloat(item.price.replace('$', '')) || 0;
-              totalSpent += priceNum;
-            });
-          });
-        }
-
-        profileInfoDiv.innerHTML = `
-          <strong>${data.username}</strong><br>
-          Balance: $${data.balance.toFixed(2)}<br>
-          Spent: $${totalSpent.toFixed(2)}<br>
-          Total: $${(data.balance + totalSpent).toFixed(2)}<br>
-          Joined: ${data.joinDate || 'Unknown'}<br>
-          Orders: ${data.orders ? data.orders.length : 0}
-        `;
-
-        // Now fetch the cart using username/email from profile
-        fetchCart(data.username);
-
-      } catch (error) {
-        console.error('Error loading profile:', error);
-        profileInfoDiv.textContent = 'Failed to load profile data';
-      }
+    async function fetchCart() {
+      const res = await fetch(`/api/cart/${email}`);
+      if (!res.ok) return;
+      const cart = await res.json();
+      renderCart(cart);
     }
 
-    // Fetch cart for current user
-    async function fetchCart(username) {
-      try {
-        const res = await fetch(`/api/cart/${username}`, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (res.status === 401) {
-          alert('Unauthorized access. Please log in again.');
-          localStorage.removeItem('token');
-          window.location.href = '/login';
-          return;
-        }
-        if (!res.ok) return;
-        const cart = await res.json();
-        renderCart(cart);
-      } catch (error) {
-        console.error('Error fetching cart:', error);
-      }
-    }
-
-    // Render cart items
     function renderCart(cart) {
       cartContainer.innerHTML = '';
       let total = 0;
@@ -221,31 +119,19 @@
       });
     }
 
-    // Remove item from cart
     async function removeFromCart(index) {
-      try {
-        const res = await fetch(`/api/cart/${profileInfoDiv.querySelector('strong').textContent}`, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-          },
-          body: JSON.stringify({ removeIndex: index }),
-        });
-        if (res.ok) fetchCart(profileInfoDiv.querySelector('strong').textContent);
-      } catch (error) {
-        console.error('Error removing item:', error);
-      }
+      const res = await fetch(`/api/cart/${email}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ removeIndex: index }),
+      });
+      if (res.ok) fetchCart();
     }
 
-    // Place order
+    // Your new checkout API call logic here:
     async function placeOrder() {
       try {
-        const username = profileInfoDiv.querySelector('strong').textContent;
-        const response = await fetch(`/api/checkout/${username}`, { 
-          method: 'POST',
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
+        const response = await fetch(`/api/checkout/${email}`, { method: 'POST' });
         const data = await response.json();
 
         if (response.ok) {
@@ -262,7 +148,17 @@
 
     checkoutButton.addEventListener('click', placeOrder);
 
-    loadProfile();
+    // Hamburger menu toggle
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    menuToggle.addEventListener('click', () => {
+      const expanded = menuToggle.getAttribute('aria-expanded') === 'true';
+      menuToggle.setAttribute('aria-expanded', !expanded);
+      sideMenu.style.display = expanded ? 'none' : 'block';
+    });
+
+    fetchCart();
   </script>
 </body>
 </html>
