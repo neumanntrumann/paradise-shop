@@ -1,7 +1,7 @@
-from flask import Flask, request, jsonify, session, redirect
+from flask import Flask, request, jsonify, session, redirect, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFProtect, generate_csrf  # <-- Added generate_csrf import
 from functools import wraps
 import os
 import requests
@@ -54,7 +54,7 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
-# --- Routes ---
+# --- API Routes ---
 @app.route('/api/signup', methods=['POST'])
 @csrf.exempt
 def signup():
@@ -178,7 +178,7 @@ def deposit():
 # --- CSRF Token Fetch Route ---
 @app.route('/api/csrf-token', methods=['GET'])
 def get_csrf_token():
-    token = csrf.generate_csrf()
+    token = generate_csrf()  # <-- Use imported generate_csrf function here
     return jsonify({'csrf_token': token})
 
 # --- Manual DB Initialization Route ---
@@ -193,6 +193,27 @@ def init_db():
         ])
         db.session.commit()
     return "Database initialized!"
+
+# --- Frontend Routes ---
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
+
+@app.route('/signup')
+def signup_page():
+    return render_template('signup.html')
+
+@app.route('/')
+def home_page():
+    return render_template('index.html')
+
+@app.route('/balance')
+def balance_page():
+    return render_template('balance.html')
+
+@app.route('/marketplace')
+def marketplace_page():
+    return render_template('marketplace.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

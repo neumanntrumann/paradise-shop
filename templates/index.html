@@ -1,16 +1,79 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Paradise Shop</title>
-<style>body {margin:0;font-family:'Segoe UI';background:#d2f7e3 url('https://i.imgur.com/dR0N7qq.jpg') no-repeat center center fixed;background-size:cover;text-align:center}header{padding:2rem;background:rgba(255,255,255,0.9);font-size:2rem}nav a{margin:1rem;color:#333;text-decoration:none}</style></head>
-<body><header>🏝️ Paradise Shop</header>
-<nav>
-  <a href="marketplace.html">Marketplace</a>
-  <a href="cart.html">Cart</a>
-  <a href="orders.html">Orders</a>
-  <a href="balance.html">Balance</a>
-  <a href="#" onclick="logout()">Logout</a>
-</nav>
-<script>async function logout(){const r=await fetch('/api/logout',{method:'POST',credentials:'include'});location.href='login.html';}</script>
-</body></html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Welcome to My Shop</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #d0f0e8;
+      color: #064635;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+    #user-info {
+      font-size: 1.2rem;
+      margin-top: 1rem;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      background: #3a9d4e;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #2d7a3a;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to my shop</h1>
+  <div id="user-info">Loading user info...</div>
+  <button id="logoutBtn">Logout</button>
+
+  <script>
+    async function fetchUserInfo() {
+      try {
+        const res = await fetch('/api/user-info', {
+          credentials: 'include'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('user-info').textContent =
+            `Logged in as: ${data.username} | Balance: $${data.balance.toFixed(2)}`;
+        } else {
+          // Not logged in or error: redirect to login page
+          window.location.href = '/login';
+        }
+      } catch (err) {
+        console.error('Failed to fetch user info:', err);
+        window.location.href = '/login';
+      }
+    }
+
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await fetch('/api/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      window.location.href = '/login';
+    });
+
+    fetchUserInfo();
+  </script>
+</body>
+</html>
