@@ -1,61 +1,16 @@
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login - Paradise Shop</title>
-  
+  <title>Login</title>
 </head>
 <body>
-
-  <!-- Floating emojis -->
-  <div class="floating" style="top: 100px; left: 20px;">🌺</div>
-  <div class="floating" style="top: 250px; right: 30px;">🌊</div>
-  <div class="floating" style="top: 400px; left: 50%;">🌴</div>
-
-  <!-- Hamburger Menu -->
-  <div id="menuToggle">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
-
-  <!-- Side Menu -->
-  <nav id="sideMenu">
-    <a href="/index">Home</a>
-    <a href="/balance">Balance</a>
-    <a href="/marketplace">Market</a>
-    <a href="/cart">Cart</a>
-    <a href="/orders">Orders</a>
-    <a href="/logout">Logout</a>
-  </nav>
-
-  <!-- Login Box -->
-  <div class="fade-slide" style="max-width: 400px; margin: 100px auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);">
-    <h2 style="text-align:center; color:#00796b;">Login to Paradise Shop</h2>
-    <form method="POST" action="/login" style="display:flex; flex-direction:column; gap:15px; margin-top:20px;">
-      <input type="text" name="username" placeholder="Username" required style="padding:10px; border-radius:6px; border:1px solid #ccc;">
-      <input type="password" name="password" placeholder="Password" required style="padding:10px; border-radius:6px; border:1px solid #ccc;">
-      <button type="submit">Login</button>
-    </form>
-    <p style="text-align:center; margin-top:10px;">Don't have an account? <a href="/signup">Sign up</a></p>
-  </div>
-
-  <script>
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-
-    menuToggle.addEventListener('click', () => {
-      sideMenu.classList.toggle('active');
-    });
-
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-      }
-    });
-  </script>
-
+  <h2>Login</h2>
+  <form id="loginForm">
+    <input id="username" name="username" placeholder="Username" required><br>
+    <input id="password" name="password" type="password" placeholder="Password" required><br>
+    <button type="submit">Login</button>
+  </form>
+  <script src="/static/js/login.js"></script>
 </body>
 </html>

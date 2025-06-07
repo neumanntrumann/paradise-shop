@@ -52,8 +52,10 @@ def token_required(f):
         return f(current_user, *args, **kwargs)
     return decorated
 
-@app.route('/signup', methods=['POST'])
+@app.route('/signup', methods=['GET', 'POST'])
 def signup():
+    if request.method == 'GET':
+        return send_from_directory('templates', 'signup.html')
     data = request.json
     if User.query.filter_by(username=data['username']).first():
         return jsonify({'message': 'Username already exists'}), 400
@@ -63,8 +65,10 @@ def signup():
     db.session.commit()
     return jsonify({'message': 'Signup successful'}), 201
 
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'GET':
+        return send_from_directory('templates', 'login.html')
     data = request.json
     user = User.query.filter_by(username=data['username']).first()
     if not user or not user.verify_password(data['password']):
