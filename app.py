@@ -1,219 +1,178 @@
-from flask import Flask, request, jsonify, session, redirect, render_template
+from flask import Flask, render_template, request, jsonify, redirect, url_for, make_response
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-from flask_wtf.csrf import CSRFProtect, generate_csrf  # <-- Added generate_csrf import
-from functools import wraps
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
-import requests
+import jwt
+import datetime
+import functools
+import secrets
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key'  # change this to secure random value
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
+
+# Configuration
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'your-secret-key')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///paradise_shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['WTF_CSRF_CHECK_DEFAULT'] = False  # We'll manually check CSRF for API
 
 db = SQLAlchemy(app)
-CORS(app, supports_credentials=True, origins=["http://localhost:5000"])
-csrf = CSRFProtect(app)
 
-# --- Models ---
+# User model without email
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
-    password = db.Column(db.String(80), nullable=False)
-    balance = db.Column(db.Float, default=100.0)  # <-- Added balance column
+    password_hash = db.Column(db.String(128), nullable=False)
 
-    cart_items = db.relationship('CartItem', backref='user', lazy=True)
-    orders = db.relationship('Order', backref='user', lazy=True)
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
+    def generate_jwt(self):
+        payload = {
+            'user_id': self.id,
+            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
+        }
+        token = jwt.encode(payload, app.config['SECRET_KEY'], algorithm='HS256')
+        # PyJWT >= 2.0 returns str; older versions return bytes
+        if isinstance(token, bytes):
+            token = token.decode('utf-8')
+        return token
 
-class Product(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80), nullable=False)
-    price = db.Column(db.Float, nullable=False)
+# CSRF protection helpers
+def generate_csrf_token():
+    return secrets.token_urlsafe(32)
 
+def verify_csrf():
+    csrf_cookie = request.cookies.get('csrf_token')
+    csrf_header = request.headers.get('X-CSRF-Token')
+    return csrf_cookie and csrf_header and csrf_cookie == csrf_header
 
-class CartItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
-    product = db.relationship('Product')
-
-
-class Order(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    items = db.Column(db.Text, nullable=False)  # comma-separated product names
-
-# --- Helpers ---
-def login_required(f):
-    @wraps(f)
+def csrf_protect(f):
+    @functools.wraps(f)
     def decorated(*args, **kwargs):
-        if 'user_id' not in session:
-            return jsonify({"error": "Unauthorized"}), 401
+        if request.method == "POST":
+            if not verify_csrf():
+                return jsonify({'error': 'CSRF token missing or invalid'}), 403
         return f(*args, **kwargs)
     return decorated
 
-# --- API Routes ---
-@app.route('/api/signup', methods=['POST'])
-@csrf.exempt
-def signup():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
+# Decorator for API routes that require JWT (return JSON error)
+def token_required(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+        auth_header = request.headers.get('Authorization')
+        if auth_header and auth_header.startswith('Bearer '):
+            token = auth_header[7:]
+        if not token:
+            token = request.cookies.get('jwt')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return jsonify({'error': 'User not found'}), 401
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token expired'}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({'error': 'Invalid token'}), 401
+        return f(current_user, *args, **kwargs)
+    return decorated
 
-    if User.query.filter_by(username=username).first():
-        return jsonify({'error': 'Username already exists'}), 400
+# Decorator for web routes that require login with redirect
+def login_required_redirect(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.cookies.get('jwt')
+        if not token:
+            return redirect('/login')
+        try:
+            payload = jwt.decode(token, app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(payload['user_id'])
+            if not current_user:
+                return redirect('/login')
+        except (jwt.ExpiredSignatureError, jwt.InvalidTokenError):
+            return redirect('/login')
+        return f(current_user, *args, **kwargs)
+    return decorated
 
-    new_user = User(username=username, password=password)
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'User created'}), 201
-
-@app.route('/api/login', methods=['POST'])
-@csrf.exempt
-def login():
-    data = request.json
-    user = User.query.filter_by(username=data.get('username')).first()
-    if not user or user.password != data.get('password'):
-        return jsonify({'error': 'Invalid credentials'}), 401
-
-    session['user_id'] = user.id
-    session['username'] = user.username
-    return jsonify({'message': 'Logged in'})
-
-@app.route('/api/logout', methods=['POST'])
-@login_required
-def logout():
-    session.clear()
-    return jsonify({'message': 'Logged out'})
-
-@app.route('/api/products', methods=['GET'])
-@login_required
-def get_products():
-    products = Product.query.all()
-    return jsonify([{'id': p.id, 'name': p.name, 'price': p.price} for p in products])
-
-@app.route('/api/cart', methods=['GET', 'POST', 'DELETE'])
-@login_required
-@csrf.exempt
-def cart():
-    user = User.query.get(session['user_id'])
-
-    if request.method == 'GET':
-        items = CartItem.query.filter_by(user_id=user.id).all()
-        return jsonify([{'id': item.product.id, 'name': item.product.name, 'price': item.product.price} for item in items])
-
-    elif request.method == 'POST':
-        product_id = request.json.get('product_id')
-        product = Product.query.get(product_id)
-        if not product:
-            return jsonify({'error': 'Product not found'}), 404
-
-        item = CartItem(user_id=user.id, product_id=product.id)
-        db.session.add(item)
-        db.session.commit()
-        return jsonify({'message': 'Added to cart'})
-
-    elif request.method == 'DELETE':
-        CartItem.query.filter_by(user_id=user.id).delete()
-        db.session.commit()
-        return jsonify({'message': 'Cart cleared'})
-
-@app.route('/api/orders', methods=['GET', 'POST'])
-@login_required
-@csrf.exempt
-def orders():
-    user = User.query.get(session['user_id'])
-
-    if request.method == 'GET':
-        return jsonify([
-            {'id': o.id, 'items': o.items.split(',')}
-            for o in Order.query.filter_by(user_id=user.id).all()
-        ])
-
-    elif request.method == 'POST':
-        cart_items = CartItem.query.filter_by(user_id=user.id).all()
-        if not cart_items:
-            return jsonify({'error': 'Cart is empty'}), 400
-
-        product_names = [item.product.name for item in cart_items]
-        order = Order(user_id=user.id, items=",".join(product_names))
-        db.session.add(order)
-        CartItem.query.filter_by(user_id=user.id).delete()
-        db.session.commit()
-        return jsonify({'message': 'Order placed', 'order': {'id': order.id, 'items': product_names}})
-
-@app.route('/api/user-info', methods=['GET'])
-@login_required
-def user_info():
-    user = User.query.get(session['user_id'])
-    return jsonify({'username': user.username, 'balance': user.balance})
-
-# --- Deposit route ---
-BLOCKCYPHER_TOKEN = "dbd5a9f9a6b5403a8c0171bd25b5e883"
-BLOCKCYPHER_API_URL = "https://api.blockcypher.com/v1/btc/test3"
-
-@app.route('/api/deposit', methods=['POST'])
-@login_required
-@csrf.exempt
-def deposit():
-    user = User.query.get(session['user_id'])
-    data = request.json
-    amount = data.get('amount')
-
-    try:
-        amount = float(amount)
-        if amount <= 0:
-            return jsonify({'error': 'Deposit amount must be positive'}), 400
-    except (TypeError, ValueError):
-        return jsonify({'error': 'Invalid amount'}), 400
-
-    # Simulate deposit verification with BlockCypher API here if needed
-
-    user.balance += amount
-    db.session.commit()
-    return jsonify({'message': f'Deposited ${amount:.2f}', 'new_balance': user.balance})
-
-# --- CSRF Token Fetch Route ---
-@app.route('/api/csrf-token', methods=['GET'])
-def get_csrf_token():
-    token = generate_csrf()  # <-- Use imported generate_csrf function here
-    return jsonify({'csrf_token': token})
-
-# --- Manual DB Initialization Route ---
-@app.route('/init_db')
-def init_db():
-    db.create_all()
-    if not Product.query.first():
-        db.session.add_all([
-            Product(name='Apple', price=1.0),
-            Product(name='Banana', price=0.5),
-            Product(name='Orange', price=0.75)
-        ])
-        db.session.commit()
-    return "Database initialized!"
-
-# --- Frontend Routes ---
-@app.route('/login')
-def login_page():
-    return render_template('login.html')
-
-@app.route('/signup')
-def signup_page():
-    return render_template('signup.html')
+# Routes
 
 @app.route('/')
-def home_page():
-    return render_template('index.html')
+def root():
+    return redirect('/login')
 
-@app.route('/balance')
-def balance_page():
-    return render_template('balance.html')
+@app.route('/login', methods=['GET'])
+def login_page():
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('login.html'))
+    # Set cookie for CSRF token accessible by JS (not HttpOnly)
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
 
-@app.route('/marketplace')
-def marketplace_page():
-    return render_template('marketplace.html')
+@app.route('/signup', methods=['GET'])
+def signup_page():
+    csrf_token = generate_csrf_token()
+    resp = make_response(render_template('signup.html'))
+    resp.set_cookie('csrf_token', csrf_token, httponly=False, samesite='Lax')
+    return resp
+
+@app.route('/login', methods=['POST'])
+@csrf_protect
+def login():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid username or password'}), 401
+
+    token = user.generate_jwt()
+    resp = jsonify({'message': 'Login successful'})
+    resp.set_cookie('jwt', token, httponly=True, samesite='Lax')
+    return resp
+
+@app.route('/signup', methods=['POST'])
+@csrf_protect
+def signup():
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already taken'}), 409
+
+    hashed_pw = generate_password_hash(password)
+    new_user = User(username=username, password_hash=hashed_pw)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({'message': 'User created successfully'})
+
+@app.route('/profile')
+@token_required
+def profile(current_user):
+    return jsonify({'username': current_user.username})
+
+@app.route('/index')
+@login_required_redirect
+def index_page(current_user):
+    return render_template('index.html', username=current_user.username)
+
+@app.route('/logout')
+def logout():
+    resp = redirect('/login')
+    resp.delete_cookie('jwt')
+    return resp
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    with app.app_context():
+        db.create_all()
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=True)

@@ -3,77 +3,340 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Welcome to My Shop</title>
+  <title>PARADISE SHOP - Home</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #d0f0e8;
-      color: #064635;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 20px;
+      margin: 0;
+      overflow-x: hidden;
+      background: linear-gradient(-45deg, #f0f8ff, #e0f7fa, #f0f8ff, #e0f7fa);
+      background-size: 400% 400%;
+      animation: ocean 20s ease infinite;
+      color: #333;
+      position: relative;
+      min-height: 100vh;
+    }
+    @keyframes ocean {
+      0% {background-position: 0% 50%;}
+      50% {background-position: 100% 50%;}
+      100% {background-position: 0% 50%;}
+    }
+    .fade-slide {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeSlideIn 1s ease-out forwards;
+    }
+    @keyframes fadeSlideIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .wave-emoji {
+      display: inline-block;
+      animation: wave 2.5s infinite ease-in-out;
+    }
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(10deg); }
+      75% { transform: rotate(-10deg); }
+    }
+    .floating {
+      position: absolute;
+      animation: float 10s infinite ease-in-out;
+      pointer-events: none;
+      opacity: 0.3;
+      font-size: 20px;
+      user-select: none;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) translateX(0); }
+      50% { transform: translateY(-20px) translateX(10px); }
+      100% { transform: translateY(0) translateX(0); }
+    }
+    #menuToggle {
+      position: fixed;
+      top: 15px;
+      left: 15px;
+      width: 35px;
+      height: 30px;
+      cursor: pointer;
+      z-index: 1100;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block;
+      height: 4px;
+      background: #333;
+      border-radius: 2px;
+    }
+    #sideMenu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 23vw;
+      max-width: 300px;
       height: 100vh;
-      margin: 0;
-      text-align: center;
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050;
+      padding-top: 60px;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
+    #sideMenu.active {
+      transform: translateX(0);
     }
-    #user-info {
-      font-size: 1.2rem;
-      margin-top: 1rem;
+    #sideMenu a {
+      display: block;
+      padding: 15px 25px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
     }
-    button {
-      margin-top: 2rem;
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      background: #3a9d4e;
+    #sideMenu a:hover,
+    #sideMenu a:focus {
+      background-color: #f0f0f0;
+      outline: none;
+    }
+    #profileDropdownContainer {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px;
+      height: 40px;
+      background-color: #00796b;
       color: white;
-      border: none;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      font-weight: bold;
+      font-size: 20px;
+      outline: none;
+    }
+    #profileIcon:focus {
+      box-shadow: 0 0 0 3px #004d40aa;
+    }
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: white;
+      border: 1px solid #ccc;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      width: 220px;
       border-radius: 5px;
+      font-size: 14px;
+      z-index: 1150;
+    }
+    #profileDropdown.active {
+      display: block;
+    }
+    #profileDropdown div, #profileDropdown a {
+      padding: 10px 15px;
+      border-bottom: 1px solid #eee;
+      display: block;
+      text-decoration: none;
+      color: #333;
       cursor: pointer;
     }
-    button:hover {
-      background: #2d7a3a;
+    #profileDropdown div {
+      user-select: none;
+    }
+    #profileDropdown a:hover,
+    #profileDropdown a:focus {
+      background-color: #f0f0f0;
+      outline: none;
+    }
+    h1 {
+      margin-top: 80px;
+      text-align: center;
+      font-size: 2.4em;
+      color: #00796b;
+      user-select: none;
+    }
+    button {
+      padding: 8px 16px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background-color 0.2s ease, transform 0.15s ease;
+    }
+    button:hover,
+    button:focus {
+      background-color: #004d40;
+      outline: none;
+    }
+    button:active {
+      transform: scale(0.97);
+    }
+    a {
+      color: #00796b;
+      font-weight: bold;
+      transition: text-shadow 0.2s;
+    }
+    a:hover,
+    a:focus {
+      text-shadow: 0 0 6px rgba(0, 137, 123, 0.5);
+      outline: none;
     }
   </style>
 </head>
 <body>
-  <h1>Welcome to my shop</h1>
-  <div id="user-info">Loading user info...</div>
-  <button id="logoutBtn">Logout</button>
+
+  <!-- Floating emojis for vibe -->
+  <div class="floating" style="top: 100px; left: 20px;">🌺</div>
+  <div class="floating" style="top: 250px; right: 30px;">🌊</div>
+  <div class="floating" style="top: 400px; left: 50%;">🌴</div>
+
+  <!-- Hamburger menu toggle -->
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+
+  <!-- Side navigation menu -->
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="/index" tabindex="0">Home</a>
+    <a href="/balance" tabindex="0">Balance</a>
+    <a href="/marketplace" tabindex="0">Market</a>
+    <a href="/cart" tabindex="0">Cart</a>
+    <a href="/orders" tabindex="0">Orders</a>
+    <a href="/more" tabindex="0">More</a>
+    <a href="/logout" tabindex="0">Logout</a>
+  </nav>
+
+  <!-- Profile dropdown -->
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
+    <div id="profileDropdown" role="menu" aria-label="User profile menu">
+      <div id="profileInfo">Loading...</div>
+      <a href="/balance" role="menuitem" tabindex="0">Load Funds</a>
+      <a href="/index" role="menuitem" tabindex="0">Shop</a>
+      <a href="/cart" role="menuitem" tabindex="0">Cart</a>
+      <a href="/orders" role="menuitem" tabindex="0">Orders</a>
+      <a href="/logout" role="menuitem" tabindex="0">Logout</a>
+    </div>
+  </div>
+
+  <h1 class="fade-slide">🌴 <span class="wave-emoji">WELCOME TO PARADISE SHOP</span> 🌴</h1>
+
+  <div class="fade-slide" style="max-width: 700px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); line-height: 1.6;">
+    <p>Thank you for stopping by! You’re now part of an exclusive community focused on premium products, reliable service, and a smooth shopping experience.</p>
+
+    <h3>🛍️ New Products Dropping Soon</h3>
+    <p>Fresh inventory, rare finds, and exciting updates — check back often!</p>
+
+    <h3>💬 Need Help?</h3>
+    <p>→ Telegram group: <a href="https://t.me/ParadiseShopGroup" target="_blank" rel="noopener noreferrer">t.me/ParadiseShopGroup</a><br>
+       → DM: <a href="https://t.me/ParadiseStoreOwner" target="_blank" rel="noopener noreferrer">@ParadiseStoreOwner</a></p>
+
+    <h3>⚠️ Stay Safe</h3>
+    <p>Only trust official links. We’ll never ask for info outside our verified channels.</p>
+
+    <h3>💸 Payments</h3>
+    <p>We accept Bitcoin. CashApp coming soon.</p>
+  </div>
 
   <script>
-    async function fetchUserInfo() {
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileInfoDiv = document.getElementById('profileInfo');
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    // Toggle side menu open/close
+    function toggleMenu() {
+      sideMenu.classList.toggle('active');
+    }
+    menuToggle.addEventListener('click', toggleMenu);
+    menuToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+      }
+    });
+
+    // Toggle profile dropdown open/close
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileIcon.setAttribute('aria-expanded', isActive);
+    }
+    profileIcon.addEventListener('click', toggleProfileDropdown);
+    profileIcon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleProfileDropdown();
+      }
+    });
+    window.addEventListener('click', (e) => {
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
+
+    // Fetch user profile info from backend (/profile)
+    async function loadUserInfo() {
       try {
-        const res = await fetch('/api/user-info', {
-          credentials: 'include'
+        const response = await fetch('/profile', {
+          credentials: 'include', // important to send cookies for JWT auth
+          headers: {
+            'Accept': 'application/json'
+          }
         });
-        if (res.ok) {
-          const data = await res.json();
-          document.getElementById('user-info').textContent =
-            `Logged in as: ${data.username} | Balance: $${data.balance.toFixed(2)}`;
-        } else {
-          // Not logged in or error: redirect to login page
+
+        if (!response.ok) throw new Error('Failed to fetch user info');
+
+        const data = await response.json();
+
+        // Provide fallback values if any are missing
+        const username = data.username || 'User';
+        const balance = (data.balance ?? 0).toFixed(2);
+        const spent = (data.spent ?? 0).toFixed(2);
+        const joinDate = data.joinDate || 'Unknown';
+        const orders = data.orders ?? 0;
+
+        profileInfoDiv.innerHTML = `
+          <strong>${username}</strong><br>
+          Balance: $${balance}<br>
+          Spent: $${spent}<br>
+          Joined: ${joinDate}<br>
+          Orders: ${orders}
+        `;
+      } catch (err) {
+        console.warn('Could not load user info:', err);
+        profileInfoDiv.textContent = 'Not logged in';
+        // Redirect to login if unauthorized
+        if (err.message.includes('Failed')) {
           window.location.href = '/login';
         }
-      } catch (err) {
-        console.error('Failed to fetch user info:', err);
-        window.location.href = '/login';
       }
     }
 
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-      await fetch('/api/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      window.location.href = '/login';
-    });
-
-    fetchUserInfo();
+    loadUserInfo();
   </script>
 </body>
 </html>
