@@ -144,13 +144,12 @@
 
 <!-- Sliding Menu -->
 <nav id="sideMenu" aria-label="Main navigation">
-  <a href="home.html">Home</a>
-  <a href="balance.html">Balance</a>
-  <a href="marketplace.html">Market</a>
-  <a href="cart.html" aria-current="page">Cart</a>
-  <a href="orders.html">Orders</a>
-  <a href="more.html">More</a>
-  <a href="logout.html">Logout</a>
+  <a href="/home">Home</a>
+  <a href="/balance">Balance</a>
+  <a href="/marketplace">Market</a>
+  <a href="/cart" aria-current="page">Cart</a>
+  <a href="/orders">Orders</a>
+  <a href="/logout">Logout</a>
 </nav>
 
 <!-- Profile Dropdown -->
@@ -158,11 +157,11 @@
   <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
   <div id="profileDropdown" role="menu" aria-label="User profile">
     <div id="profileInfo">Loading...</div>
-    <a href="balance.html">Load Funds</a>
-    <a href="home.html">Shop</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="logout.html">Logout</a>
+    <a href="/balance">Load Funds</a>
+    <a href="/home">Shop</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/logout">Logout</a>
   </div>
 </div>
 
@@ -233,17 +232,12 @@
     }
   });
 
-  // Helper to get JWT token from localStorage
-  function getToken() {
-    return localStorage.getItem('token');
-  }
-
-  // Helper fetch with Authorization header
+  // Fetch with credentials to include session cookie
   async function fetchJson(url, options = {}) {
-    const token = getToken();
+    options.credentials = 'include'; // IMPORTANT for session cookie
     options.headers = {
       ...(options.headers || {}),
-      'Authorization': token ? 'Bearer ' + token : ''
+      'Content-Type': 'application/json'
     };
     const res = await fetch(url, options);
     if (!res.ok) {
@@ -257,14 +251,14 @@
     return await res.json();
   }
 
-  // Check session by calling backend, redirect if unauthorized
+  // Check session: just call /profile and redirect if unauthorized
   async function checkSession() {
     try {
-      const session = await fetchJson('/api/session');
-      return session.user;
+      const profile = await fetchJson('/profile');
+      return profile.username;
     } catch {
       alert('Please log in to view your cart.');
-      window.location.href = 'index.html';
+      window.location.href = '/login';
       return null;
     }
   }
@@ -272,13 +266,9 @@
   // Load profile info into dropdown
   async function loadProfile() {
     try {
-      const profile = await fetchJson('/api/user/profile');
+      const profile = await fetchJson('/profile');
       document.getElementById('profileInfo').innerHTML = `
-        <strong>${profile.username}</strong><br>
-        Balance: $${profile.balance.toFixed(2)}<br>
-        Spent: $${profile.totalSpent.toFixed(2)}<br>
-        Joined: ${profile.joinDate}<br>
-        Orders: ${profile.orderCount}
+        <strong>${profile.username}</strong>
       `;
     } catch {
       document.getElementById('profileInfo').textContent = 'Failed to load profile info.';
@@ -288,7 +278,10 @@
   // Load cart and render in table
   async function loadCart() {
     try {
-      const data = await fetchJson('/api/userdata');
+      // Our backend currently has no dedicated cart API route.
+      // Let's assume we create /api/cart to return JSON cart data for current user.
+      // This route needs to be implemented in your Flask backend (I can help if you want).
+      const data = await fetchJson('/api/cart');
       const cartItems = data.cart || [];
       const tbody = document.querySelector('#cart-table tbody');
       tbody.innerHTML = '';
