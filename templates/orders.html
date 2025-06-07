@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Orders</title>
@@ -159,6 +160,26 @@
   <div class="container">
     <h1>📦 Order History</h1>
     <p>Your tropical deliveries will appear here.</p>
+=======
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Orders</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Order History</h1>
+    <p>Balance: ${{ '%.2f' % balance }}</p>
+    {% if orders %}
+      <ul>
+        {% for order, product in orders %}
+          <li>{{ product.name }} - ${{ '%.2f' % product.price }} ({{ order.timestamp.strftime('%Y-%m-%d %H:%M') }})</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No past orders found.</p>
+    {% endif %}
+>>>>>>> 0198110 (Initial commit for Paradise Shop)
   </div>
 </body>
 </html>

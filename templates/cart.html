@@ -2,6 +2,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<<<<<<< HEAD
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Cart</title>
@@ -159,6 +160,37 @@
   <div class="container">
     <h1>🛒 Your Cart</h1>
     <p>Your selected items will be listed here.</p>
+=======
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Cart</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>Your Cart</h1>
+    <p>Balance: ${{ '%.2f' % balance }}</p>
+    {% if products %}
+      <ul>
+        {% set total = 0 %}
+        {% for item, product in products %}
+          <li>
+            {{ product.name }} - ${{ '%.2f' % product.price }}
+            <form action="{{ url_for('remove_from_cart', cart_id=item.id) }}" method="POST" style="display:inline;">
+              <button type="submit">Remove</button>
+            </form>
+          </li>
+          {% set total = total + product.price %}
+        {% endfor %}
+      </ul>
+      <p>Total: ${{ '%.2f' % total }}</p>
+      <form action="{{ url_for('checkout') }}" method="POST">
+        <button type="submit">Checkout</button>
+      </form>
+    {% else %}
+      <p>Your cart is empty.</p>
+    {% endif %}
+>>>>>>> 0198110 (Initial commit for Paradise Shop)
   </div>
 </body>
 </html>

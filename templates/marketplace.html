@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -220,5 +221,32 @@
   </div>
 </div>
 
+=======
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Marketplace</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+  <div class="market-container">
+    <h2>Marketplace</h2>
+    <p>Balance: ${{ '%.2f' % balance }}</p>
+    {% for product in products %}
+    <div class="product-card">
+      <div class="product-header">
+        <span class="product-title">{{ product.name }}</span>
+        <span class="product-price">${{ '%.2f' % product.price }}</span>
+      </div>
+      <form action="{{ url_for('add_to_cart', product_id=product.id) }}" method="POST">
+        <button type="submit">Add to Cart</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+>>>>>>> 0198110 (Initial commit for Paradise Shop)
 </body>
 </html>
