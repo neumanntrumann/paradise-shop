@@ -3,365 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PARADISE SHOP - Marketplace</title>
+  <title>Paradise Shop - Marketplace</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      padding: 20px;
       margin: 0;
-      overflow-x: hidden;
-      background: linear-gradient(to bottom, #f0f8ff, #e0f7fa);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      min-height: 100vh;
+      padding: 20px 0;
+      display: flex;
+      justify-content: center;
       color: #333;
     }
 
-    /* Hamburger menu styles */
     #menuToggle {
       position: fixed;
-      top: 15px;
-      left: 15px;
-      width: 35px;
-      height: 30px;
+      left: 20px;
+      top: 20px;
+      display: inline-block;
       cursor: pointer;
-      z-index: 1100;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    #menuToggle span {
-      display: block;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
+      width: 30px;
+      height: 25px;
+      z-index: 1002;
     }
 
-    /* Sliding side menu */
+    #menuToggle span {
+      display: block;
+      height: 3px;
+      background: #333;
+      margin-bottom: 5px;
+      border-radius: 2px;
+      transition: 0.3s ease;
+    }
+
     #sideMenu {
       position: fixed;
+      left: -220px;
       top: 0;
-      left: 0;
-      width: 23vw;
-      max-width: 300px;
-      height: 100vh;
-      background: #ffffff;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 1050;
+      width: 200px;
+      height: 100%;
+      background: #fff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
       padding-top: 60px;
-      box-sizing: border-box;
+      transition: left 0.3s ease;
+      z-index: 1000;
     }
+
     #sideMenu.active {
-      transform: translateX(0);
+      left: 0;
     }
+
     #sideMenu a {
       display: block;
-      padding: 15px 25px;
+      padding: 12px 20px;
       text-decoration: none;
       color: #333;
       font-weight: 600;
       border-bottom: 1px solid #eee;
     }
+
     #sideMenu a:hover {
-      background-color: #f0f0f0;
+      background: #d0f0fd;
     }
 
-    /* Profile dropdown */
     #profileDropdownContainer {
       position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 1100;
-    }
-    #profileIcon {
-      width: 40px;
-      height: 40px;
-      background-color: #333;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      cursor: pointer;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
       user-select: none;
-      font-weight: bold;
-      font-size: 20px;
+      z-index: 1002;
     }
+
+    #profileIcon {
+      cursor: pointer;
+    }
+
     #profileDropdown {
       display: none;
       position: absolute;
-      top: 50px;
       right: 0;
+      top: 35px;
       background: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 10px;
       width: 220px;
-      border-radius: 5px;
+      font-size: 14px;
+      z-index: 1001;
     }
+
     #profileDropdown.active {
       display: block;
     }
-    #profileDropdown div#profileInfo {
-      padding: 10px 15px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      line-height: 1.4;
-      white-space: normal;
-    }
+
     #profileDropdown a {
       display: block;
-      padding: 8px 15px;
-      text-decoration: none;
+      padding: 6px 8px;
       color: #333;
-      border-top: 1px solid #eee;
-      font-weight: 600;
+      text-decoration: none;
+      border-radius: 4px;
     }
+
     #profileDropdown a:hover {
-      background-color: #f0f0f0;
+      background: #d0f0fd;
     }
 
-    h1 {
+    .marketplace-container {
+      max-width: 600px;
+      width: 100%;
+      padding: 0 20px;
       margin-top: 80px;
-      text-align: center;
-      font-size: 2.4em;
-      color: #00796b;
     }
 
-    .item {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    .product-card {
+      background: rgba(255, 255, 255, 0.85);
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
+      margin-bottom: 30px;
       padding: 20px;
-      margin: 15px auto;
-      max-width: 500px;
-      transition: transform 0.2s ease;
-    }
-    .item:hover {
-      transform: scale(1.01);
-    }
-
-    button {
-      padding: 8px 16px;
-      background-color: #00796b;
-      color: white;
-      border: none;
-      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
       cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.2s ease;
-      margin-right: 10px;
-      margin-top: 5px;
-    }
-    button:hover {
-      background-color: #004d40;
+      position: relative;
+      overflow: hidden;
     }
 
-    a {
+    .product-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 25px rgba(0, 128, 128, 0.6);
+    }
+
+    .product-image {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-right: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .product-details {
+      flex: 1;
+    }
+
+    .product-title {
+      font-size: 1.5rem;
+      font-weight: 700;
       color: #00796b;
-      font-weight: bold;
+      margin: 0 0 10px 0;
     }
 
-    .description {
-      display: none;
-      max-height: 150px;
-      overflow-y: auto;
-      margin-top: 10px;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
-      padding: 10px;
-      border-radius: 6px;
-      background: #f9f9f9;
+    .product-description {
+      font-size: 1rem;
+      color: #004d40;
+      margin-bottom: 15px;
+    }
+
+    .product-price {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e65100;
+    }
+
+    .leaf-decor {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 50px;
+      opacity: 0.3;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
 
-  <!-- Hamburger menu -->
-  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
-    <span></span>
-    <span></span>
-    <span></span>
+  <!-- Burger Menu -->
+  <div id="menuToggle" tabindex="0" role="button" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
   </div>
 
-  <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="index.html">Home</a>
-    <a href="balance.html">Balance</a>
-    <a href="marketplace.html">Market</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="more.html">More</a>
-    <a href="logout.html">Logout</a>
+  <!-- Side Navigation -->
+  <nav id="sideMenu" aria-label="Main navigation">
+    <a href="/">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Marketplace</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/logout">Logout</a>
   </nav>
 
   <!-- Profile Dropdown -->
   <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo">Loading...</div>
-      <a href="balance.html">Load Funds</a>
-      <a href="index.html">Shop</a>
-      <a href="cart.html">Cart</a>
-      <a href="orders.html">Orders</a>
-      <a href="logout.html">Logout</a>
+    <div id="profileIcon" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">👤</div>
+    <div id="profileDropdown" role="menu" aria-hidden="true">
+      <div id="profileInfo" role="none">Loading...</div>
+      <a href="/balance" role="menuitem">Load Funds</a>
+      <a href="/marketplace" role="menuitem">Shop</a>
+      <a href="/cart" role="menuitem">Cart</a>
+      <a href="/orders" role="menuitem">Orders</a>
+      <a href="/logout" role="menuitem">Logout</a>
     </div>
   </div>
 
-  <h1>Marketplace</h1>
-
-  <!-- Product 1 -->
-  <div class="item">
-    <p><strong>🌴 Spammed CC – $15</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spammed CC', 15)">Add to Cart</button>
-    <div class="description">
-90% Validity — Restocked fresh every day
+  <!-- Marketplace Items -->
+  <div class="marketplace-container">
+    <div class="product-card">
+      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=120&q=80" alt="Tropical Shirt" class="product-image" />
+      <div class="product-details">
+        <h2 class="product-title">Tropical Shirt</h2>
+        <p class="product-description">Lightweight, breezy, perfect for beach days.</p>
+        <p class="product-price">$29.99</p>
+      </div>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Leaf_icon.svg" alt="Leaf" class="leaf-decor" />
     </div>
   </div>
-
-  <!-- Product 2 -->
-  <div class="item">
-    <p><strong>🏝️ X2 EMV Software – Full Breakdown</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('X2 EMV Software', 400)">Add to Cart</button>
-    <div class="description">
-Everything you need to know about EMV software:
-
-What type of card can I read/write with this EMV software?
-SDA and DDA (Static/Dynamic) — includes Visa, Visa Electron, MasterCard, Maestro, Amex, UnionPay, Diners, Discover, JCB.
-
-Will this EMV software work in any country?
-Yes — it works anywhere EMV technology is used.
-
-What data is needed to make an ATM transaction?
-You’ll need to write the Track 2 data.
-
-Can I use any PIN at an ATM?
-No — you’ll need the original PIN code.
-
-Can I use any PIN at POS?
-Yes — any PIN can be used at most point-of-sale terminals.
-
-Can I check balance and withdraw money from ATM?
-Yes — if you have a valid Track 2 and the correct PIN, you can perform all standard card functions.
-
-Where can I find smart cards?
-Message: @paradisestoreowner
-
-Where can I get the hardware?
-Search for Omnikey 3121 or check our website.
-
-What if I lose my PC with the EMV software?
-There are no replacements or re-sends. You lose it, it’s gone.
-
-What is the price for the EMV software?
-$400 USD — Bitcoin only.
-
-What will I receive?
-You’ll receive the full version of X2 software, a license key, and a user manual.
-
-Does the EMV software expire?
-No — once purchased, it’s yours permanently.
-
-Will there be future updates?
-Yes — NFC reader/writer support is coming.
-    </div>
-  </div>
-
-  <!-- Product 3 -->
-  <div class="item">
-    <p><strong>🌺 Spamming Bundle – What’s Included</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('Spamming Bundle', 150)">Add to Cart</button>
-    <div class="description">
-1. Email Spammer Tool
-Mass email sender
-
-SMTP support or fake mail server
-
-Phishing email templates
-
-Email spoofing (fake “From” fields)
-
-Proxy integration
-
-2. Phishing Templates
-Fake login pages (Google, Microsoft, banking)
-
-Prize or reward scams
-
-Malicious files or links
-
-3. SMS Spammer
-Auto-senders for WhatsApp, Telegram, SMS
-
-Phone number databases
-
-Shortened malicious URLs
-
-4. Spoofing Tools
-Fake headers, spoofed IPs, and domain masking
-
-5. Scripts / Bots
-Python or PowerShell automation
-
-Captcha bypass bots
-
-Malicious Office document macros
-
-6. Bypass Tools
-Anti-spam evasion methods
-
-Email warming tools
-
-IP rotation / VPN tools
-
-7. Instructions & Tutorials
-PDF or video guide
-
-Full setup walkthrough
-
-Tips on staying undetected
-    </div>
-  </div>
-
-  <!-- Product 4 -->
-  <div class="item">
-    <p><strong>💳 D+P: $150</strong></p>
-    <button onclick="toggleDetails(this)">Details</button>
-    <button onclick="addToCart('D+P', 150)">Add to Cart</button>
-    <div class="description">
-Real, fresh, and verified dump + pin sets
-✅ 100% valid
-👨‍💻 Selling since 2020 — check 5 years of vouches
-🔢 201 code only
-    </div>
-  </div>
-
-  <p style="text-align: center;">
-    <a href="cart.html">Go to Cart</a> | 
-    <a href="orders.html">View Your Orders</a>
-  </p>
 
   <script>
-    // Check if user is logged in
-    const user = sessionStorage.getItem('loggedInUser');
-    if (!user) {
-      alert('Please log in first.');
-      window.location.href = 'login.html';
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
     }
 
-    // Load users data from localStorage
-    const users = JSON.parse(localStorage.getItem('users')) || {};
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
     const profileInfoDiv = document.getElementById('profileInfo');
-
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
-    // Hamburger menu toggle
     function toggleMenu() {
-      sideMenu.classList.toggle('active');
+      const isActive = sideMenu.classList.toggle('active');
+      menuToggle.setAttribute('aria-expanded', isActive);
+    }
+
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileDropdown.setAttribute('aria-hidden', !isActive);
+      profileIcon.setAttribute('aria-expanded', isActive);
     }
 
     menuToggle.addEventListener('click', toggleMenu);
@@ -372,19 +254,6 @@ Real, fresh, and verified dump + pin sets
       }
     });
 
-    // Close side menu if clicked outside
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-      }
-    });
-
-    // Profile dropdown toggle
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
-    }
-
     profileIcon.addEventListener('click', toggleProfileDropdown);
     profileIcon.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -393,63 +262,44 @@ Real, fresh, and verified dump + pin sets
       }
     });
 
-    // Close profile dropdown if clicked outside
     window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+        menuToggle.setAttribute('aria-expanded', false);
+      }
       if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
         profileDropdown.classList.remove('active');
+        profileDropdown.setAttribute('aria-hidden', true);
         profileIcon.setAttribute('aria-expanded', false);
       }
     });
 
-    // Populate profile info
-    if (user && users[user]) {
-      const userData = users[user];
-      let totalSpent = 0;
-      if (userData.orders) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            totalSpent += parseFloat(item.price) || 0;
-          });
+    async function loadUserInfo() {
+      const csrfToken = getCookie('csrf_token');
+      try {
+        const response = await fetch('/profile', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
         });
-      }
-
-      let joinDate = userData.joinDate || 'Unknown';
-      profileInfoDiv.innerHTML = `
-        <strong>${user}</strong><br>
-        Balance: $${userData.balance ? userData.balance.toFixed(2) : '0.00'}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Total: $${userData.balance ? (userData.balance + totalSpent).toFixed(2) : totalSpent.toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${userData.orders ? userData.orders.length : 0}
-      `;
-    } else {
-      profileInfoDiv.textContent = 'No user data found';
-    }
-
-    // Add product to cart
-    function addToCart(name, price) {
-      const cart = JSON.parse(localStorage.getItem('cart_' + user)) || [];
-      cart.push({ name, price });
-      localStorage.setItem('cart_' + user, JSON.stringify(cart));
-      alert(name + ' added to cart');
-    }
-
-    // Toggle product details display
-    function toggleDetails(button) {
-      // Description is the next sibling of the button's parent container
-      // But your structure is: button then next sibling is button then next sibling is description
-      // So we get nextElementSibling twice from the clicked button
-      const desc = button.nextElementSibling.nextElementSibling;
-      if (!desc) return;
-      if (desc.style.display === 'none' || desc.style.display === '') {
-        desc.style.display = 'block';
-        button.textContent = 'Hide Details';
-      } else {
-        desc.style.display = 'none';
-        button.textContent = 'Details';
+        if (!response.ok) throw new Error('Unauthorized');
+        const data = await response.json();
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username || 'User'}</strong><br>
+          Balance: $${(data.balance ?? 0).toFixed(2)}<br>
+          Spent: $${(data.spent ?? 0).toFixed(2)}<br>
+          Joined: ${data.joinDate || 'Unknown'}<br>
+          Orders: ${data.orders ?? 0}
+        `;
+      } catch {
+        profileInfoDiv.textContent = 'Not logged in';
+        window.location.href = '/login';
       }
     }
+
+    loadUserInfo();
   </script>
-
 </body>
 </html>
