@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 
 # BlockCypher configuration
 BLOCKCYPHER_TOKEN = 'dbd5a9f9a6b5403a8c0171bd25b5e883'
-BTC_ADDRESS = 'YOUR_BTC_WALLET_ADDRESS_HERE'  # Replace with actual BTC address
+BTC_ADDRESS = '3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
 WEBHOOK_SECRET = '55f66a40b826bd9cfa3f2b70d958ae6c'
 
 class User(db.Model):
@@ -158,7 +158,7 @@ def btc_webhook():
     if confirmations >= 2:
         for output in outputs:
             if output["addresses"] and BTC_ADDRESS in output["addresses"]:
-                usd_value = float(output["value"]) / 100000000 * 68000  # convert satoshi to USD (approx)
+                usd_value = float(output["value"]) / 100000000 * 68000
                 deposit = PendingDeposit.query.filter_by(tx_hash=tx_hash).first()
                 if not deposit:
                     user = User.query.filter_by(username="admin").first()
@@ -197,5 +197,7 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
+# ✅ FINAL DEPLOYMENT SETUP FOR RENDER
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='0.0.0.0', port=port)
