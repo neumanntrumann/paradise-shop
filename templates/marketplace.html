@@ -3,418 +3,128 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>PARADISE SHOP - Marketplace</title>
+  <title>Paradise Shop - Marketplace</title>
   <style>
-    /* (keep all your existing CSS as is) */
     body {
-      font-family: 'Segoe UI', sans-serif;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      margin: 0;
-      overflow-x: hidden;
-      background: linear-gradient(to bottom, #f0f8ff, #e0f7fa);
+      background: #f0f8ff;
       color: #333;
     }
-    /* Hamburger menu styles */
-    #menuToggle {
-      position: fixed;
-      top: 15px;
-      left: 15px;
-      width: 35px;
-      height: 30px;
-      cursor: pointer;
-      z-index: 1100;
+    header {
       display: flex;
-      flex-direction: column;
       justify-content: space-between;
-      background: none;
-      border: none;
-      padding: 0;
-    }
-    #menuToggle span {
-      display: block;
-      height: 4px;
-      background: #333;
-      border-radius: 2px;
-    }
-    /* Sliding side menu */
-    #sideMenu {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 23vw;
-      max-width: 300px;
-      height: 100vh;
-      background: #ffffff;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.2);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      z-index: 1050;
-      padding-top: 60px;
-      box-sizing: border-box;
-    }
-    #sideMenu.active {
-      transform: translateX(0);
-    }
-    #sideMenu a {
-      display: block;
-      padding: 15px 25px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 600;
-      border-bottom: 1px solid #eee;
-    }
-    #sideMenu a:hover,
-    #sideMenu a:focus {
-      background-color: #f0f0f0;
-      outline: none;
-    }
-    /* Profile dropdown */
-    #profileDropdownContainer {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      z-index: 1100;
-    }
-    #profileIcon {
-      width: 40px;
-      height: 40px;
-      background-color: #333;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
       align-items: center;
-      cursor: pointer;
-      user-select: none;
-      font-weight: bold;
-      font-size: 20px;
-      border: none;
-    }
-    #profileDropdown {
-      display: none;
-      position: absolute;
-      top: 50px;
-      right: 0;
-      background: white;
-      border: 1px solid #ccc;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      width: 220px;
-      border-radius: 5px;
-    }
-    #profileDropdown.active {
-      display: block;
-    }
-    #profileDropdown div#profileInfo {
-      padding: 10px 15px;
-      border-bottom: 1px solid #eee;
-      font-size: 14px;
-      line-height: 1.4;
-      white-space: normal;
-    }
-    #profileDropdown a {
-      display: block;
-      padding: 8px 15px;
-      text-decoration: none;
-      color: #333;
-      border-top: 1px solid #eee;
-      font-weight: 600;
-    }
-    #profileDropdown a:hover,
-    #profileDropdown a:focus {
-      background-color: #f0f0f0;
-      outline: none;
+      margin-bottom: 20px;
     }
     h1 {
-      margin-top: 80px;
-      text-align: center;
-      font-size: 2.4em;
-      color: #00796b;
+      margin: 0;
     }
-    .item {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      margin: 15px auto;
-      max-width: 500px;
-      transition: transform 0.2s ease;
-    }
-    .item:hover,
-    .item:focus-within {
-      transform: scale(1.01);
-    }
-    button {
-      padding: 8px 16px;
-      background-color: #00796b;
+    #logout-btn {
+      padding: 6px 12px;
+      background-color: #007acc;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-weight: 600;
-      transition: background-color 0.2s ease;
-      margin-right: 10px;
-      margin-top: 5px;
     }
-    button:hover,
-    button:focus {
-      background-color: #004d40;
-      outline: none;
+    #logout-btn:hover {
+      background-color: #005fa3;
     }
-    a {
-      color: #00796b;
-      font-weight: bold;
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
     }
-    a:focus {
-      outline: 2px solid #00796b;
-      outline-offset: 2px;
+    .product {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.1);
     }
-    .description {
-      display: none;
-      max-height: 150px;
-      overflow-y: auto;
-      margin-top: 10px;
-      white-space: pre-wrap;
-      border: 1px solid #ccc;
-      padding: 10px;
+    .product img {
+      max-width: 100%;
+      height: auto;
       border-radius: 6px;
-      background: #f9f9f9;
+      margin-bottom: 8px;
+    }
+    .product-name {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .product-price {
+      color: #007acc;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
+  <header>
+    <h1>Welcome, <span id="profile-username">User</span>!</h1>
+    <button id="logout-btn">Logout</button>
+  </header>
 
-  <!-- Hamburger menu -->
-  <button id="menuToggle" aria-label="Toggle navigation menu" aria-pressed="false" aria-controls="sideMenu">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-
-  <!-- Sliding side menu -->
-  <nav id="sideMenu" aria-label="Main navigation menu" role="menu" hidden>
-    <a href="/home" role="menuitem">Home</a>
-    <a href="/balance" role="menuitem">Balance</a>
-    <a href="/marketplace" role="menuitem">Market</a>
-    <a href="/cart" role="menuitem">Cart</a>
-    <a href="/orders" role="menuitem">Orders</a>
-    <a href="/more" role="menuitem">More</a>
-    <a href="/logout" role="menuitem">Logout</a>
-  </nav>
-
-  <!-- Profile Dropdown -->
-  <div id="profileDropdownContainer">
-    <button id="profileIcon" aria-label="User profile menu" aria-expanded="false" aria-controls="profileDropdown" title="Profile">👤</button>
-    <div id="profileDropdown" role="menu" aria-label="User profile menu" hidden>
-      <div id="profileInfo">Loading...</div>
-      <a href="/balance" role="menuitem">Load Funds</a>
-      <a href="/home" role="menuitem">Shop</a>
-      <a href="/cart" role="menuitem">Cart</a>
-      <a href="/orders" role="menuitem">Orders</a>
-      <a href="/logout" role="menuitem">Logout</a>
+  <main>
+    <h2>Marketplace</h2>
+    <div class="products" id="products-list">
+      <!-- Products will be listed here -->
     </div>
-  </div>
-
-  <h1>Marketplace</h1>
-
-  <!-- Product 1 -->
-  <div class="item" tabindex="0">
-    <p><strong>🌴 Pineapple VPN – $15</strong></p>
-    <button type="button" onclick="toggleDetails(this)">Details</button>
-    <button type="button" onclick="addToCart('Pineapple VPN', 15)">Add to Cart</button>
-    <div class="description" aria-hidden="true">
-      Secure, fast, and private VPN service with global servers.
-    </div>
-  </div>
-
-  <!-- Product 2 -->
-  <div class="item" tabindex="0">
-    <p><strong>🏝️ Island Proxy Pass – $400</strong></p>
-    <button type="button" onclick="toggleDetails(this)">Details</button>
-    <button type="button" onclick="addToCart('Island Proxy Pass', 400)">Add to Cart</button>
-    <div class="description" aria-hidden="true">
-      Premium proxy service supporting multiple protocols and locations.
-      Unlimited bandwidth, zero logs, and 24/7 support.
-    </div>
-  </div>
-
-  <!-- Product 3 -->
-  <div class="item" tabindex="0">
-    <p><strong>🌺 Tropical Software Suite – $150</strong></p>
-    <button type="button" onclick="toggleDetails(this)">Details</button>
-    <button type="button" onclick="addToCart('Tropical Software Suite', 150)">Add to Cart</button>
-    <div class="description" aria-hidden="true">
-      A collection of productivity and security tools designed for island living.
-      Includes email clients, password managers, and more.
-    </div>
-  </div>
-
-  <!-- Product 4 -->
-  <div class="item" tabindex="0">
-    <p><strong>💳 Paradise Access Pass – $150</strong></p>
-    <button type="button" onclick="toggleDetails(this)">Details</button>
-    <button type="button" onclick="addToCart('Paradise Access Pass', 150)">Add to Cart</button>
-    <div class="description" aria-hidden="true">
-      Exclusive membership offering special discounts, early access, and VIP support.
-    </div>
-  </div>
-
-  <p style="text-align: center;">
-    <a href="/cart">Go to Cart</a> | 
-    <a href="/orders">View Your Orders</a>
-  </p>
+  </main>
 
   <script>
-    const API_BASE = 'https://paradise-shop-1.onrender.com';
-
-    // Helper to read a cookie by name
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
-
+    // Fetch and display logged-in user's username
     async function loadProfile() {
       try {
-        const csrfToken = getCookie('csrf_token');
-        const res = await fetch(`${API_BASE}/profile`, {
-          credentials: 'include',
-          headers: {
-            'X-CSRF-Token': csrfToken || '',
-          },
-        });
-        if (!res.ok) throw new Error('Not authenticated');
+        const res = await fetch('/profile', { credentials: 'include' });
+        if (!res.ok) {
+          // Not logged in, redirect to login page
+          window.location.href = '/login';
+          return;
+        }
         const data = await res.json();
-
-        const profileInfoDiv = document.getElementById('profileInfo');
-        profileInfoDiv.innerHTML = `
-          <strong>${data.username}</strong><br>
-          Balance: $${data.balance.toFixed(2)}<br>
-          Spent: $${data.totalSpent.toFixed(2)}<br>
-          Total: $${(data.balance + data.totalSpent).toFixed(2)}<br>
-          Joined: ${data.joinDate}<br>
-          Orders: ${data.ordersCount}
-        `;
-      } catch (err) {
-        alert('Session expired or invalid token. Please log in again.');
+        document.getElementById('profile-username').textContent = data.username;
+      } catch (e) {
+        console.error('Error loading profile:', e);
         window.location.href = '/login';
       }
     }
 
-    async function addToCart(name, price) {
+    // Basic static products list
+    const products = [
+      { id: 1, name: "Paradise T-shirt", price: "$25", img: "https://via.placeholder.com/150?text=T-shirt" },
+      { id: 2, name: "Beach Hat", price: "$18", img: "https://via.placeholder.com/150?text=Hat" },
+      { id: 3, name: "Sunglasses", price: "$30", img: "https://via.placeholder.com/150?text=Sunglasses" },
+      { id: 4, name: "Flip Flops", price: "$15", img: "https://via.placeholder.com/150?text=Flip+Flops" }
+    ];
+
+    function displayProducts() {
+      const container = document.getElementById('products-list');
+      container.innerHTML = '';
+      products.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'product';
+        div.innerHTML = `
+          <img src="${p.img}" alt="${p.name}">
+          <div class="product-name">${p.name}</div>
+          <div class="product-price">${p.price}</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Logout handler
+    document.getElementById('logout-btn').addEventListener('click', async () => {
       try {
-        const csrfToken = getCookie('csrf_token');
-        const res = await fetch(`${API_BASE}/cart/add`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-Token': csrfToken || '',
-          },
-          credentials: 'include',
-          body: JSON.stringify({ name, price }),
-        });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.message || 'Failed to add to cart');
-        }
-        alert(`${name} added to cart.`);
-      } catch (err) {
-        alert('Error adding to cart. Please try again.');
-      }
-    }
+        await fetch('/logout', { method: 'GET', credentials: 'include' });
+      } catch {}
+      window.location.href = '/login';
+    });
 
-    function toggleDetails(button) {
-      const desc = button.nextElementSibling.nextElementSibling;
-      if (!desc) return;
-      const isHidden = desc.style.display === 'none' || desc.style.display === '';
-      desc.style.display = isHidden ? 'block' : 'none';
-      button.textContent = isHidden ? 'Hide Details' : 'Details';
-      desc.setAttribute('aria-hidden', !isHidden);
-    }
-
+    // Initialize page
     loadProfile();
-
-    // Hamburger menu toggle
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-
-    function closeSideMenu() {
-      sideMenu.classList.remove('active');
-      sideMenu.hidden = true;
-      menuToggle.setAttribute('aria-pressed', 'false');
-      menuToggle.focus();
-    }
-
-    menuToggle.addEventListener('click', () => {
-      const active = sideMenu.classList.toggle('active');
-      sideMenu.hidden = !active;
-      menuToggle.setAttribute('aria-pressed', active.toString());
-      if (active) {
-        // Focus first link in sideMenu
-        const firstLink = sideMenu.querySelector('a');
-        if (firstLink) firstLink.focus();
-      } else {
-        menuToggle.focus();
-      }
-    });
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        const active = sideMenu.classList.toggle('active');
-        sideMenu.hidden = !active;
-        menuToggle.setAttribute('aria-pressed', active.toString());
-        if (active) {
-          const firstLink = sideMenu.querySelector('a');
-          if (firstLink) firstLink.focus();
-        } else {
-          menuToggle.focus();
-        }
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        closeSideMenu();
-      }
-    });
-
-    // Profile dropdown toggle
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-
-    function closeProfileDropdown() {
-      profileDropdown.classList.remove('active');
-      profileDropdown.hidden = true;
-      profileIcon.setAttribute('aria-expanded', 'false');
-      profileIcon.focus();
-    }
-
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileDropdown.hidden = !isActive;
-      profileIcon.setAttribute('aria-expanded', isActive.toString());
-      if (isActive) {
-        // Focus first menu item inside profile dropdown
-        const firstItem = profileDropdown.querySelector('a');
-        if (firstItem) firstItem.focus();
-      } else {
-        profileIcon.focus();
-      }
-    }
-
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        closeProfileDropdown();
-      }
-    });
+    displayProducts();
   </script>
-
 </body>
 </html>
