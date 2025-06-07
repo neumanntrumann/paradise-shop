@@ -5,25 +5,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Paradise Shop - Marketplace</title>
   <style>
-    /* Tropical gradient background */
     body {
       margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #a1c4fd, #c2e9fb); /* light tropical blue gradient */
+      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
       min-height: 100vh;
       padding: 20px 0;
       display: flex;
       justify-content: center;
+      color: #333;
     }
 
-    /* Container for marketplace items */
+    #menuToggle {
+      position: fixed;
+      left: 20px;
+      top: 20px;
+      display: inline-block;
+      cursor: pointer;
+      width: 30px;
+      height: 25px;
+      z-index: 1002;
+    }
+
+    #menuToggle span {
+      display: block;
+      height: 3px;
+      background: #333;
+      margin-bottom: 5px;
+      border-radius: 2px;
+      transition: 0.3s ease;
+    }
+
+    #sideMenu {
+      position: fixed;
+      left: -220px;
+      top: 0;
+      width: 200px;
+      height: 100%;
+      background: #fff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+      padding-top: 60px;
+      transition: left 0.3s ease;
+      z-index: 1000;
+    }
+
+    #sideMenu.active {
+      left: 0;
+    }
+
+    #sideMenu a {
+      display: block;
+      padding: 12px 20px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 600;
+      border-bottom: 1px solid #eee;
+    }
+
+    #sideMenu a:hover {
+      background: #d0f0fd;
+    }
+
+    #profileDropdownContainer {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      font-size: 24px;
+      user-select: none;
+      z-index: 1002;
+    }
+
+    #profileIcon {
+      cursor: pointer;
+    }
+
+    #profileDropdown {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 35px;
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 10px;
+      width: 220px;
+      font-size: 14px;
+      z-index: 1001;
+    }
+
+    #profileDropdown.active {
+      display: block;
+    }
+
+    #profileDropdown a {
+      display: block;
+      padding: 6px 8px;
+      color: #333;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+
+    #profileDropdown a:hover {
+      background: #d0f0fd;
+    }
+
     .marketplace-container {
       max-width: 600px;
       width: 100%;
       padding: 0 20px;
+      margin-top: 80px;
     }
 
-    /* Each product card */
     .product-card {
       background: rgba(255, 255, 255, 0.85);
       border-radius: 15px;
@@ -43,7 +136,6 @@
       box-shadow: 0 8px 25px rgba(0, 128, 128, 0.6);
     }
 
-    /* Product image */
     .product-image {
       width: 120px;
       height: 120px;
@@ -53,7 +145,6 @@
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
 
-    /* Product details */
     .product-details {
       flex: 1;
     }
@@ -61,7 +152,7 @@
     .product-title {
       font-size: 1.5rem;
       font-weight: 700;
-      color: #00796b; /* tropical teal */
+      color: #00796b;
       margin: 0 0 10px 0;
     }
 
@@ -74,10 +165,9 @@
     .product-price {
       font-size: 1.2rem;
       font-weight: 600;
-      color: #e65100; /* coral orange */
+      color: #e65100;
     }
 
-    /* Decorative tropical leaf - top right corner */
     .leaf-decor {
       position: absolute;
       top: -10px;
@@ -89,8 +179,37 @@
   </style>
 </head>
 <body>
+
+  <!-- Burger Menu -->
+  <div id="menuToggle" tabindex="0" role="button" aria-label="Toggle menu" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </div>
+
+  <!-- Side Navigation -->
+  <nav id="sideMenu" aria-label="Main navigation">
+    <a href="/">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Marketplace</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/logout">Logout</a>
+  </nav>
+
+  <!-- Profile Dropdown -->
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">👤</div>
+    <div id="profileDropdown" role="menu" aria-hidden="true">
+      <div id="profileInfo" role="none">Loading...</div>
+      <a href="/balance" role="menuitem">Load Funds</a>
+      <a href="/marketplace" role="menuitem">Shop</a>
+      <a href="/cart" role="menuitem">Cart</a>
+      <a href="/orders" role="menuitem">Orders</a>
+      <a href="/logout" role="menuitem">Logout</a>
+    </div>
+  </div>
+
+  <!-- Marketplace Items -->
   <div class="marketplace-container">
-    <!-- Example product card -->
     <div class="product-card">
       <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=120&q=80" alt="Tropical Shirt" class="product-image" />
       <div class="product-details">
@@ -100,8 +219,87 @@
       </div>
       <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Leaf_icon.svg" alt="Leaf" class="leaf-decor" />
     </div>
-
-    <!-- Add more product cards below in the same style -->
   </div>
+
+  <script>
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    }
+
+    const profileIcon = document.getElementById('profileIcon');
+    const profileDropdown = document.getElementById('profileDropdown');
+    const profileInfoDiv = document.getElementById('profileInfo');
+    const menuToggle = document.getElementById('menuToggle');
+    const sideMenu = document.getElementById('sideMenu');
+
+    function toggleMenu() {
+      const isActive = sideMenu.classList.toggle('active');
+      menuToggle.setAttribute('aria-expanded', isActive);
+    }
+
+    function toggleProfileDropdown() {
+      const isActive = profileDropdown.classList.toggle('active');
+      profileDropdown.setAttribute('aria-hidden', !isActive);
+      profileIcon.setAttribute('aria-expanded', isActive);
+    }
+
+    menuToggle.addEventListener('click', toggleMenu);
+    menuToggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleMenu();
+      }
+    });
+
+    profileIcon.addEventListener('click', toggleProfileDropdown);
+    profileIcon.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleProfileDropdown();
+      }
+    });
+
+    window.addEventListener('click', (e) => {
+      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+        sideMenu.classList.remove('active');
+        menuToggle.setAttribute('aria-expanded', false);
+      }
+      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
+        profileDropdown.classList.remove('active');
+        profileDropdown.setAttribute('aria-hidden', true);
+        profileIcon.setAttribute('aria-expanded', false);
+      }
+    });
+
+    async function loadUserInfo() {
+      const csrfToken = getCookie('csrf_token');
+      try {
+        const response = await fetch('/profile', {
+          credentials: 'include',
+          headers: {
+            'Accept': 'application/json',
+            'X-CSRF-Token': csrfToken
+          }
+        });
+        if (!response.ok) throw new Error('Unauthorized');
+        const data = await response.json();
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username || 'User'}</strong><br>
+          Balance: $${(data.balance ?? 0).toFixed(2)}<br>
+          Spent: $${(data.spent ?? 0).toFixed(2)}<br>
+          Joined: ${data.joinDate || 'Unknown'}<br>
+          Orders: ${data.orders ?? 0}
+        `;
+      } catch {
+        profileInfoDiv.textContent = 'Not logged in';
+        window.location.href = '/login';
+      }
+    }
+
+    loadUserInfo();
+  </script>
 </body>
 </html>
