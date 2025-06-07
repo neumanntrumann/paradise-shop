@@ -14,7 +14,6 @@
     h1 {
       margin-bottom: 20px;
     }
-    /* Hamburger menu */
     #menuToggle {
       cursor: pointer;
       width: 30px;
@@ -87,7 +86,6 @@
     #profileDropdown a:hover {
       text-decoration: underline;
     }
-    /* Table Styles */
     table {
       width: 100%;
       border-collapse: collapse;
@@ -142,7 +140,7 @@
   <span></span>
 </div>
 
-<!-- Sliding Menu -->
+<!-- Side Menu -->
 <nav id="sideMenu" aria-label="Main navigation">
   <a href="/home">Home</a>
   <a href="/balance">Balance</a>
@@ -187,7 +185,6 @@
 <button id="checkout-btn" disabled aria-disabled="true">💰 Proceed to Checkout</button>
 
 <script>
-  // Toggle hamburger menu
   const menuToggle = document.getElementById('menuToggle');
   const sideMenu = document.getElementById('sideMenu');
   const profileIcon = document.getElementById('profileIcon');
@@ -211,7 +208,6 @@
     }
   });
 
-  // Toggle profile dropdown
   function toggleProfileDropdown() {
     const isActive = profileDropdown.classList.toggle('active');
     profileIcon.setAttribute('aria-expanded', isActive);
@@ -232,9 +228,8 @@
     }
   });
 
-  // Fetch with credentials to include session cookie
   async function fetchJson(url, options = {}) {
-    options.credentials = 'include'; // IMPORTANT for session cookie
+    options.credentials = 'include';
     options.headers = {
       ...(options.headers || {}),
       'Content-Type': 'application/json'
@@ -251,7 +246,6 @@
     return await res.json();
   }
 
-  // Check session: just call /profile and redirect if unauthorized
   async function checkSession() {
     try {
       const profile = await fetchJson('/profile');
@@ -263,25 +257,18 @@
     }
   }
 
-  // Load profile info into dropdown
   async function loadProfile() {
     try {
       const profile = await fetchJson('/profile');
-      document.getElementById('profileInfo').innerHTML = `
-        <strong>${profile.username}</strong>
-      `;
+      document.getElementById('profileInfo').innerHTML = `<strong>${profile.username}</strong>`;
     } catch {
       document.getElementById('profileInfo').textContent = 'Failed to load profile info.';
     }
   }
 
-  // Load cart and render in table
   async function loadCart() {
     try {
-      // Our backend currently has no dedicated cart API route.
-      // Let's assume we create /api/cart to return JSON cart data for current user.
-      // This route needs to be implemented in your Flask backend (I can help if you want).
-      const data = await fetchJson('/api/cart');
+      const data = await fetchJson('/api/userdata');
       const cartItems = data.cart || [];
       const tbody = document.querySelector('#cart-table tbody');
       tbody.innerHTML = '';
@@ -312,7 +299,6 @@
       document.getElementById('total-price').textContent = 'Total: $' + total.toFixed(2);
       enableCheckout();
 
-      // Add event listeners for remove buttons
       document.querySelectorAll('.remove-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
           const itemId = btn.getAttribute('data-id');
@@ -332,7 +318,6 @@
     }
   }
 
-  // Enable and disable checkout button
   function enableCheckout() {
     const btn = document.getElementById('checkout-btn');
     btn.disabled = false;
@@ -345,23 +330,20 @@
     btn.setAttribute('aria-disabled', 'true');
   }
 
-  // Checkout button click handler
   document.getElementById('checkout-btn').addEventListener('click', async () => {
     try {
       const res = await fetchJson('/api/checkout', { method: 'POST' });
       alert('Order placed successfully! Your new balance is $' + res.balance.toFixed(2));
       loadCart();
-      loadProfile(); // Update balance display
+      loadProfile();
     } catch (e) {
       alert('Checkout failed: ' + e.message);
     }
   });
 
-  // On page load, verify session and load data
   (async () => {
     const user = await checkSession();
     if (!user) return;
-
     await loadProfile();
     await loadCart();
   })();

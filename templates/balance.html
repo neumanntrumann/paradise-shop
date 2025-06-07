@@ -5,8 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PARADISE SHOP - Balance</title>
   <style>
-    /* (Keep your existing CSS styles exactly as you provided, omitted here for brevity) */
-    /* ... your entire CSS styles from original page ... */
+    /* Your existing CSS styles here, keep them unchanged */
+    /* Example styles: */
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
+      margin: 0; padding: 0;
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      color: #333;
+    }
+    main {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      margin-top: 4rem;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    #wallet {
+      background: #f0f0f0;
+      padding: 1rem;
+      border-radius: 8px;
+      word-break: break-all;
+      user-select: all;
+      font-family: monospace;
+      margin-bottom: 1rem;
+    }
+    button {
+      background: #28a745;
+      color: white;
+      font-weight: bold;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #218838;
+    }
+    h1, h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+    #balance {
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    /* Keep your hamburger menu and profile dropdown styles here as needed */
   </style>
 </head>
 <body>
@@ -18,13 +69,12 @@
   </div>
 
   <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="balance.html">Home</a>
-    <a href="balance.html" aria-current="page">Balance</a>
-    <a href="marketplace.html">Market</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="more.html">More</a>
-    <a href="logout.html">Logout</a>
+    <a href="/balance" aria-current="page">Balance</a>
+    <a href="/marketplace">Market</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/more">More</a>
+    <a href="/logout">Logout</a>
   </nav>
 
   <!-- Profile Dropdown -->
@@ -32,10 +82,10 @@
     <div id="profileIcon" title="Profile" role="button" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-controls="profileDropdown">👤</div>
     <div id="profileDropdown" role="menu" aria-label="User profile menu" tabindex="-1">
       <div id="profileInfo">Loading...</div>
-      <a href="balance.html" role="menuitem">Load Funds</a>
-      <a href="cart.html" role="menuitem">Cart</a>
-      <a href="orders.html" role="menuitem">Orders</a>
-      <a href="logout.html" role="menuitem">Logout</a>
+      <a href="/balance" role="menuitem">Load Funds</a>
+      <a href="/cart" role="menuitem">Cart</a>
+      <a href="/orders" role="menuitem">Orders</a>
+      <a href="/logout" role="menuitem">Logout</a>
     </div>
   </div>
 
@@ -46,157 +96,49 @@
     <h2>Add Bitcoin to Your Account</h2>
     <p>Send Bitcoin to this wallet address:</p>
     <div id="wallet" aria-label="Bitcoin wallet address" role="textbox" tabindex="0" aria-readonly="true">
-      1ExampleBitcoinWalletAddressXYZ123456789
+      Loading wallet address...
     </div>
 
-    <p>After sending Bitcoin, click the button below to confirm your payment and update your balance:</p>
+    <p>After sending Bitcoin, click the button below to refresh your balance:</p>
     <button id="addFundsBtn" aria-live="polite">I Sent the Payment</button>
   </main>
 
   <script>
     const balanceDiv = document.getElementById('balance');
+    const walletDiv = document.getElementById('wallet');
     const addFundsBtn = document.getElementById('addFundsBtn');
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
 
-    // Get JWT token from localStorage
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please log in to view your balance.');
-      window.location.href = 'login.html';
-    }
+    // Hamburger and profile dropdown elements (if you want to keep toggles, can add later)
 
-    // Helper to fetch profile from backend
-    async function fetchProfile() {
+    // Fetch balance and wallet from backend
+    async function fetchBalanceAndWallet() {
       try {
-        const res = await fetch('/api/profile', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
+        const res = await fetch('/api/balance', { credentials: 'include' });
         if (res.status === 401) throw new Error('Unauthorized');
         const data = await res.json();
-        return data;
+
+        const balanceUSD = parseFloat(data.balance_usd).toFixed(2);
+        const btcAddress = data.btc_address;
+
+        balanceDiv.textContent = `Your current balance: $${balanceUSD}`;
+        walletDiv.textContent = btcAddress;
       } catch (err) {
-        alert('Session expired or not logged in. Redirecting to login.');
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
+        alert('Please log in to view your balance.');
+        window.location.href = '/login';
       }
     }
 
-    // Update balance UI
-    function updateBalanceUI(balance) {
-      balanceDiv.textContent = `Your current balance: $${balance.toFixed(2)}`;
-    }
+    // On load, fetch balance and wallet address
+    fetchBalanceAndWallet();
 
-    // Populate profile dropdown with user info
-    function populateProfileInfo(userData) {
-      if (!userData) {
-        profileInfoDiv.textContent = 'No user data found';
-        return;
-      }
-
-      let totalSpent = 0;
-      if (Array.isArray(userData.orders)) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            const price = parseFloat(item.price?.replace('$', '') || 0);
-            totalSpent += price;
-          });
-        });
-      }
-
-      const joinDate = userData.joinDate || 'Unknown';
-      const ordersCount = userData.orders ? userData.orders.length : 0;
-
-      profileInfoDiv.innerHTML = `
-        <strong>${userData.username}</strong><br>
-        Balance: $${userData.balance.toFixed(2)}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${ordersCount}
-      `;
-    }
-
-    // Add funds API call
-    async function addFunds() {
-      try {
-        const res = await fetch('/api/add-funds', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ amount: 10 }) // add $10
-        });
-
-        if (res.status === 401) throw new Error('Unauthorized');
-        if (!res.ok) throw new Error('Failed to add funds');
-
-        const updatedProfile = await res.json();
-        updateBalanceUI(updatedProfile.balance);
-        populateProfileInfo(updatedProfile);
-        alert('Balance updated! $10 has been added.');
-      } catch (err) {
-        alert('Error updating balance. Please try logging in again.');
-        localStorage.removeItem('token');
-        window.location.href = 'login.html';
-      }
-    }
-
-    // On page load, fetch user profile and balance
-    (async () => {
-      const profile = await fetchProfile();
-      if (profile) {
-        updateBalanceUI(profile.balance);
-        populateProfileInfo(profile);
-      }
-    })();
-
-    // Add funds button click handler
-    addFundsBtn.addEventListener('click', addFunds);
-
-    // Hamburger menu toggle
-    function toggleMenu() {
-      sideMenu.classList.toggle('active');
-      const expanded = sideMenu.classList.contains('active');
-      menuToggle.setAttribute('aria-expanded', expanded);
-    }
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', 'false');
-      }
-    });
-
-    // Profile dropdown toggle
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileIcon.setAttribute('aria-expanded', isActive);
-      if (isActive) {
-        profileDropdown.focus();
-      }
-    }
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
-    window.addEventListener('click', (e) => {
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileIcon.setAttribute('aria-expanded', 'false');
-      }
+    // On button click, refresh balance (actual BTC payment confirmation happens asynchronously on backend webhook)
+    addFundsBtn.addEventListener('click', () => {
+      addFundsBtn.disabled = true;
+      addFundsBtn.textContent = 'Checking payment...';
+      fetchBalanceAndWallet().finally(() => {
+        addFundsBtn.disabled = false;
+        addFundsBtn.textContent = 'I Sent the Payment';
+      });
     });
   </script>
 </body>
