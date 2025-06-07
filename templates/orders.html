@@ -246,6 +246,8 @@
   const sideMenu = document.getElementById('sideMenu');
   const ordersList = document.getElementById('orders-list');
 
+  let csrfToken = '';
+
   function toggleMenu() {
     sideMenu.classList.toggle('active');
   }
@@ -281,22 +283,26 @@
     }
   });
 
-  async function loadOrders() {
+  // First fetch /profile to get CSRF token and user info
+  async function loadProfileAndOrders() {
     try {
-      const res = await fetch('/orders', {
+      // Fetch profile (GET) with credentials and accept JSON
+      const profileRes = await fetch('/profile', {
         method: 'GET',
-        credentials: 'include',  // send cookies for auth
+        credentials: 'include',
         headers: { 'Accept': 'application/json' }
       });
 
-      if (!res.ok) throw new Error('Failed to fetch orders');
+      if (!profileRes.ok) throw new Error('Failed to fetch profile');
 
-      const data = await res.json();
+      const profileData = await profileRes.json();
 
-      const username = data.username || 'User';
-      const balance = (data.balance ?? 0).toFixed(2);
-      const joinDate = data.joinDate || 'Unknown';
-      const orders = data.orders ?? [];
+      csrfToken = profileData.csrf_token || '';
+
+      const username = profileData.username || 'User';
+      const balance = (profileData.balance ?? 0).toFixed(2);
+      const joinDate = profileData.joinDate || 'Unknown';
+      const orders = profileData.orders ?? [];
 
       // Update profile info dropdown
       profileInfoDiv.innerHTML = `
@@ -306,14 +312,30 @@
         Joined: ${joinDate}
       `;
 
-      if (orders.length === 0) {
+      // Now fetch orders separately, sending CSRF token and credentials
+      const ordersRes = await fetch('/orders', {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          'Accept': 'application/json',
+          'X-CSRFToken': csrfToken
+        }
+      });
+
+      if (!ordersRes.ok) throw new Error('Failed to fetch orders');
+
+      const ordersData = await ordersRes.json();
+
+      const ordersListData = ordersData.orders ?? [];
+
+      if (ordersListData.length === 0) {
         ordersList.innerHTML = '<p style="text-align:center;">You have no orders yet.</p>';
         return;
       }
 
       // Clear old list
       ordersList.innerHTML = '';
-      orders.forEach((order, i) => {
+      ordersListData.forEach((order, i) => {
         const div = document.createElement('div');
         div.className = 'order';
 
@@ -342,7 +364,7 @@
     }
   }
 
-  loadOrders();
+  loadProfileAndOrders();
 </script>
 </body>
 </html>
