@@ -1,29 +1,21 @@
 
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, redirect, session, url_for
 from flask_sqlalchemy import SQLAlchemy
-from flask_cors import CORS
-from werkzeug.security import generate_password_hash, check_password_hash
-import jwt
-import datetime
+from datetime import datetime
 import os
-from functools import wraps
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_jwt_secret'
+app.secret_key = 'secret123'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-CORS(app)
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    password_hash = db.Column(db.String(128), nullable=False)
-    balance = db.Column(db.Float, default=50.0)
-
-    def verify_password(self, password):
-        return check_password_hash(self.password_hash, password)
+    username = db.Column(db.String(100), unique=True, nullable=False)
+    password = db.Column(db.String(100), nullable=False)
+    balance = db.Column(db.Float, default=100.0)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -32,102 +24,80 @@ class Product(db.Model):
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    product_id = db.Column(db.Integer, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    product_id = db.Column(db.Integer, db.ForeignKey('product.id'))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-def token_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        token = None
-        if 'Authorization' in request.headers:
-            token = request.headers['Authorization'].split(" ")[1]
-        if not token:
-            return jsonify({'message': 'Token is missing!'}), 401
-        try:
-            data = jwt.decode(token, app.config['SECRET_KEY'], algorithms=["HS256"])
-            current_user = User.query.get(data['user_id'])
-        except:
-            return jsonify({'message': 'Token is invalid!'}), 401
-        return f(current_user, *args, **kwargs)
-    return decorated
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'GET':
-        return send_from_directory('templates', 'signup.html')
-    data = request.json
-    if User.query.filter_by(username=data['username']).first():
-        return jsonify({'message': 'Username already exists'}), 400
-    hashed_pw = generate_password_hash(data['password'], method='sha256')
-    user = User(username=data['username'], password_hash=hashed_pw)
-    db.session.add(user)
+with app.app_context():
+    db.create_all()
+    if not User.query.filter_by(username='admin').first():
+        db.session.add(User(username='admin', password='admin', balance=100.0))
+    if not Product.query.first():
+        db.session.add_all([
+            Product(name='Island Coconut Lip Balm', price=5.99),
+            Product(name='Tropical Body Butter', price=12.49),
+            Product(name='Beach Vibes Scented Candle', price=9.99)
+        ])
     db.session.commit()
-    return jsonify({'message': 'Signup successful'}), 201
+
+@app.route('/')
+@app.route('/index')
+def index():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    return render_template('index.html')
+
+@app.route('/marketplace')
+def marketplace():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    products = Product.query.all()
+    return render_template('marketplace.html', products=products)
+
+@app.route('/balance')
+def balance():
+    return render_template('balance.html')
+
+@app.route('/cart')
+def cart():
+    return render_template('cart.html')
+
+@app.route('/orders')
+def orders():
+    return render_template('orders.html')
+
+@app.route('/more')
+def more():
+    return render_template('more.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return send_from_directory('templates', 'login.html')
-    data = request.json
-    user = User.query.filter_by(username=data['username']).first()
-    if not user or not user.verify_password(data['password']):
-        return jsonify({'message': 'Invalid credentials'}), 401
-    token = jwt.encode({'user_id': user.id, 'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=12)}, app.config['SECRET_KEY'], algorithm="HS256")
-    return jsonify({'token': token})
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username, password=password).first()
+        if user:
+            session['user_id'] = user.id
+            return redirect(url_for('index'))
+        return render_template('login.html', error="Invalid credentials")
+    return render_template('login.html')
 
-@app.route('/profile', methods=['GET'])
-@token_required
-def profile(current_user):
-    return jsonify({
-        'username': current_user.username,
-        'balance': current_user.balance
-    })
-
-@app.route('/products', methods=['GET'])
-def get_products():
-    products = Product.query.all()
-    return jsonify([{'id': p.id, 'name': p.name, 'price': p.price} for p in products])
-
-@app.route('/checkout/<int:product_id>', methods=['POST'])
-@token_required
-def checkout(current_user, product_id):
-    product = Product.query.get(product_id)
-    if not product or current_user.balance < product.price:
-        return jsonify({'message': 'Not enough balance'}), 400
-    current_user.balance -= product.price
-    order = Order(user_id=current_user.id, product_id=product.id)
-    db.session.add(order)
-    db.session.commit()
-    return jsonify({'message': 'Purchase successful'})
-
-@app.route('/orders', methods=['GET'])
-@token_required
-def get_orders(current_user):
-    orders = Order.query.filter_by(user_id=current_user.id).all()
-    return jsonify([{'order_id': o.id, 'product_id': o.product_id, 'timestamp': o.timestamp} for o in orders])
-
-@app.route('/balance', methods=['GET'])
-@token_required
-def get_balance(current_user):
-    return jsonify({'balance': current_user.balance})
-
-@app.route('/')
-def serve_index():
-    return send_from_directory('templates', 'index.html')
-
-def seed():
-    with app.app_context():
-        db.create_all()
-        if not Product.query.first():
-            db.session.add_all([
-                Product(name='Coconut Lip Balm', price=5.99),
-                Product(name='Tropical Butter', price=12.49),
-                Product(name='Beach Candle', price=9.99)
-            ])
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if User.query.filter_by(username=username).first():
+            return render_template('signup.html', error="Username already exists")
+        db.session.add(User(username=username, password=password))
         db.session.commit()
+        return redirect(url_for('login'))
+    return render_template('signup.html')
 
-seed()
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     app.run(debug=True)

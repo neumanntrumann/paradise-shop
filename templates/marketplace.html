@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Marketplace</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      margin: 0;
+      padding: 2em;
+    }
+    .market-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+    }
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .product-title {
+      font-size: 1.3em;
+      font-weight: bold;
+    }
+    .product-price {
+      color: #00796b;
+      font-weight: bold;
+    }
+    .product-actions {
+      margin-top: 10px;
+    }
+    .info-text {
+      display: none;
+      margin-top: 10px;
+      color: #333;
+      font-size: 0.95em;
+      text-align: left;
+    }
+    button {
+      background: #00aaff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-right: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #008fcc;
+    }
+    #menuToggle {
+      position: fixed; top: 15px; left: 15px;
+      width: 35px; height: 30px;
+      cursor: pointer; z-index: 1100;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block; height: 4px;
+      background: #00f6ff; border-radius: 2px;
+      box-shadow: 0 0 8px #00f6ff;
+    }
+    #sideMenu {
+      position: fixed; top: 0; left: 0;
+      width: 70vw; max-width: 280px;
+      height: 100vh;
+      background: #111;
+      box-shadow: 0 0 15px #00f6ff;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050; padding-top: 60px;
+    }
+    #sideMenu.active { transform: translateX(0); }
+    #sideMenu a {
+      display: block; padding: 15px 25px;
+      color: #fff; border-bottom: 1px solid #222;
+      text-decoration: none;
+    }
+    #sideMenu a:hover { background-color: #222; }
+    #profileDropdownContainer {
+      position: fixed; top: 15px; right: 15px;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px; height: 40px;
+      background-color: #00f6ff;
+      color: white; border-radius: 50%;
+      display: flex; align-items: center;
+      justify-content: center; cursor: pointer;
+      box-shadow: 0 0 10px #00f6ff;
+    }
+    #profileDropdown {
+      display: none; position: absolute; top: 50px; right: 0;
+      background: #fff; width: 200px;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 15px #00f6ff;
+    }
+    #profileDropdown.active { display: block; }
+    #profileDropdown a {
+      display: block; padding: 12px 16px;
+      text-decoration: none; color: #333;
+      border-bottom: 1px solid #eee;
+    }
+    #profileDropdown a:hover { background-color: #f0f0f0; }
+  </style>
+  <script>
+    const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
+    const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
+    window.onload = () => {
+      document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
+      document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
+      window.addEventListener('click', e => {
+        if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
+          document.getElementById('sideMenu').classList.remove('active');
+        if (!document.getElementById('profileDropdown').contains(e.target) && !document.getElementById('profileIcon').contains(e.target))
+          document.getElementById('profileDropdown').classList.remove('active');
+      });
+    };
+    function toggleInfo(button) {
+      const info = button.closest('.product-card').querySelector('.info-text');
+      info.style.display = info.style.display === 'block' ? 'none' : 'block';
+    }
+  </script>
+</head>
+<body>
+
+<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <span></span><span></span><span></span>
+</div>
+<nav id="sideMenu" aria-label="Main navigation menu">
+  <a href="/index">Home</a>
+  <a href="/balance">Balance</a>
+  <a href="/marketplace">Market</a>
+  <a href="/cart">Cart</a>
+  <a href="/orders">Orders</a>
+  <a href="/more">More</a>
+  <a href="/logout">Logout</a>
+</nav>
+
+<div id="profileDropdownContainer">
+  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
+  <div id="profileDropdown">
+    <div id="profileInfo">Loading...</div>
+    <a href="/balance">Load Funds</a>
+    <a href="/index">Shop</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/logout">Logout</a>
+  </div>
+</div>
+
+<div class="market-container">
+  <div class="product-card">
+    <div class="product-header">
+      <span class="product-title">Spammed CC</span>
+      <span class="product-price">$15</span>
+    </div>
+    <div class="product-actions">
+      <button onclick="toggleInfo(this)">Info</button>
+      <button>Add to Cart</button>
+    </div>
+    <div class="info-text">
+      90% Validity. Restocked fresh every day.
+    </div>
+  </div>
+
+  <div class="product-card">
+    <div class="product-header">
+      <span class="product-title">X2 EMV Software</span>
+      <span class="product-price">$400</span>
+    </div>
+    <div class="product-actions">
+      <button onclick="toggleInfo(this)">Info</button>
+      <button>Add to Cart</button>
+    </div>
+    <div class="info-text">
+      EMV reader/writer for SDA/DDA cards (Visa, MC, etc.). Works worldwide. Includes license, manual. Lifetime ownership.
+    </div>
+  </div>
+
+  <div class="product-card">
+    <div class="product-header">
+      <span class="product-title">Spamming Bundle</span>
+      <span class="product-price">$500</span>
+    </div>
+    <div class="product-actions">
+      <button onclick="toggleInfo(this)">Info</button>
+      <button>Add to Cart</button>
+    </div>
+    <div class="info-text">
+      Includes email/SMS spammers, phishing templates, spoofing tools, automation scripts, tutorials.
+    </div>
+  </div>
+
+  <div class="product-card">
+    <div class="product-header">
+      <span class="product-title">D+P Pack</span>
+      <span class="product-price">$150</span>
+    </div>
+    <div class="product-actions">
+      <button onclick="toggleInfo(this)">Info</button>
+      <button>Add to Cart</button>
+    </div>
+    <div class="info-text">
+      Real fresh checked D+P (201 code). Valid. Seller since 2020. Long-standing rep and vouches.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

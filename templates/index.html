@@ -1,75 +1,166 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Paradise Shop</title>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Welcome</title>
+<link href="/static/style.css" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      margin: 0;
+      padding: 2em;
+    }
+    .container {
+      background: #fff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      max-width: 600px;
+      margin: 2em auto;
+      text-align: center;
+    }
+    h1 {
+      color: #00796b;
+    }
+    p, a {
+      color: #444;
+      font-size: 1.1em;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 80%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    button {
+      background-color: #00aaff;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+    a {
+      display: block;
+      margin-top: 1em;
+      color: #005599;
+      text-decoration: none;
+    }
+</style>
+<style>
+  #menuToggle {
+    position: fixed; top: 15px; left: 15px;
+    width: 35px; height: 30px;
+    cursor: pointer; z-index: 1100;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+  }
+  #menuToggle span {
+    display: block; height: 4px;
+    background: #00f6ff; border-radius: 2px;
+    box-shadow: 0 0 8px #00f6ff;
+  }
+  #sideMenu {
+    position: fixed; top: 0; left: 0;
+    width: 70vw; max-width: 280px;
+    height: 100vh;
+    background: #111;
+    box-shadow: 0 0 15px #00f6ff;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1050; padding-top: 60px;
+  }
+  #sideMenu.active { transform: translateX(0); }
+  #sideMenu a {
+    display: block; padding: 15px 25px;
+    color: #fff; border-bottom: 1px solid #222;
+    text-decoration: none;
+  }
+  #sideMenu a:hover { background-color: #222; }
+
+  #profileDropdownContainer {
+    position: fixed; top: 15px; right: 15px;
+    z-index: 1100;
+  }
+  #profileIcon {
+    width: 40px; height: 40px;
+    background-color: #00f6ff;
+    color: white; border-radius: 50%;
+    display: flex; align-items: center;
+    justify-content: center; cursor: pointer;
+    box-shadow: 0 0 10px #00f6ff;
+  }
+  #profileDropdown {
+    display: none; position: absolute; top: 50px; right: 0;
+    background: #fff; width: 200px;
+    border-radius: 8px; overflow: hidden;
+    box-shadow: 0 0 15px #00f6ff;
+  }
+  #profileDropdown.active { display: block; }
+  #profileDropdown a {
+    display: block; padding: 12px 16px;
+    text-decoration: none; color: #333;
+    border-bottom: 1px solid #eee;
+  }
+  #profileDropdown a:hover { background-color: #f0f0f0; }
+</style>
+<script>
+  const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
+  const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
+
+  window.onload = () => {
+    document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
+    document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
+    window.addEventListener('click', e => {
+      if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
+        document.getElementById('sideMenu').classList.remove('active');
+      if (!document.getElementById('profileDropdown').contains(e.target) && !document.getElementById('profileIcon').contains(e.target))
+        document.getElementById('profileDropdown').classList.remove('active');
+    });
+  };
+</script>
 </head>
 <body>
-  <h2>Welcome to Paradise Shop</h2>
-  <div id="profileInfo"></div>
-  <div id="productList"></div>
-
-  <script>
-    const token = localStorage.getItem('token');
-
-    if (!token) {
-      window.location.href = '/login';
-    }
-
-    // Fetch profile
-    fetch('/profile', {
-      headers: {
-        'Authorization': 'Bearer ' + token
-      }
-    })
-    .then(res => {
-      if (!res.ok) throw new Error('Unauthorized');
-      return res.json();
-    })
-    .then(data => {
-      document.getElementById('profileInfo').innerHTML = `
-        <p><strong>User:</strong> ${data.username}</p>
-        <p><strong>Balance:</strong> $${data.balance.toFixed(2)}</p>
-        <button onclick="logout()">Logout</button>
-      `;
-    })
-    .catch(() => {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    });
-
-    // Fetch products
-    fetch('/products')
-    .then(res => res.json())
-    .then(products => {
-      const list = document.getElementById('productList');
-      list.innerHTML = '<h3>Products</h3>';
-      products.forEach(p => {
-        const item = document.createElement('div');
-        item.innerHTML = `
-          <p><strong>${p.name}</strong> - $${p.price.toFixed(2)}</p>
-          <button onclick="buy(${p.id})">Buy Now</button>
-        `;
-        list.appendChild(item);
-      });
-    });
-
-    function buy(productId) {
-      fetch('/checkout/' + productId, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + token
-        }
-      })
-      .then(res => res.json())
-      .then(data => alert(data.message || 'Success'))
-      .catch(err => alert('Error: ' + err.message));
-    }
-
-    function logout() {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-  </script>
+<!-- Hamburger menu -->
+<div aria-label="Toggle navigation menu" id="menuToggle" role="button" tabindex="0">
+<span></span><span></span><span></span>
+</div>
+<!-- Side navigation menu -->
+<nav aria-label="Main navigation menu" id="sideMenu">
+<a href="/index">Home</a>
+<a href="/balance">Balance</a>
+<a href="/marketplace">Market</a>
+<a href="/cart">Cart</a>
+<a href="/orders">Orders</a>
+<a href="/more">More</a>
+<a href="/logout">Logout</a>
+</nav>
+<!-- Profile dropdown -->
+<div id="profileDropdownContainer">
+<div aria-label="User profile menu" id="profileIcon" role="button" tabindex="0">👤</div>
+<div id="profileDropdown">
+<div id="profileInfo">Loading...</div>
+<a href="/balance">Load Funds</a>
+<a href="/index">Shop</a>
+<a href="/cart">Cart</a>
+<a href="/orders">Orders</a>
+<a href="/logout">Logout</a>
+</div>
+</div>
+<div class="container">
+<h1>🌴 Welcome to Paradise Shop</h1><div style="max-width: 720px; margin: 30px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); line-height: 1.6;">
+<h2>Welcome to Paradise Shop 🏝️</h2>
+<p>You’ve just landed at the official home of Paradise Shop — your trusted source for exclusive tools, fresh content, and carefully curated digital drops.</p>
+<p>We’re all about consistency, quality, and staying ahead of the wave. New products drop often — always fresh, always verified. Be sure to check in daily so you don’t miss a release.</p>
+<p>Whether you’re browsing, learning, or just vibing, we’re glad you’re here.</p>
+<p><strong>Stay connected with the community and get instant updates:</strong></p>
+<p>Telegram Chat: <a href="https://t.me/paradisestorechat" target="_blank">https://t.me/paradisestorechat</a><br/>
+    Username: <code>@paradisestorechat</code></p>
+<p>More heat coming soon. Stay sharp 🌺</p>
+</div>
+<p>Your island escape for premium vibes and products.</p>
+</div>
 </body>
 </html>

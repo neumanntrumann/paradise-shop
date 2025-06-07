@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>More</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #fceabb, #f8b500);
+      margin: 0;
+      padding: 2em;
+    }
+    .container {
+      background: #fff;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      max-width: 600px;
+      margin: 2em auto;
+      text-align: center;
+    }
+    h1, h2 {
+      color: #00796b;
+    }
+    p, a {
+      color: #444;
+      font-size: 1.1em;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px 0;
+      width: 80%;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 1em;
+    }
+    button {
+      background-color: #00aaff;
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+    a {
+      display: block;
+      margin-top: 1em;
+      color: #005599;
+      text-decoration: none;
+    }
+
+    #menuToggle {
+      position: fixed; top: 15px; left: 15px;
+      width: 35px; height: 30px;
+      cursor: pointer; z-index: 1100;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block; height: 4px;
+      background: #00f6ff; border-radius: 2px;
+      box-shadow: 0 0 8px #00f6ff;
+    }
+    #sideMenu {
+      position: fixed; top: 0; left: 0;
+      width: 70vw; max-width: 280px;
+      height: 100vh;
+      background: #111;
+      box-shadow: 0 0 15px #00f6ff;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050; padding-top: 60px;
+    }
+    #sideMenu.active { transform: translateX(0); }
+    #sideMenu a {
+      display: block; padding: 15px 25px;
+      color: #fff; border-bottom: 1px solid #222;
+      text-decoration: none;
+    }
+    #sideMenu a:hover { background-color: #222; }
+
+    #profileDropdownContainer {
+      position: fixed; top: 15px; right: 15px;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px; height: 40px;
+      background-color: #00f6ff;
+      color: white; border-radius: 50%;
+      display: flex; align-items: center;
+      justify-content: center; cursor: pointer;
+      box-shadow: 0 0 10px #00f6ff;
+    }
+    #profileDropdown {
+      display: none; position: absolute; top: 50px; right: 0;
+      background: #fff; width: 200px;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 15px #00f6ff;
+    }
+    #profileDropdown.active { display: block; }
+    #profileDropdown a {
+      display: block; padding: 12px 16px;
+      text-decoration: none; color: #333;
+      border-bottom: 1px solid #eee;
+    }
+    #profileDropdown a:hover { background-color: #f0f0f0; }
+  </style>
+  <script>
+    const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
+    const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
+
+    window.onload = () => {
+      document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
+      document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
+      window.addEventListener('click', e => {
+        if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
+          document.getElementById('sideMenu').classList.remove('active');
+        if (!document.getElementById('profileDropdown').contains(e.target) && !document.getElementById('profileIcon').contains(e.target))
+          document.getElementById('profileDropdown').classList.remove('active');
+      });
+    };
+  </script>
+</head>
+<body>
+
+<!-- Hamburger menu -->
+<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+  <span></span><span></span><span></span>
+</div>
+
+<!-- Side navigation menu -->
+<nav id="sideMenu" aria-label="Main navigation menu">
+  <a href="/index">Home</a>
+  <a href="/balance">Balance</a>
+  <a href="/marketplace">Market</a>
+  <a href="/cart">Cart</a>
+  <a href="/orders">Orders</a>
+  <a href="/more">More</a>
+  <a href="/logout">Logout</a>
+</nav>
+
+<!-- Profile dropdown -->
+<div id="profileDropdownContainer">
+  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
+  <div id="profileDropdown">
+    <div id="profileInfo">Loading...</div>
+    <a href="/balance">Load Funds</a>
+    <a href="/index">Shop</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/logout">Logout</a>
+  </div>
+</div>
+
+<!-- Main content -->
+<div class="container">
+  <h1>🌴 HIT US UP 🌴</h1>
+  <p>Got questions or just wanna vibe?</p>
+  <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank">t.me/ParadiseShopGroup</a></p>
+  <p>📲 Or DM me directly: <strong>@ParadiseStoreOwner</strong> — always down to talk!</p>
+
+  <hr>
+
+  <h2>🛠️ PARADISE SUPPORT 🛠️</h2>
+  <p>Need help or running into issues?</p>
+  <p>Tap in with our support team: <strong>@ParadiseSupportBot</strong></p>
+  <p>We’re here 24/7 — no stress, just real support.</p>
+</div>
+
+</body>
+</html>
