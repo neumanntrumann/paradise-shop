@@ -15,7 +15,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    balance = db.Column(db.Float, default=0.0)
+    balance = db.Column(db.Float, default=50.0)  # start with balance
     orders = db.relationship('Order', backref='user', lazy=True)
 
 class Product(db.Model):
@@ -28,6 +28,18 @@ class Order(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+def create_tables_and_seed():
+    db.create_all()
+    if not User.query.filter_by(username='admin').first():
+        db.session.add(User(username='admin', password='admin', balance=100.0))
+    if not Product.query.first():
+        db.session.add_all([
+            Product(name='Island Coconut Lip Balm', price=5.99),
+            Product(name='Tropical Body Butter', price=12.49),
+            Product(name='Beach Vibes Scented Candle', price=9.99)
+        ])
+    db.session.commit()
 
 @app.route('/')
 def index():
@@ -97,6 +109,8 @@ def checkout(product_id):
 def logout():
     session.clear()
     return redirect(url_for('login'))
+
+create_tables_and_seed()
 
 if __name__ == '__main__':
     app.run(debug=True)
