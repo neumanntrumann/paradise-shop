@@ -1,16 +1,33 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Login</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Paradise Shop - Login</title>
+  <link rel="stylesheet" href="/static/css/auth.css">
 </head>
 <body>
-  <h2>Login</h2>
-  <form id="loginForm">
-    <input id="username" name="username" placeholder="Username" required><br>
-    <input id="password" name="password" type="password" placeholder="Password" required><br>
-    <button type="submit">Login</button>
-  </form>
+  <div class="parallax-bg"></div>
+  <img src="https://cdn-icons-png.flaticon.com/512/869/869869.png" alt="Palm Logo" class="logo" />
+
+  <audio id="bg-music" loop muted>
+    <source src="https://cdn.pixabay.com/audio/2023/02/28/audio_c0f505b92f.mp3" type="audio/mpeg" />
+  </audio>
+  <button id="music-toggle">🔊 Music</button>
+
+  <div class="login-container">
+    <h2>🌺 Welcome Back to Paradise</h2>
+    <form id="loginForm" onsubmit="event.preventDefault(); login();">
+      <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
+      <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
+      <button type="submit">Login</button>
+    </form>
+
+    <p id="message"></p>
+    <p class="signup-link">Don't have an account? <a href="/signup">Sign up</a></p>
+  </div>
+
   <script src="/static/js/login.js"></script>
+  <script src="/static/js/music-toggle.js"></script>
 </body>
 </html>
