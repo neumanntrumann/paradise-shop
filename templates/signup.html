@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -147,7 +147,7 @@
 
   <div class="signup-container">
     <h2>🏝️ Join Paradise</h2>
-    <form id="signupForm" onsubmit="event.preventDefault(); signup();">
+    <form id="signupForm">
       <input type="text" id="username" name="username" placeholder="Username" oninput="clearMessage()" required />
       <input type="email" id="email" name="email" placeholder="Email" oninput="clearMessage()" required />
       <input type="password" id="password" name="password" placeholder="Password" oninput="clearMessage()" required />
@@ -155,7 +155,6 @@
     </form>
 
     <p id="message"></p>
-
     <p class="login-link">Already have an account? <a href="/login">Log in</a></p>
   </div>
 
@@ -163,6 +162,7 @@
     const message = document.getElementById('message');
     const bgMusic = document.getElementById('bg-music');
     const musicToggle = document.getElementById('music-toggle');
+    const signupForm = document.getElementById('signupForm');
 
     bgMusic.volume = 0.15;
 
@@ -171,12 +171,20 @@
       message.style.color = 'red';
     }
 
-    async function signup() {
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    async function signup(event) {
+      event.preventDefault();
       clearMessage();
 
       const username = document.getElementById('username').value.trim();
       const email = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value.trim();
+      const csrfToken = getCookie('csrf_token');
 
       if (!username || !email || !password) {
         message.textContent = 'Please fill out all fields.';
@@ -187,7 +195,8 @@
         const response = await fetch('/signup', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-CSRF-Token': csrfToken
           },
           body: JSON.stringify({ username, email, password }),
           credentials: 'include'
@@ -200,13 +209,14 @@
           return;
         }
 
-        // On successful signup, redirect to login page or homepage
         window.location.href = '/login';
       } catch (error) {
         message.textContent = 'Error connecting to server';
         console.error('Signup error:', error);
       }
     }
+
+    signupForm.addEventListener('submit', signup);
 
     musicToggle.addEventListener('click', () => {
       if (bgMusic.paused) {
