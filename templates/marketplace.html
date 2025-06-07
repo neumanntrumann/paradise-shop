@@ -1,305 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Paradise Shop - Marketplace</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #a1c4fd, #c2e9fb);
-      min-height: 100vh;
-      padding: 20px 0;
-      display: flex;
-      justify-content: center;
-      color: #333;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Paradise Shop - Marketplace</title>
 
-    #menuToggle {
-      position: fixed;
-      left: 20px;
-      top: 20px;
-      display: inline-block;
-      cursor: pointer;
-      width: 30px;
-      height: 25px;
-      z-index: 1002;
-    }
+<style>
+  /* Your existing styling for hamburger menu and page */
 
-    #menuToggle span {
-      display: block;
-      height: 3px;
-      background: #333;
-      margin-bottom: 5px;
-      border-radius: 2px;
-      transition: 0.3s ease;
-    }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0; padding: 0;
+    background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+    color: #333;
+  }
 
-    #sideMenu {
-      position: fixed;
-      left: -220px;
-      top: 0;
-      width: 200px;
-      height: 100%;
-      background: #fff;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-      padding-top: 60px;
-      transition: left 0.3s ease;
-      z-index: 1000;
-    }
+  /* Hamburger menu styles */
+  .hamburger {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    cursor: pointer;
+    z-index: 1000;
+  }
+  .hamburger div {
+    width: 30px;
+    height: 4px;
+    background-color: #333;
+    margin: 6px 0;
+    transition: 0.4s;
+  }
 
-    #sideMenu.active {
-      left: 0;
-    }
+  /* Sidebar menu */
+  .sidebar {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 999;
+    top: 0;
+    left: 0;
+    background-color: #00416a;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+  }
+  .sidebar a {
+    padding: 15px 30px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #e0e0e0;
+    display: block;
+    transition: 0.3s;
+  }
+  .sidebar a:hover {
+    background-color: #0288d1;
+  }
+  .sidebar .closebtn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 30px;
+    color: white;
+    cursor: pointer;
+  }
 
-    #sideMenu a {
-      display: block;
-      padding: 12px 20px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 600;
-      border-bottom: 1px solid #eee;
-    }
-
-    #sideMenu a:hover {
-      background: #d0f0fd;
-    }
-
-    #profileDropdownContainer {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      font-size: 24px;
-      user-select: none;
-      z-index: 1002;
-    }
-
-    #profileIcon {
-      cursor: pointer;
-    }
-
-    #profileDropdown {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: 35px;
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 10px;
-      width: 220px;
-      font-size: 14px;
-      z-index: 1001;
-    }
-
-    #profileDropdown.active {
-      display: block;
-    }
-
-    #profileDropdown a {
-      display: block;
-      padding: 6px 8px;
-      color: #333;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-
-    #profileDropdown a:hover {
-      background: #d0f0fd;
-    }
-
-    .marketplace-container {
-      max-width: 600px;
-      width: 100%;
-      padding: 0 20px;
-      margin-top: 80px;
-    }
-
-    .product-card {
-      background: rgba(255, 255, 255, 0.85);
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 128, 128, 0.3);
-      margin-bottom: 30px;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .product-card:hover {
-      transform: scale(1.05);
-      box-shadow: 0 8px 25px rgba(0, 128, 128, 0.6);
-    }
-
-    .product-image {
-      width: 120px;
-      height: 120px;
-      border-radius: 12px;
-      object-fit: cover;
-      margin-right: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
-
-    .product-details {
-      flex: 1;
-    }
-
-    .product-title {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #00796b;
-      margin: 0 0 10px 0;
-    }
-
-    .product-description {
-      font-size: 1rem;
-      color: #004d40;
-      margin-bottom: 15px;
-    }
-
-    .product-price {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #e65100;
-    }
-
-    .leaf-decor {
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      width: 50px;
-      opacity: 0.3;
-      pointer-events: none;
-    }
-  </style>
+  /* Marketplace content */
+  main {
+    padding: 80px 20px 20px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  h1 {
+    text-align: center;
+    color: #00416a;
+  }
+  .item-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+  }
+  .item-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 220px;
+    padding: 15px;
+    text-align: center;
+  }
+  .item-card img {
+    max-width: 100%;
+    border-radius: 6px;
+  }
+  .item-card button {
+    margin-top: 10px;
+    background-color: #0288d1;
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .item-card button:hover {
+    background-color: #015a8b;
+  }
+</style>
 </head>
 <body>
 
-  <!-- Burger Menu -->
-  <div id="menuToggle" tabindex="0" role="button" aria-label="Toggle menu" aria-expanded="false">
-    <span></span><span></span><span></span>
+<!-- Hamburger menu icon -->
+<div class="hamburger" id="hamburger">
+  <div></div>
+  <div></div>
+  <div></div>
+</div>
+
+<!-- Sidebar navigation -->
+<div id="sidebar" class="sidebar">
+  <a href="javascript:void(0)" class="closebtn" id="closebtn">&times;</a>
+  <a href="/index">Home</a>
+  <a href="/balance">Balance</a>
+  <a href="/marketplace">Marketplace</a>
+  <a href="/cart">Cart</a>
+  <a href="/orders">Orders</a>
+  <a href="/logout">Logout</a>
+</div>
+
+<main>
+  <h1>Welcome to the Marketplace, {{ username }}!</h1>
+
+  <div class="item-list" id="item-list">
+    <!-- Marketplace items will appear here -->
   </div>
+</main>
 
-  <!-- Side Navigation -->
-  <nav id="sideMenu" aria-label="Main navigation">
-    <a href="/">Home</a>
-    <a href="/balance">Balance</a>
-    <a href="/marketplace">Marketplace</a>
-    <a href="/cart">Cart</a>
-    <a href="/orders">Orders</a>
-    <a href="/logout">Logout</a>
-  </nav>
+<script>
+  // Hamburger menu toggle
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const closebtn = document.getElementById('closebtn');
 
-  <!-- Profile Dropdown -->
-  <div id="profileDropdownContainer">
-    <div id="profileIcon" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false" aria-label="User profile menu">👤</div>
-    <div id="profileDropdown" role="menu" aria-hidden="true">
-      <div id="profileInfo" role="none">Loading...</div>
-      <a href="/balance" role="menuitem">Load Funds</a>
-      <a href="/marketplace" role="menuitem">Shop</a>
-      <a href="/cart" role="menuitem">Cart</a>
-      <a href="/orders" role="menuitem">Orders</a>
-      <a href="/logout" role="menuitem">Logout</a>
-    </div>
-  </div>
+  hamburger.onclick = function() {
+    sidebar.style.width = '250px';
+  };
 
-  <!-- Marketplace Items -->
-  <div class="marketplace-container">
-    <div class="product-card">
-      <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=120&q=80" alt="Tropical Shirt" class="product-image" />
-      <div class="product-details">
-        <h2 class="product-title">Tropical Shirt</h2>
-        <p class="product-description">Lightweight, breezy, perfect for beach days.</p>
-        <p class="product-price">$29.99</p>
-      </div>
-      <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Leaf_icon.svg" alt="Leaf" class="leaf-decor" />
-    </div>
-  </div>
+  closebtn.onclick = function() {
+    sidebar.style.width = '0';
+  };
 
-  <script>
-    function getCookie(name) {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
-    }
+  // Placeholder marketplace items - replace or enhance later
+  const items = [
+    { id: 1, name: 'Tropical Shirt', price: 29.99, img: 'https://via.placeholder.com/200?text=Tropical+Shirt' },
+    { id: 2, name: 'Beach Hat', price: 19.99, img: 'https://via.placeholder.com/200?text=Beach+Hat' },
+    { id: 3, name: 'Sunglasses', price: 14.99, img: 'https://via.placeholder.com/200?text=Sunglasses' },
+    { id: 4, name: 'Flip Flops', price: 9.99, img: 'https://via.placeholder.com/200?text=Flip+Flops' }
+  ];
 
-    const profileIcon = document.getElementById('profileIcon');
-    const profileDropdown = document.getElementById('profileDropdown');
-    const profileInfoDiv = document.getElementById('profileInfo');
-    const menuToggle = document.getElementById('menuToggle');
-    const sideMenu = document.getElementById('sideMenu');
+  const itemList = document.getElementById('item-list');
 
-    function toggleMenu() {
-      const isActive = sideMenu.classList.toggle('active');
-      menuToggle.setAttribute('aria-expanded', isActive);
-    }
-
-    function toggleProfileDropdown() {
-      const isActive = profileDropdown.classList.toggle('active');
-      profileDropdown.setAttribute('aria-hidden', !isActive);
-      profileIcon.setAttribute('aria-expanded', isActive);
-    }
-
-    menuToggle.addEventListener('click', toggleMenu);
-    menuToggle.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleMenu();
-      }
+  function renderItems() {
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+      card.innerHTML = `
+        <img src="${item.img}" alt="${item.name}">
+        <h3>${item.name}</h3>
+        <p>$${item.price.toFixed(2)}</p>
+        <button data-id="${item.id}">Add to Cart</button>
+      `;
+      itemList.appendChild(card);
     });
+  }
 
-    profileIcon.addEventListener('click', toggleProfileDropdown);
-    profileIcon.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        toggleProfileDropdown();
-      }
-    });
+  renderItems();
 
-    window.addEventListener('click', (e) => {
-      if (!sideMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-        sideMenu.classList.remove('active');
-        menuToggle.setAttribute('aria-expanded', false);
-      }
-      if (!profileIcon.contains(e.target) && !profileDropdown.contains(e.target)) {
-        profileDropdown.classList.remove('active');
-        profileDropdown.setAttribute('aria-hidden', true);
-        profileIcon.setAttribute('aria-expanded', false);
-      }
-    });
-
-    async function loadUserInfo() {
-      const csrfToken = getCookie('csrf_token');
+  // Event delegation for Add to Cart buttons
+  itemList.addEventListener('click', async (e) => {
+    if (e.target.tagName === 'BUTTON') {
+      const itemId = e.target.getAttribute('data-id');
       try {
-        const response = await fetch('/profile', {
-          credentials: 'include',
-          headers: {
-            'Accept': 'application/json',
-            'X-CSRF-Token': csrfToken
-          }
+        // Example: POST to /cart/add API (you'll need to create this endpoint)
+        const res = await fetch('/cart/add', {
+          method: 'POST',
+          credentials: 'include',  // send session cookie
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ item_id: itemId })
         });
-        if (!response.ok) throw new Error('Unauthorized');
-        const data = await response.json();
-        profileInfoDiv.innerHTML = `
-          <strong>${data.username || 'User'}</strong><br>
-          Balance: $${(data.balance ?? 0).toFixed(2)}<br>
-          Spent: $${(data.spent ?? 0).toFixed(2)}<br>
-          Joined: ${data.joinDate || 'Unknown'}<br>
-          Orders: ${data.orders ?? 0}
-        `;
-      } catch {
-        profileInfoDiv.textContent = 'Not logged in';
-        window.location.href = '/login';
+
+        if (res.status === 401) {
+          // Not logged in, redirect to login
+          window.location.href = '/login';
+          return;
+        }
+
+        const data = await res.json();
+        if (res.ok) {
+          alert('Item added to cart!');
+        } else {
+          alert(data.error || 'Failed to add to cart');
+        }
+      } catch (error) {
+        alert('Network error, please try again');
       }
     }
+  });
+</script>
 
-    loadUserInfo();
-  </script>
 </body>
 </html>

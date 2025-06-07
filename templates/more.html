@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>PARADISE SHOP - More</title>
   <style>
     body {
@@ -168,25 +170,25 @@
 
   <!-- Side Menu -->
   <nav id="sideMenu" aria-label="Main navigation menu">
-    <a href="index.html">Home</a>
-    <a href="balance.html">Balance</a>
-    <a href="marketplace.html">Market</a>
-    <a href="cart.html">Cart</a>
-    <a href="orders.html">Orders</a>
-    <a href="more.html">More</a>
-    <a href="logout.html">Logout</a>
+    <a href="/">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Market</a>
+    <a href="/cart">Cart</a>
+    <a href="/orders">Orders</a>
+    <a href="/more">More</a>
+    <a href="/logout">Logout</a>
   </nav>
 
   <!-- Profile dropdown -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu" aria-expanded="false" title="Profile">👤</div>
     <div id="profileDropdown" role="menu" aria-label="User profile menu">
-      <div id="profileInfo"></div>
-      <a href="balance.html">Load Funds</a>
-      <a href="index.html">Shop</a>
-      <a href="cart.html">Cart</a>
-      <a href="orders.html">Orders</a>
-      <a href="logout.html">Logout</a>
+      <div id="profileInfo">Loading...</div>
+      <a href="/balance">Load Funds</a>
+      <a href="/">Shop</a>
+      <a href="/cart">Cart</a>
+      <a href="/orders">Orders</a>
+      <a href="/logout">Logout</a>
     </div>
   </div>
 
@@ -195,7 +197,7 @@
 
   <div class="contact-section">
     <p>Got questions or just wanna vibe?</p>
-    <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank">t.me/ParadiseShopGroup</a></p>
+    <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank" rel="noopener noreferrer">t.me/ParadiseShopGroup</a></p>
     <p>📲 Or DM me directly: <strong>@ParadiseStoreOwner</strong> — always down to talk!</p>
 
     <div class="divider">⸻</div>
@@ -207,20 +209,20 @@
   </div>
 
   <script>
-    const user = sessionStorage.getItem('loggedInUser');
-    if (!user) {
+    // Check for JWT token in localStorage
+    const token = localStorage.getItem('token');
+    if (!token) {
       alert('Please log in first.');
-      window.location.href = 'login.html';
+      window.location.href = '/login';
     }
 
-    const users = JSON.parse(localStorage.getItem('users')) || {};
     const profileIcon = document.getElementById('profileIcon');
     const profileDropdown = document.getElementById('profileDropdown');
     const profileInfoDiv = document.getElementById('profileInfo');
     const menuToggle = document.getElementById('menuToggle');
     const sideMenu = document.getElementById('sideMenu');
 
-    // Hamburger menu
+    // Hamburger menu toggle
     function toggleMenu() {
       sideMenu.classList.toggle('active');
     }
@@ -237,7 +239,7 @@
       }
     });
 
-    // Profile dropdown
+    // Profile dropdown toggle
     function toggleProfileDropdown() {
       const isActive = profileDropdown.classList.toggle('active');
       profileIcon.setAttribute('aria-expanded', isActive);
@@ -256,30 +258,46 @@
       }
     });
 
-    if (user && users[user]) {
-      const userData = users[user];
-      let totalSpent = 0;
-      if (userData.orders) {
-        userData.orders.forEach(order => {
-          order.forEach(item => {
-            totalSpent += parseFloat(item.price.replace('$', ''));
-          });
+    // Fetch user profile data from backend
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile', {
+          headers: { 'Authorization': 'Bearer ' + token }
         });
+        if (res.status === 401) {
+          alert('Session expired or unauthorized. Please log in again.');
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          return;
+        }
+        const data = await res.json();
+
+        // Calculate total spent from orders
+        let totalSpent = 0;
+        if (data.orders && Array.isArray(data.orders)) {
+          data.orders.forEach(order => {
+            order.forEach(item => {
+              const priceNum = parseFloat(item.price.replace('$', '')) || 0;
+              totalSpent += priceNum;
+            });
+          });
+        }
+
+        profileInfoDiv.innerHTML = `
+          <strong>${data.username}</strong><br>
+          Balance: $${data.balance.toFixed(2)}<br>
+          Spent: $${totalSpent.toFixed(2)}<br>
+          Total: $${(data.balance + totalSpent).toFixed(2)}<br>
+          Joined: ${data.joinDate || 'Unknown'}<br>
+          Orders: ${data.orders ? data.orders.length : 0}
+        `;
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        profileInfoDiv.textContent = 'Failed to load profile data';
       }
-
-      let joinDate = userData.joinDate || 'Unknown';
-      profileInfoDiv.innerHTML = `
-        <strong>${user}</strong><br>
-        Balance: $${userData.balance.toFixed(2)}<br>
-        Spent: $${totalSpent.toFixed(2)}<br>
-        Total: $${(userData.balance + totalSpent).toFixed(2)}<br>
-        Joined: ${joinDate}<br>
-        Orders: ${userData.orders ? userData.orders.length : 0}
-      `;
-    } else {
-      profileInfoDiv.textContent = 'No user data found';
     }
-  </script>
 
+    loadProfile();
+  </script>
 </body>
 </html>
