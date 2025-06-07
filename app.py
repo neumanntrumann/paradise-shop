@@ -1,4 +1,3 @@
-
 from flask import Flask, render_template, request, redirect, session, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
@@ -6,6 +5,9 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+
+# ✅ Fix: allow session cookies over HTTP (localhost)
+app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -15,7 +17,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password = db.Column(db.String(120), nullable=False)
-    balance = db.Column(db.Float, default=50.0)  # start with balance
+    balance = db.Column(db.Float, default=50.0)
     orders = db.relationship('Order', backref='user', lazy=True)
 
 class Product(db.Model):
@@ -29,23 +31,36 @@ class Order(db.Model):
     product_id = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
-def create_tables_and_seed()  # ensures tables + seed data setup inside app context:
+# ensures tables + seed data setup inside app context
+def create_tables_and_seed():
     with app.app_context():
-    db.create_all()
-    if not User.query.filter_by(username='admin').first():
-        db.session.add(User(username='admin', password='admin', balance=100.0))
-    if not Product.query.first():
-        db.session.add_all([
-            Product(name='Island Coconut Lip Balm', price=5.99),
-            Product(name='Tropical Body Butter', price=12.49),
-            Product(name='Beach Vibes Scented Candle', price=9.99)
-        ])
-    db.session.commit()
+        db.create_all()
+
+        if not User.query.filter_by(username='admin').first():
+            db.session.add(User(username='admin', password='admin', balance=100.0))
+
+        if not Product.query.first():
+            db.session.add_all([
+                Product(name='Island Coconut Lip Balm', price=5.99),
+                Product(name='Tropical Body Butter', price=12.49),
+                Product(name='Beach Vibes Scented Candle', price=9.99)
+            ])
+
+        db.session.commit()
 
 @app.route('/')
 def index():
     if 'user_id' not in session:
+        print("🔁 No session found — redirecting to login.")
         return redirect(url_for('login'))
+    
+    user = User.query.get(session['user_id'])
+    if not user:
+        session.clear()
+        print("⚠️ Invalid session user — logging out.")
+        return redirect(url_for('login'))
+
+    print(f"✅ {user.username} is logged in. Showing products.")
     products = Product.query.all()
     return render_template('index.html', products=products)
 
@@ -54,12 +69,17 @@ def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
+        print(f"🛂 Attempting login: {username} / {password}")
+        
         user = User.query.filter_by(username=username, password=password).first()
         if user:
             session['user_id'] = user.id
+            print("✅ Login successful, session set.")
             return redirect(url_for('index'))
         else:
             flash('Invalid credentials')
+            print("❌ Login failed: invalid credentials.")
+    
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
@@ -111,7 +131,8 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-create_tables_and_seed()  # ensures tables + seed data setup inside app context
+# create tables + seed data before the app runs
+create_tables_and_seed()
 
 if __name__ == '__main__':
     app.run(debug=True)
