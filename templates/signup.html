@@ -1,171 +1,205 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sign Up</title>
-  <link rel="stylesheet" href="/static/style.css">
+
   <style>
     body {
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to bottom, #fceabb, #f8b500);
-      margin: 0;
-      padding: 2em;
+      overflow-x: hidden;
+      perspective: 1px;
+      height: 100vh;
+      overflow-y: auto;
+      background-attachment: fixed;
+      color: #333;
+    }
+    .parallax-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
+      z-index: -1;
+      filter: brightness(0.75);
     }
     .container {
-      background: #fff;
-      padding: 2em;
+      margin: 120px auto;
+      width: 320px;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
-      max-width: 600px;
-      margin: 2em auto;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
       text-align: center;
+      z-index: 1;
+      position: relative;
     }
-    h1 {
-      color: #00796b;
-    }
-    p, a {
-      color: #444;
-      font-size: 1.1em;
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
     }
     input, button {
-      padding: 10px;
-      margin: 10px 0;
-      width: 80%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
+      margin: 12px 0;
+      padding: 12px;
+      width: 100%;
+      border: 1.5px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    input:focus {
+      border-color: #00ffd0;
+      box-shadow: 0 0 8px #00ffd0;
+      outline: none;
     }
     button {
       background-color: #00aaff;
       color: white;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 0 10px #00aaff;
+      text-transform: uppercase;
       border: none;
-      font-weight: bold;
+    }
+    button:hover {
+      background-color: #008ecc;
+      box-shadow: 0 0 20px #008ecc;
     }
     a {
-      display: block;
-      margin-top: 1em;
-      color: #005599;
+      color: #0077cc;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.3s ease;
+    }
+    a:hover {
+      text-decoration: underline;
+      color: #004999;
+    }
+
+    #menuToggle {
+      position: fixed; top: 15px; left: 15px;
+      width: 35px; height: 30px;
+      cursor: pointer; z-index: 1100;
+      display: flex; flex-direction: column;
+      justify-content: space-between;
+    }
+    #menuToggle span {
+      display: block; height: 4px;
+      background: #00f6ff; border-radius: 2px;
+      box-shadow: 0 0 8px #00f6ff;
+    }
+    #sideMenu {
+      position: fixed; top: 0; left: 0;
+      width: 70vw; max-width: 280px;
+      height: 100vh;
+      background: #111;
+      box-shadow: 0 0 15px #00f6ff;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease;
+      z-index: 1050; padding-top: 60px;
+    }
+    #sideMenu.active { transform: translateX(0); }
+    #sideMenu a {
+      display: block; padding: 15px 25px;
+      color: #fff; border-bottom: 1px solid #222;
       text-decoration: none;
     }
+    #sideMenu a:hover { background-color: #222; }
+
+    #profileDropdownContainer {
+      position: fixed; top: 15px; right: 15px;
+      z-index: 1100;
+    }
+    #profileIcon {
+      width: 40px; height: 40px;
+      background-color: #00f6ff;
+      color: white; border-radius: 50%;
+      display: flex; align-items: center;
+      justify-content: center; cursor: pointer;
+      box-shadow: 0 0 10px #00f6ff;
+    }
+    #profileDropdown {
+      display: none; position: absolute; top: 50px; right: 0;
+      background: #fff; width: 200px;
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 0 15px #00f6ff;
+    }
+    #profileDropdown.active { display: block; }
+    #profileDropdown a {
+      display: block; padding: 12px 16px;
+      text-decoration: none; color: #333;
+      border-bottom: 1px solid #eee;
+    }
+    #profileDropdown a:hover { background-color: #f0f0f0; }
   </style>
 
-<style>
-  #menuToggle {
-    position: fixed; top: 15px; left: 15px;
-    width: 35px; height: 30px;
-    cursor: pointer; z-index: 1100;
-    display: flex; flex-direction: column;
-    justify-content: space-between;
-  }
-  #menuToggle span {
-    display: block; height: 4px;
-    background: #00f6ff; border-radius: 2px;
-    box-shadow: 0 0 8px #00f6ff;
-  }
-  #sideMenu {
-    position: fixed; top: 0; left: 0;
-    width: 70vw; max-width: 280px;
-    height: 100vh;
-    background: #111;
-    box-shadow: 0 0 15px #00f6ff;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    z-index: 1050; padding-top: 60px;
-  }
-  #sideMenu.active { transform: translateX(0); }
-  #sideMenu a {
-    display: block; padding: 15px 25px;
-    color: #fff; border-bottom: 1px solid #222;
-    text-decoration: none;
-  }
-  #sideMenu a:hover { background-color: #222; }
+  <script>
+    const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
+    const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
 
-  #profileDropdownContainer {
-    position: fixed; top: 15px; right: 15px;
-    z-index: 1100;
-  }
-  #profileIcon {
-    width: 40px; height: 40px;
-    background-color: #00f6ff;
-    color: white; border-radius: 50%;
-    display: flex; align-items: center;
-    justify-content: center; cursor: pointer;
-    box-shadow: 0 0 10px #00f6ff;
-  }
-  #profileDropdown {
-    display: none; position: absolute; top: 50px; right: 0;
-    background: #fff; width: 200px;
-    border-radius: 8px; overflow: hidden;
-    box-shadow: 0 0 15px #00f6ff;
-  }
-  #profileDropdown.active { display: block; }
-  #profileDropdown a {
-    display: block; padding: 12px 16px;
-    text-decoration: none; color: #333;
-    border-bottom: 1px solid #eee;
-  }
-  #profileDropdown a:hover { background-color: #f0f0f0; }
-</style>
-<script>
-  const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
-  const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
-
-  window.onload = () => {
-    document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
-    document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
-    window.addEventListener('click', e => {
-      if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
-        document.getElementById('sideMenu').classList.remove('active');
-      if (!document.getElementById('profileDropdown').contains(e.target) && !document.getElementById('profileIcon').contains(e.target))
-        document.getElementById('profileDropdown').classList.remove('active');
-    });
-  };
-</script>
-
+    window.onload = () => {
+      document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
+      document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
+      window.addEventListener('click', e => {
+        if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
+          document.getElementById('sideMenu').classList.remove('active');
+        if (!document.getElementById('profileDropdown').contains(e.target) && !document.getElementById('profileIcon').contains(e.target))
+          document.getElementById('profileDropdown').classList.remove('active');
+      });
+    };
+  </script>
 </head>
 <body>
+  <div class="parallax-bg"></div>
 
-<!-- Hamburger menu -->
-<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
-  <span></span><span></span><span></span>
-</div>
+  <!-- Hamburger menu -->
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span><span></span><span></span>
+  </div>
 
-<!-- Side navigation menu -->
-<nav id="sideMenu" aria-label="Main navigation menu">
-  <a href="/index">Home</a>
-  <a href="/balance">Balance</a>
-  <a href="/marketplace">Market</a>
-  <a href="/cart">Cart</a>
-  <a href="/orders">Orders</a>
-  <a href="/more">More</a>
-  <a href="/logout">Logout</a>
-</nav>
-
-<!-- Profile dropdown -->
-<div id="profileDropdownContainer">
-  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
-  <div id="profileDropdown">
-    <div id="profileInfo">Loading...</div>
-    <a href="/balance">Load Funds</a>
-    <a href="/index">Shop</a>
+  <!-- Side navigation menu -->
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="/index">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Market</a>
     <a href="/cart">Cart</a>
     <a href="/orders">Orders</a>
+    <a href="/more">More</a>
     <a href="/logout">Logout</a>
-  </div>
-</div>
+  </nav>
 
+  <!-- Profile dropdown -->
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
+    <div id="profileDropdown">
+      <div id="profileInfo">Loading...</div>
+      <a href="/balance">Load Funds</a>
+      <a href="/index">Shop</a>
+      <a href="/cart">Cart</a>
+      <a href="/orders">Orders</a>
+      <a href="/logout">Logout</a>
+    </div>
+  </div>
+
+  <!-- Sign Up Form -->
   <div class="container">
-    <h1>🏝️ Join the Paradise</h1>
-    
-        <form method="POST">
-          <input name="username" placeholder="Choose a Username" required><br>
-          <input name="password" type="password" placeholder="Create a Password" required><br>
-          <button type="submit">Sign Up</button>
-        </form>
-        <a href="/login">Already have an account? Login</a>
-        
+    <h2>🏝️ Join the Paradise</h2>
+    <form method="POST">
+      <input name="username" placeholder="Choose a Username" required><br>
+      <input name="password" type="password" placeholder="Create a Password" required><br>
+      <button type="submit">Sign Up</button>
+    </form>
+    <p><a href="/login">Already have an account? Login</a></p>
   </div>
 </body>
 </html>

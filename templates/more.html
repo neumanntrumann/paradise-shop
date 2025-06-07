@@ -7,46 +7,69 @@
   <link rel="stylesheet" href="/static/style.css">
   <style>
     body {
+      margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to bottom, #fceabb, #f8b500);
-      margin: 0;
-      padding: 2em;
+      overflow-x: hidden;
+      perspective: 1px;
+      height: 100vh;
+      overflow-y: auto;
+      background-attachment: fixed;
+      color: #333;
     }
+
+    .parallax-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 150%;
+      background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=80') no-repeat center center;
+      background-size: cover;
+      transform: translateZ(-1px) scale(2);
+      z-index: -1;
+      filter: brightness(0.75);
+    }
+
     .container {
-      background: #fff;
-      padding: 2em;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      margin: 120px auto;
+      width: 90%;
       max-width: 600px;
-      margin: 2em auto;
+      padding: 30px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 208, 0.7);
+      border: 3px solid #00ffd0;
+      animation: pulseBorder 3s infinite ease-in-out;
       text-align: center;
+      z-index: 1;
+      position: relative;
     }
+
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 15px #00ffd0; }
+      50% { box-shadow: 0 0 35px #00fff2; }
+      100% { box-shadow: 0 0 15px #00ffd0; }
+    }
+
     h1, h2 {
       color: #00796b;
     }
+
     p, a {
       color: #444;
       font-size: 1.1em;
     }
-    input, button {
-      padding: 10px;
-      margin: 10px 0;
-      width: 80%;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1em;
-    }
-    button {
-      background-color: #00aaff;
-      color: white;
-      border: none;
-      font-weight: bold;
-    }
+
     a {
-      display: block;
-      margin-top: 1em;
-      color: #005599;
+      color: #0077cc;
+      font-weight: 600;
       text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+      color: #004999;
     }
 
     #menuToggle {
@@ -56,11 +79,13 @@
       display: flex; flex-direction: column;
       justify-content: space-between;
     }
+
     #menuToggle span {
       display: block; height: 4px;
       background: #00f6ff; border-radius: 2px;
       box-shadow: 0 0 8px #00f6ff;
     }
+
     #sideMenu {
       position: fixed; top: 0; left: 0;
       width: 70vw; max-width: 280px;
@@ -71,40 +96,58 @@
       transition: transform 0.3s ease;
       z-index: 1050; padding-top: 60px;
     }
+
     #sideMenu.active { transform: translateX(0); }
+
     #sideMenu a {
       display: block; padding: 15px 25px;
       color: #fff; border-bottom: 1px solid #222;
       text-decoration: none;
     }
+
     #sideMenu a:hover { background-color: #222; }
 
     #profileDropdownContainer {
       position: fixed; top: 15px; right: 15px;
       z-index: 1100;
     }
+
     #profileIcon {
       width: 40px; height: 40px;
       background-color: #00f6ff;
-      color: white; border-radius: 50%;
+      color: white;
+      border-radius: 50%;
       display: flex; align-items: center;
-      justify-content: center; cursor: pointer;
+      justify-content: center;
+      cursor: pointer;
       box-shadow: 0 0 10px #00f6ff;
     }
+
     #profileDropdown {
-      display: none; position: absolute; top: 50px; right: 0;
-      background: #fff; width: 200px;
-      border-radius: 8px; overflow: hidden;
+      display: none;
+      position: absolute;
+      top: 50px;
+      right: 0;
+      background: #fff;
+      width: 200px;
+      border-radius: 8px;
+      overflow: hidden;
       box-shadow: 0 0 15px #00f6ff;
     }
+
     #profileDropdown.active { display: block; }
+
     #profileDropdown a {
-      display: block; padding: 12px 16px;
-      text-decoration: none; color: #333;
+      display: block;
+      padding: 12px 16px;
+      text-decoration: none;
+      color: #333;
       border-bottom: 1px solid #eee;
     }
+
     #profileDropdown a:hover { background-color: #f0f0f0; }
   </style>
+
   <script>
     const toggleMenu = () => document.getElementById('sideMenu').classList.toggle('active');
     const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
@@ -122,50 +165,51 @@
   </script>
 </head>
 <body>
+  <div class="parallax-bg"></div>
 
-<!-- Hamburger menu -->
-<div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
-  <span></span><span></span><span></span>
-</div>
+  <!-- Hamburger menu -->
+  <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
+    <span></span><span></span><span></span>
+  </div>
 
-<!-- Side navigation menu -->
-<nav id="sideMenu" aria-label="Main navigation menu">
-  <a href="/index">Home</a>
-  <a href="/balance">Balance</a>
-  <a href="/marketplace">Market</a>
-  <a href="/cart">Cart</a>
-  <a href="/orders">Orders</a>
-  <a href="/more">More</a>
-  <a href="/logout">Logout</a>
-</nav>
-
-<!-- Profile dropdown -->
-<div id="profileDropdownContainer">
-  <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
-  <div id="profileDropdown">
-    <div id="profileInfo">Loading...</div>
-    <a href="/balance">Load Funds</a>
-    <a href="/index">Shop</a>
+  <!-- Side navigation menu -->
+  <nav id="sideMenu" aria-label="Main navigation menu">
+    <a href="/index">Home</a>
+    <a href="/balance">Balance</a>
+    <a href="/marketplace">Market</a>
     <a href="/cart">Cart</a>
     <a href="/orders">Orders</a>
+    <a href="/more">More</a>
     <a href="/logout">Logout</a>
+  </nav>
+
+  <!-- Profile dropdown -->
+  <div id="profileDropdownContainer">
+    <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
+    <div id="profileDropdown">
+      <div id="profileInfo">Loading...</div>
+      <a href="/balance">Load Funds</a>
+      <a href="/index">Shop</a>
+      <a href="/cart">Cart</a>
+      <a href="/orders">Orders</a>
+      <a href="/logout">Logout</a>
+    </div>
   </div>
-</div>
 
-<!-- Main content -->
-<div class="container">
-  <h1>🌴 HIT US UP 🌴</h1>
-  <p>Got questions or just wanna vibe?</p>
-  <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank">t.me/ParadiseShopGroup</a></p>
-  <p>📲 Or DM me directly: <strong>@ParadiseStoreOwner</strong> — always down to talk!</p>
+  <!-- Main content -->
+  <div class="container">
+    <h1>🌴 HIT US UP 🌴</h1>
+    <p>Got questions or just wanna vibe?</p>
+    <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank">t.me/ParadiseShopGroup</a></p>
+    <p>📲 Or DM me directly: <strong>@ParadiseStoreOwner</strong> — always down to talk!</p>
 
-  <hr>
+    <hr>
 
-  <h2>🛠️ PARADISE SUPPORT 🛠️</h2>
-  <p>Need help or running into issues?</p>
-  <p>Tap in with our support team: <strong>@ParadiseSupportBot</strong></p>
-  <p>We’re here 24/7 — no stress, just real support.</p>
-</div>
-
+    <h2>🛠️ PARADISE SUPPORT 🛠️</h2>
+    <p>Need help or running into issues?</p>
+    <p>Tap in with our support team: <strong>@ParadiseSupportBot</strong></p>
+    <p>We’re here 24/7 — no stress, just real support.</p>
+  </div>
 </body>
 </html>
+
