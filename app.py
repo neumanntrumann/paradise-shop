@@ -29,6 +29,7 @@ class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float, nullable=False)
+    description = db.Column(db.Text, nullable=True)
 
 class CartItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -61,10 +62,13 @@ with app.app_context():
         ))
     if not Product.query.first():
         db.session.add_all([
-            Product(name='Spammed CC', price=15.00),
-            Product(name='X2 EMV Software', price=400.00),
-            Product(name='Spamming Bundle', price=500.00),
-            Product(name='D+P Pack', price=150.00)
+            Product(name='Spammed CC', price=15.00, description='90% Validity Restocked Fresh Everyday'),
+            Product(name='X2 EMV Software', price=400.00, description='Everything you need to know about EMV software...'),
+            Product(name='Spamming Bundle', price=500.00, description='Includes email spammer, phishing templates, spoofing tools, SMS spammer, bypass tools, and tutorials.'),
+            Product(name='D+P Pack', price=150.00, description='Real fresh checked d+p 💳100% valid been selling since 2020 check my vouches 5 years worth✅201 code only👨‍💻'),
+            Product(name='Your Own Shop Website', price=1000.00, description='Custom shop created just like this one to your taste and style with instructions.'),
+            Product(name='Money Order Method with Tutorial', price=250.00, description='Includes money order tutorial with everything you need.'),
+            Product(name='Check Bundle', price=500.00, description='Includes everything needed to make checks, full tutorial with all the templates.')
         ])
     db.session.commit()
 

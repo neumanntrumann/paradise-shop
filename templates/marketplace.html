@@ -85,6 +85,7 @@
       color: #333;
       font-size: 0.95em;
       text-align: left;
+      white-space: pre-line;
     }
 
     button {
@@ -193,12 +194,10 @@
 <body>
   <div class="parallax-bg"></div>
 
-  <!-- Hamburger menu -->
   <div id="menuToggle" aria-label="Toggle navigation menu" role="button" tabindex="0">
     <span></span><span></span><span></span>
   </div>
 
-  <!-- Side navigation menu -->
   <nav id="sideMenu" aria-label="Main navigation menu">
     <a href="/index">Home</a>
     <a href="/balance">Balance</a>
@@ -209,7 +208,6 @@
     <a href="/logout">Logout</a>
   </nav>
 
-  <!-- Profile icon and dropdown -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
     <div id="profileDropdown">
@@ -226,7 +224,6 @@
     </div>
   </div>
 
-  <!-- Marketplace Container -->
   <div class="market-container">
     {% for product in products %}
       <div class="product-card">
