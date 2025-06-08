@@ -1,7 +1,7 @@
 import random
 import string
 import requests
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import os
@@ -15,14 +15,14 @@ db = SQLAlchemy(app)
 
 # BlockCypher configuration
 BLOCKCYPHER_TOKEN = 'dbd5a9f9a6b5403a8c0171bd25b5e883'
-BTC_ADDRESS = '3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
 WEBHOOK_SECRET = '55f66a40b826bd9cfa3f2b70d958ae6c'
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(100), nullable=False)
-    balance = db.Column(db.Float, default=100.0)
+    balance = db.Column(db.Float, default=0.0)
+    btc_address = db.Column(db.String(100), unique=True)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,7 +52,12 @@ class PendingDeposit(db.Model):
 with app.app_context():
     db.create_all()
     if not User.query.filter_by(username='admin').first():
-        db.session.add(User(username='admin', password='admin', balance=100.0))
+        db.session.add(User(
+            username='admin',
+            password='admin',
+            balance=100.0,
+            btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
+        ))
     if not Product.query.first():
         db.session.add_all([
             Product(name='Spammed CC', price=15.00),
@@ -62,19 +67,27 @@ with app.app_context():
         ])
     db.session.commit()
 
+# Add this helper function before the routes
+def get_user_context():
+    if 'user_id' in session:
+        user = User.query.get(session['user_id'])
+        order_count = Order.query.filter_by(user_id=user.id).count()
+        return {'user': user, 'order_count': order_count}
+    return {'user': None, 'order_count': 0}
+
 @app.route('/')
 @app.route('/index')
 def index():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    return render_template('index.html')
+    return render_template('index.html', **get_user_context())
 
 @app.route('/marketplace')
 def marketplace():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     products = Product.query.all()
-    return render_template('marketplace.html', products=products)
+    return render_template('marketplace.html', products=products, **get_user_context())
 
 @app.route('/add_to_cart/<int:product_id>')
 def add_to_cart(product_id):
@@ -88,6 +101,16 @@ def add_to_cart(product_id):
     db.session.commit()
     return redirect(url_for('marketplace'))
 
+@app.route('/remove_from_cart/<int:cart_id>', methods=['POST'])
+def remove_from_cart(cart_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    item = CartItem.query.get(cart_id)
+    if item and item.user_id == session['user_id']:
+        db.session.delete(item)
+        db.session.commit()
+    return redirect(url_for('cart'))
+
 @app.route('/cart')
 def cart():
     if 'user_id' not in session:
@@ -99,19 +122,17 @@ def cart():
         product = Product.query.get(item.product_id)
         subtotal = product.price * item.quantity
         total += subtotal
-        cart_items.append({'product': product, 'quantity': item.quantity})
-    return render_template('cart.html', items=cart_items, total=total)
+        cart_items.append({'product': product, 'quantity': item.quantity, 'id': item.id})
+    context = get_user_context()
+    return render_template('cart.html', items=cart_items, total=total, **context)
 
-@app.route('/checkout')
+@app.route('/checkout', methods=['POST'])
 def checkout():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     items = CartItem.query.filter_by(user_id=session['user_id']).all()
     user = User.query.get(session['user_id'])
-    total = 0
-    for item in items:
-        product = Product.query.get(item.product_id)
-        total += product.price * item.quantity
+    total = sum(Product.query.get(item.product_id).price * item.quantity for item in items)
 
     if user.balance < total:
         return "Insufficient balance."
@@ -120,53 +141,83 @@ def checkout():
         product = Product.query.get(item.product_id)
         for _ in range(item.quantity):
             hash_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            db.session.add(Order(user_id=user.id, product_name=product.name, hash_string=hash_str))
+            db.session.add(Order(user_id=user.id,
+                                 product_name=product.name,
+                                 hash_string=hash_str))
 
     user.balance -= total
-    CartItem.query.filter_by(user_id=session['user_id']).delete()
+    CartItem.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return redirect(url_for('orders'))
 
-@app.route('/orders')
+@app.route('/orders', methods=['GET','POST'])
 def orders():
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    orders = Order.query.filter_by(user_id=session['user_id']).order_by(Order.timestamp.desc()).all()
-    return render_template('orders.html', orders=orders)
+    user = User.query.get(session['user_id'])
+    orders = Order.query.filter_by(user_id=user.id).order_by(Order.timestamp.desc()).all()
+
+    if request.method == 'POST' and user.username == 'admin':
+        hash_code = request.form.get('hash_code', '').strip()
+        order = Order.query.filter_by(hash_string=hash_code).first()
+        if order:
+            owner = User.query.get(order.user_id)
+            flash(f"✔️ VALID: {order.product_name} by {owner.username} at {order.timestamp.strftime('%Y-%m-%d %H:%M:%S')}", 'success')
+        else:
+            flash("❌ INVALID or unknown hash.", 'error')
+
+    return render_template('orders.html', orders=orders, **get_user_context())
 
 @app.route('/balance')
 def balance():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    return render_template('balance.html', balance=user.balance, btc_address=BTC_ADDRESS)
+    return render_template('balance.html', balance=user.balance, btc_address=user.btc_address, **get_user_context())
 
 @app.route('/more')
 def more():
-    return render_template('more.html')
+    return render_template('more.html', **get_user_context())
 
 @app.route('/btc-webhook', methods=['POST'])
 def btc_webhook():
-    data = request.json
-    if data.get("token") != WEBHOOK_SECRET:
+    token = request.args.get("token")
+    if token != WEBHOOK_SECRET:
         return "Unauthorized", 401
 
+    data = request.json
     tx_hash = data.get("hash")
     confirmations = data.get("confirmations", 0)
     outputs = data.get("outputs", [])
 
     if confirmations >= 2:
         for output in outputs:
-            if output["addresses"] and BTC_ADDRESS in output["addresses"]:
-                usd_value = float(output["value"]) / 100000000 * 68000
-                deposit = PendingDeposit.query.filter_by(tx_hash=tx_hash).first()
-                if not deposit:
-                    user = User.query.filter_by(username="admin").first()
-                    deposit = PendingDeposit(user_id=user.id, tx_hash=tx_hash, usd_value=usd_value, confirmed=True)
+            addresses = output.get("addresses", [])
+            value = output.get("value", 0)
+            for address in addresses:
+                user = User.query.filter_by(btc_address=address).first()
+                if user and not PendingDeposit.query.filter_by(tx_hash=tx_hash).first():
+                    usd_value = float(value) / 100000000 * 68000
+                    deposit = PendingDeposit(user_id=user.id,
+                                             tx_hash=tx_hash,
+                                             usd_value=usd_value,
+                                             confirmed=True)
                     user.balance += usd_value
                     db.session.add(deposit)
                     db.session.commit()
     return "OK", 200
+
+@app.route('/profile-data')
+def profile_data():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    user = User.query.get(session['user_id'])
+    order_count = Order.query.filter_by(user_id=user.id).count()
+    return jsonify({
+        'username': user.username,
+        'balance': round(user.balance, 2),
+        'order_count': order_count
+    })
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -187,7 +238,10 @@ def signup():
         password = request.form.get('password')
         if User.query.filter_by(username=username).first():
             return render_template('signup.html', error="Username already exists")
-        db.session.add(User(username=username, password=password))
+        btc_address = "btc_" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=16))
+        db.session.add(User(username=username,
+                            password=password,
+                            btc_address=btc_address))
         db.session.commit()
         return redirect(url_for('login'))
     return render_template('signup.html')
@@ -197,7 +251,30 @@ def logout():
     session.clear()
     return redirect(url_for('login'))
 
-# ✅ FINAL DEPLOYMENT SETUP FOR RENDER
+@app.route('/verify', methods=['GET', 'POST'])
+def verify_order():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    if user.username != 'admin':
+        return redirect(url_for('index'))
+
+    result = None
+    if request.method == 'POST':
+        hash_input = request.form.get('hash_input')
+        order = Order.query.filter_by(hash_string=hash_input).first()
+        if order:
+            owner = User.query.get(order.user_id)
+            result = {
+                'valid': True,
+                'username': owner.username,
+                'product_name': order.product_name,
+                'timestamp': order.timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            }
+        else:
+            result = {'valid': False}
+    return render_template('verify.html', result=result, **get_user_context())
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

@@ -44,7 +44,6 @@
       z-index: 1;
       position: relative;
     }
-
     @keyframes pulseBorder {
       0% { box-shadow: 0 0 15px #00ffd0; }
       50% { box-shadow: 0 0 35px #00fff2; }
@@ -67,7 +66,12 @@
       font-family: monospace;
       color: #d32f2f;
     }
+    .order-hash a {
+      color: #d32f2f;
+      text-decoration: underline;
+    }
 
+    /* Hamburger + Profile */
     #menuToggle {
       position: fixed; top: 15px; left: 15px;
       width: 35px; height: 30px;
@@ -75,13 +79,11 @@
       display: flex; flex-direction: column;
       justify-content: space-between;
     }
-
     #menuToggle span {
       display: block; height: 4px;
       background: #00f6ff; border-radius: 2px;
       box-shadow: 0 0 8px #00f6ff;
     }
-
     #sideMenu {
       position: fixed; top: 0; left: 0;
       width: 70vw; max-width: 280px;
@@ -92,22 +94,18 @@
       transition: transform 0.3s ease;
       z-index: 1050; padding-top: 60px;
     }
-
     #sideMenu.active { transform: translateX(0); }
-
     #sideMenu a {
       display: block; padding: 15px 25px;
       color: #fff; border-bottom: 1px solid #222;
       text-decoration: none;
     }
-
     #sideMenu a:hover { background-color: #222; }
 
     #profileDropdownContainer {
       position: fixed; top: 15px; right: 15px;
       z-index: 1100;
     }
-
     #profileIcon {
       width: 40px; height: 40px;
       background-color: #00f6ff;
@@ -116,22 +114,18 @@
       justify-content: center; cursor: pointer;
       box-shadow: 0 0 10px #00f6ff;
     }
-
     #profileDropdown {
       display: none; position: absolute; top: 50px; right: 0;
       background: #fff; width: 200px;
       border-radius: 8px; overflow: hidden;
       box-shadow: 0 0 15px #00f6ff;
     }
-
     #profileDropdown.active { display: block; }
-
     #profileDropdown a {
       display: block; padding: 12px 16px;
       text-decoration: none; color: #333;
       border-bottom: 1px solid #eee;
     }
-
     #profileDropdown a:hover { background-color: #f0f0f0; }
   </style>
 
@@ -140,8 +134,8 @@
     const toggleProfile = () => document.getElementById('profileDropdown').classList.toggle('active');
 
     window.onload = () => {
-      document.getElementById('menuToggle')?.addEventListener('click', toggleMenu);
-      document.getElementById('profileIcon')?.addEventListener('click', toggleProfile);
+      document.getElementById('menuToggle').addEventListener('click', toggleMenu);
+      document.getElementById('profileIcon').addEventListener('click', toggleProfile);
       window.addEventListener('click', e => {
         if (!document.getElementById('sideMenu').contains(e.target) && !document.getElementById('menuToggle').contains(e.target))
           document.getElementById('sideMenu').classList.remove('active');
@@ -176,7 +170,8 @@
     <div id="profileDropdown">
       <div id="profileInfo">
         {{ user.username if user }}<br>
-        💰 Balance: ${{ '%.2f' | format(user.balance) if user }}
+        💰 ${{ '%.2f' | format(user.balance) if user }}<br>
+        📦 Orders: {{ orders|length }}
       </div>
       <a href="/balance">Load Funds</a>
       <a href="/marketplace">Shop</a>
@@ -194,7 +189,14 @@
         <div class="order-item">
           <strong>{{ order.product_name }}</strong><br>
           <small>Ordered: {{ order.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</small><br>
-          <div class="order-hash">Order ID: {{ order.hash_string }}</div>
+          <div class="order-hash">
+            Order ID: {{ order.hash_string }}<br>
+            <span>
+              Send this hash to
+              <a href="https://t.me/paradisestoreshop" target="_blank">@paradisestoreshop</a>
+              on Telegram
+            </span>
+          </div>
         </div>
       {% endfor %}
     {% else %}

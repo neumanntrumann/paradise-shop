@@ -113,11 +113,13 @@
     }
 
     #profileIcon {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       background-color: #00f6ff;
       color: white;
       border-radius: 50%;
-      display: flex; align-items: center;
+      display: flex;
+      align-items: center;
       justify-content: center;
       cursor: pointer;
       box-shadow: 0 0 10px #00f6ff;
@@ -183,11 +185,15 @@
     <a href="/logout">Logout</a>
   </nav>
 
-  <!-- Profile dropdown -->
+  <!-- Profile dropdown container -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
     <div id="profileDropdown">
-      <div id="profileInfo">Loading...</div>
+      <div id="profileInfo">
+        👤 {{ user.username }}<br>
+        💰 ${{ '%.2f' | format(user.balance) }}<br>
+        📦 Orders: {{ order_count }}
+      </div>
       <a href="/balance">Load Funds</a>
       <a href="/index">Shop</a>
       <a href="/cart">Cart</a>
@@ -202,9 +208,7 @@
     <p>Got questions or just wanna vibe?</p>
     <p>➡️ Join the fam on Telegram: <a href="https://t.me/ParadiseShopGroup" target="_blank">t.me/ParadiseShopGroup</a></p>
     <p>📲 Or DM me directly: <strong>@ParadiseStoreOwner</strong> — always down to talk!</p>
-
     <hr>
-
     <h2>🛠️ PARADISE SUPPORT 🛠️</h2>
     <p>Need help or running into issues?</p>
     <p>Tap in with our support team: <strong>@ParadiseSupportBot</strong></p>
@@ -212,4 +216,3 @@
   </div>
 </body>
 </html>
-

@@ -188,11 +188,15 @@
     <a href="/logout">Logout</a>
   </nav>
 
-  <!-- Profile dropdown -->
+  <!-- Profile dropdown container -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
     <div id="profileDropdown">
-      <div id="profileInfo">Loading...</div>
+      <div id="profileInfo">
+        👤 {{ user.username }}<br>
+        💰 ${{ '%.2f' | format(user.balance) }}<br>
+        📦 Orders: {{ order_count }}
+      </div>
       <a href="/balance">Load Funds</a>
       <a href="/index">Shop</a>
       <a href="/cart">Cart</a>

@@ -120,6 +120,11 @@
       border-bottom: 1px solid #eee;
     }
     #profileDropdown a:hover { background-color: #f0f0f0; }
+    #profileInfo {
+      padding: 12px 16px;
+      font-size: 0.95em;
+      border-bottom: 1px solid #eee;
+    }
   </style>
 
   <script>
@@ -161,7 +166,11 @@
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
     <div id="profileDropdown">
-      <div id="profileInfo">Loading...</div>
+      <div id="profileInfo">
+        {{ user.username }}<br>
+        💰 ${{ '%.2f' | format(user.balance) }}<br>
+        📦 Orders: {{ orders|length }}
+      </div>
       <a href="/balance">Load Funds</a>
       <a href="/index">Shop</a>
       <a href="/cart">Cart</a>

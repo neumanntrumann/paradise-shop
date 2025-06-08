@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Verify Order Hash</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e0f7fa, #f8b500);
+      margin: 0;
+      padding: 40px;
+      text-align: center;
+    }
+    form input {
+      padding: 10px;
+      font-size: 1em;
+      width: 300px;
+    }
+    form button {
+      padding: 10px 20px;
+      font-size: 1em;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .result {
+      margin-top: 30px;
+      padding: 20px;
+      background: white;
+      display: inline-block;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .valid { color: green; }
+    .invalid { color: red; }
+  </style>
+</head>
+<body>
+  <h1>🔍 Verify Order Hash</h1>
+  <form method="POST">
+    <input name="hash_input" placeholder="Enter 10-digit hash" required />
+    <button type="submit">Check</button>
+  </form>
+
+  {% if result %}
+    <div class="result">
+      {% if result.valid %}
+        <p class="valid">✅ Valid Order</p>
+        <p><strong>Username:</strong> {{ result.username }}</p>
+        <p><strong>Item:</strong> {{ result.product_name }}</p>
+        <p><strong>Date:</strong> {{ result.timestamp }}</p>
+      {% else %}
+        <p class="invalid">❌ Invalid Hash</p>
+      {% endif %}
+    </div>
+  {% endif %}
+</body>
+</html>
