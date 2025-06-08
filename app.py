@@ -16,6 +16,7 @@ db = SQLAlchemy(app)
 # BlockCypher configuration
 BLOCKCYPHER_TOKEN = 'dbd5a9f9a6b5403a8c0171bd25b5e883'
 WEBHOOK_SECRET = '55f66a40b826bd9cfa3f2b70d958ae6c'
+BASE_WEBHOOK_URL = "https://paradise-shop-1.onrender.com/btc-webhook"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,7 +68,6 @@ with app.app_context():
         ])
     db.session.commit()
 
-# Add this helper function before the routes
 def get_user_context():
     if 'user_id' in session:
         user = User.query.get(session['user_id'])
@@ -133,30 +133,24 @@ def checkout():
     items = CartItem.query.filter_by(user_id=session['user_id']).all()
     user = User.query.get(session['user_id'])
     total = sum(Product.query.get(item.product_id).price * item.quantity for item in items)
-
     if user.balance < total:
         return "Insufficient balance."
-
     for item in items:
         product = Product.query.get(item.product_id)
         for _ in range(item.quantity):
             hash_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
-            db.session.add(Order(user_id=user.id,
-                                 product_name=product.name,
-                                 hash_string=hash_str))
-
+            db.session.add(Order(user_id=user.id, product_name=product.name, hash_string=hash_str))
     user.balance -= total
     CartItem.query.filter_by(user_id=user.id).delete()
     db.session.commit()
     return redirect(url_for('orders'))
 
-@app.route('/orders', methods=['GET','POST'])
+@app.route('/orders', methods=['GET', 'POST'])
 def orders():
     if 'user_id' not in session:
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
     orders = Order.query.filter_by(user_id=user.id).order_by(Order.timestamp.desc()).all()
-
     if request.method == 'POST' and user.username == 'admin':
         hash_code = request.form.get('hash_code', '').strip()
         order = Order.query.filter_by(hash_string=hash_code).first()
@@ -165,7 +159,6 @@ def orders():
             flash(f"✔️ VALID: {order.product_name} by {owner.username} at {order.timestamp.strftime('%Y-%m-%d %H:%M:%S')}", 'success')
         else:
             flash("❌ INVALID or unknown hash.", 'error')
-
     return render_template('orders.html', orders=orders, **get_user_context())
 
 @app.route('/balance')
@@ -184,12 +177,10 @@ def btc_webhook():
     token = request.args.get("token")
     if token != WEBHOOK_SECRET:
         return "Unauthorized", 401
-
     data = request.json
     tx_hash = data.get("hash")
     confirmations = data.get("confirmations", 0)
     outputs = data.get("outputs", [])
-
     if confirmations >= 2:
         for output in outputs:
             addresses = output.get("addresses", [])
@@ -198,13 +189,11 @@ def btc_webhook():
                 user = User.query.filter_by(btc_address=address).first()
                 if user and not PendingDeposit.query.filter_by(tx_hash=tx_hash).first():
                     usd_value = float(value) / 100000000 * 68000
-                    deposit = PendingDeposit(user_id=user.id,
-                                             tx_hash=tx_hash,
-                                             usd_value=usd_value,
-                                             confirmed=True)
+                    deposit = PendingDeposit(user_id=user.id, tx_hash=tx_hash, usd_value=usd_value, confirmed=True)
                     user.balance += usd_value
                     db.session.add(deposit)
                     db.session.commit()
+                    flash("✅ Deposit confirmed and balance updated.", "success")
     return "OK", 200
 
 @app.route('/profile-data')
@@ -238,23 +227,30 @@ def signup():
         password = request.form.get('password')
         if User.query.filter_by(username=username).first():
             return render_template('signup.html', error="Username already exists")
-
-        # ✅ Generate a real BTC address from BlockCypher
         api_url = f"https://api.blockcypher.com/v1/btc/main/addrs?token={BLOCKCYPHER_TOKEN}"
         try:
             response = requests.post(api_url)
             data = response.json()
             btc_address = data.get("address")
-        except Exception as e:
-            return render_template('signup.html', error="Error generating BTC address.")
-
+        except:
+            return render_template('signup.html', error="BTC address error.")
         if not btc_address:
-            return render_template('signup.html', error="Failed to get BTC address from BlockCypher.")
-
-        db.session.add(User(username=username,
-                            password=password,
-                            btc_address=btc_address))
+            return render_template('signup.html', error="BTC address error.")
+        user = User(username=username, password=password, btc_address=btc_address)
+        db.session.add(user)
         db.session.commit()
+
+        webhook_url = f"https://api.blockcypher.com/v1/btc/main/hooks?token={BLOCKCYPHER_TOKEN}"
+        webhook_data = {
+            "event": "unconfirmed-tx",
+            "address": btc_address,
+            "url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}"
+        }
+        try:
+            requests.post(webhook_url, json=webhook_data)
+        except:
+            pass
+
         return redirect(url_for('login'))
     return render_template('signup.html')
 
@@ -270,7 +266,6 @@ def verify_order():
     user = User.query.get(session['user_id'])
     if user.username != 'admin':
         return redirect(url_for('index'))
-
     result = None
     if request.method == 'POST':
         hash_input = request.form.get('hash_input')

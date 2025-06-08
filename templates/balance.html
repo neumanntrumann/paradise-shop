@@ -77,6 +77,26 @@
       margin: 10px 0;
     }
 
+    .alert {
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    .alert-success {
+      background-color: #dff0d8;
+      color: #3c763d;
+      border: 1px solid #d0e9c6;
+    }
+
+    .alert-error {
+      background-color: #f2dede;
+      color: #a94442;
+      border: 1px solid #ebccd1;
+    }
+
     #menuToggle {
       position: fixed; top: 15px; left: 15px;
       width: 35px; height: 30px;
@@ -188,7 +208,7 @@
     <a href="/logout">Logout</a>
   </nav>
 
-  <!-- Profile dropdown container -->
+  <!-- Profile dropdown -->
   <div id="profileDropdownContainer">
     <div id="profileIcon" tabindex="0" role="button" aria-label="User profile menu">👤</div>
     <div id="profileDropdown">
@@ -207,6 +227,17 @@
 
   <!-- Main content -->
   <div class="container">
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'success' if category == 'success' else 'error' }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <h1>💰 Your Balance</h1>
     <p>Current Balance: <strong>${{ "%.2f"|format(balance) }}</strong></p>
 
@@ -215,6 +246,7 @@
       <p>Send BTC to this address to top up your account:</p>
       <code>{{ btc_address }}</code>
       <p>Minimum: $5 USD equivalent in BTC</p>
+      <p><strong>⚠️ Funds will be applied after 2 blockchain confirmations.</strong></p>
       <p>After sending BTC, message <strong>@paradisestoreorders</strong> on Telegram with your username and transaction screenshot.</p>
     </div>
   </div>
