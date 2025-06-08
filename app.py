@@ -238,7 +238,19 @@ def signup():
         password = request.form.get('password')
         if User.query.filter_by(username=username).first():
             return render_template('signup.html', error="Username already exists")
-        btc_address = "btc_" + ''.join(random.choices(string.ascii_lowercase + string.digits, k=16))
+
+        # ✅ Generate a real BTC address from BlockCypher
+        api_url = f"https://api.blockcypher.com/v1/btc/main/addrs?token={BLOCKCYPHER_TOKEN}"
+        try:
+            response = requests.post(api_url)
+            data = response.json()
+            btc_address = data.get("address")
+        except Exception as e:
+            return render_template('signup.html', error="Error generating BTC address.")
+
+        if not btc_address:
+            return render_template('signup.html', error="Failed to get BTC address from BlockCypher.")
+
         db.session.add(User(username=username,
                             password=password,
                             btc_address=btc_address))
