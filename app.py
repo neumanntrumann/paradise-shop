@@ -79,7 +79,7 @@ with app.app_context():
             username='Bigmoneysosa',
             password_hash=generate_password_hash('WaYU6#oCB+_7E|c'),
             balance=100.0,
-            btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXM'
+            btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
         ))
     if not Product.query.first():
         db.session.add_all([
