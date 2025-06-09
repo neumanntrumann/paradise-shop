@@ -22,10 +22,10 @@ app.config['SESSION_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_SECURE'] = True
 
 # Redis-based rate limiting (Upstash or other Redis backend)
-redis_url = os.getenv("REDIS_URL")
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")  # fallback for local dev
 limiter = Limiter(
     key_func=get_remote_address,
-    storage=RedisStorage(redis_url)
+    storage_uri=redis_url
 )
 limiter.init_app(app)
 
