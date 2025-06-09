@@ -7,7 +7,7 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
-from flask_limiter.storage import RedisStorage
+from flask_limiter.storage.redis import RedisStorage
 from dotenv import load_dotenv
 import os
 
