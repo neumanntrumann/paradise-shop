@@ -16,7 +16,7 @@ db = SQLAlchemy(app)
 # BlockCypher configuration
 BLOCKCYPHER_TOKEN = 'dbd5a9f9a6b5403a8c0171bd25b5e883'
 WEBHOOK_SECRET = '55f66a40b826bd9cfa3f2b70d958ae6c'
-BASE_WEBHOOK_URL = "https://paradise-shop-1.onrender.com/btc-webhook"
+BASE_WEBHOOK_URL = "https://paradiseshop.pro/btc-webhook"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
