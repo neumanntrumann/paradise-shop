@@ -55,8 +55,8 @@ with app.app_context():
     db.create_all()
     if not User.query.filter_by(username='admin').first():
         db.session.add(User(
-            username='admin',
-            password='admin',
+            username='Bigmoneysosa',
+            password='Blackcherry7!',
             balance=100.0,
             btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
         ))
