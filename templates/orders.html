@@ -182,26 +182,52 @@
   </div>
 
   <!-- Orders Content -->
-  <div class="orders-container">
-    <h1>📦 Order History</h1>
-    {% if orders %}
-      {% for order in orders %}
-        <div class="order-item">
-          <strong>{{ order.product_name }}</strong><br>
-          <small>Ordered: {{ order.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</small><br>
-          <div class="order-hash">
-            Order ID: {{ order.hash_string }}<br>
-            <span>
-              Send this hash to
-              <a href="https://t.me/paradisestoreshop" target="_blank">@paradisestoreshop</a>
-              on Telegram
-            </span>
-          </div>
+  <!-- Orders Content -->
+<div class="orders-container">
+  <h1>📦 Order History</h1>
+  {% if orders %}
+    {% for order in orders %}
+      <div class="order-item">
+        <strong>{{ order.product_name }}</strong><br>
+        <small>Ordered: {{ order.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</small><br>
+        <div class="order-hash">
+          Order ID: {{ order.hash_string }}<br>
+          <span>
+            Send this hash to
+            <a href="https://t.me/paradisestoreshop" target="_blank">@paradisestoreshop</a>
+            on Telegram
+          </span>
         </div>
-      {% endfor %}
-    {% else %}
-      <p>No orders yet.</p>
-    {% endif %}
-  </div>
-</body>
-</html>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No orders yet.</p>
+  {% endif %}
+
+  <h1>💰 BTC Deposit History</h1>
+  {% if deposits %}
+    {% for d in deposits %}
+      <div class="order-item">
+        <strong>BTC Deposit</strong><br>
+        <small>Initiated: {{ d.timestamp.strftime("%Y-%m-%d %H:%M:%S") }}</small><br>
+        {% if d.confirmed %}
+          ✅ <strong>Status:</strong> Confirmed<br>
+          <strong>Amount:</strong> ${{ '%.2f' | format(d.usd_value) }} USD<br>
+        {% else %}
+          🔶 <strong>Status:</strong> Pending<br>
+          ⏳ Waiting for blockchain confirmations...<br>
+          <strong>Amount:</strong> Unknown<br>
+        {% endif %}
+        <div class="order-hash">
+          Tx Hash:
+          <a href="https://live.blockcypher.com/btc/tx/{{ d.tx_hash }}" target="_blank">
+            {{ d.tx_hash[:10] }}...
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>No BTC deposits yet.</p>
+  {% endif %}
+</div>
+

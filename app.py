@@ -50,6 +50,8 @@ class PendingDeposit(db.Model):
     tx_hash = db.Column(db.String(100), unique=True)
     usd_value = db.Column(db.Float)
     confirmed = db.Column(db.Boolean, default=False)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    confirmations = db.Column(db.Integer, default=0)
 
 with app.app_context():
     db.create_all()
@@ -155,26 +157,8 @@ def orders():
         return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
     orders = Order.query.filter_by(user_id=user.id).order_by(Order.timestamp.desc()).all()
-    if request.method == 'POST' and user.username == 'admin':
-        hash_code = request.form.get('hash_code', '').strip()
-        order = Order.query.filter_by(hash_string=hash_code).first()
-        if order:
-            owner = User.query.get(order.user_id)
-            flash(f"✔️ VALID: {order.product_name} by {owner.username} at {order.timestamp.strftime('%Y-%m-%d %H:%M:%S')}", 'success')
-        else:
-            flash("❌ INVALID or unknown hash.", 'error')
-    return render_template('orders.html', orders=orders, **get_user_context())
-
-@app.route('/balance')
-def balance():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    return render_template('balance.html', balance=user.balance, btc_address=user.btc_address, **get_user_context())
-
-@app.route('/more')
-def more():
-    return render_template('more.html', **get_user_context())
+    deposits = PendingDeposit.query.filter_by(user_id=user.id).order_by(PendingDeposit.timestamp.desc()).all()
+    return render_template('orders.html', orders=orders, deposits=deposits, **get_user_context())
 
 @app.route('/btc-webhook', methods=['POST'])
 def btc_webhook():
@@ -185,32 +169,37 @@ def btc_webhook():
     tx_hash = data.get("hash")
     confirmations = data.get("confirmations", 0)
     outputs = data.get("outputs", [])
-    if confirmations >= 2:
-        for output in outputs:
-            addresses = output.get("addresses", [])
-            value = output.get("value", 0)
-            for address in addresses:
-                user = User.query.filter_by(btc_address=address).first()
-                if user and not PendingDeposit.query.filter_by(tx_hash=tx_hash).first():
+    for output in outputs:
+        addresses = output.get("addresses", [])
+        value = output.get("value", 0)
+        for address in addresses:
+            user = User.query.filter_by(btc_address=address).first()
+            if user:
+                deposit = PendingDeposit.query.filter_by(tx_hash=tx_hash).first()
+                if not deposit:
                     usd_value = float(value) / 100000000 * 68000
-                    deposit = PendingDeposit(user_id=user.id, tx_hash=tx_hash, usd_value=usd_value, confirmed=True)
-                    user.balance += usd_value
+                    deposit = PendingDeposit(
+                        user_id=user.id,
+                        tx_hash=tx_hash,
+                        usd_value=usd_value,
+                        confirmations=confirmations,
+                        confirmed=(confirmations >= 2)
+                    )
                     db.session.add(deposit)
-                    db.session.commit()
-                    flash("✅ Deposit confirmed and balance updated.", "success")
+                else:
+                    deposit.confirmations = confirmations
+                    if confirmations >= 2 and not deposit.confirmed:
+                        deposit.confirmed = True
+                        user.balance += deposit.usd_value
+                db.session.commit()
     return "OK", 200
 
-@app.route('/profile-data')
-def profile_data():
+@app.route('/balance')
+def balance():
     if 'user_id' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
+        return redirect(url_for('login'))
     user = User.query.get(session['user_id'])
-    order_count = Order.query.filter_by(user_id=user.id).count()
-    return jsonify({
-        'username': user.username,
-        'balance': round(user.balance, 2),
-        'order_count': order_count
-    })
+    return render_template('balance.html', balance=user.balance, btc_address=user.btc_address, **get_user_context())
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -240,13 +229,9 @@ def signup():
             return render_template('signup.html', error="BTC address error.")
         if not btc_address:
             return render_template('signup.html', error="BTC address error.")
-        
-        # Create user
         user = User(username=username, password=password, btc_address=btc_address)
         db.session.add(user)
         db.session.commit()
-
-        # Set up webhook to your backend
         webhook_url = f"https://api.blockcypher.com/v1/btc/main/hooks?token={BLOCKCYPHER_TOKEN}"
         webhook_data = {
             "event": "unconfirmed-tx",
@@ -257,8 +242,6 @@ def signup():
             requests.post(webhook_url, json=webhook_data)
         except:
             pass
-
-        # Set up automatic payment forwarding
         forward_url = f"https://api.blockcypher.com/v1/btc/main/payments?token={BLOCKCYPHER_TOKEN}"
         forward_data = {
             "destination": "3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL",
@@ -270,7 +253,6 @@ def signup():
             requests.post(forward_url, json=forward_data)
         except:
             pass
-
         return redirect(url_for('login'))
     return render_template('signup.html')
 
@@ -278,29 +260,6 @@ def signup():
 def logout():
     session.clear()
     return redirect(url_for('login'))
-
-@app.route('/verify', methods=['GET', 'POST'])
-def verify_order():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    if user.username != 'admin':
-        return redirect(url_for('index'))
-    result = None
-    if request.method == 'POST':
-        hash_input = request.form.get('hash_input')
-        order = Order.query.filter_by(hash_string=hash_input).first()
-        if order:
-            owner = User.query.get(order.user_id)
-            result = {
-                'valid': True,
-                'username': owner.username,
-                'product_name': order.product_name,
-                'timestamp': order.timestamp.strftime("%Y-%m-%d %H:%M:%S")
-            }
-        else:
-            result = {'valid': False}
-    return render_template('verify.html', result=result, **get_user_context())
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
