@@ -4,26 +4,31 @@ import requests
 from flask import Flask, render_template, request, redirect, session, url_for, jsonify, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__)
-app.secret_key = 'secret123'
+app.secret_key = os.getenv('FLASK_SECRET_KEY', 'secret123')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///shop.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# BlockCypher configuration
-BLOCKCYPHER_TOKEN = 'dbd5a9f9a6b5403a8c0171bd25b5e883'
-WEBHOOK_SECRET = '55f66a40b826bd9cfa3f2b70d958ae6c'
+# Turnstile + BlockCypher
+TURNSTILE_SECRET = os.getenv('TURNSTILE_SECRET', '0x4AAAAAABgee-0FI3E-a1fkoBmay_gDt8o')
+BLOCKCYPHER_TOKEN = os.getenv('BLOCKCYPHER_TOKEN', 'dbd5a9f9a6b5403a8c0171bd25b5e883')
+WEBHOOK_SECRET = os.getenv('WEBHOOK_SECRET', '55f66a40b826bd9cfa3f2b70d958ae6c')
 BASE_WEBHOOK_URL = "https://paradiseshop.pro/btc-webhook"
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(100), nullable=False)
+    password_hash = db.Column(db.String(100), nullable=False)
     balance = db.Column(db.Float, default=0.0)
     btc_address = db.Column(db.String(100), unique=True)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -58,7 +63,7 @@ with app.app_context():
     if not User.query.filter_by(username='admin').first():
         db.session.add(User(
             username='admin',
-            password='admin',
+            password_hash=generate_password_hash('admin'),
             balance=100.0,
             btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
         ))
@@ -80,6 +85,20 @@ def get_user_context():
         order_count = Order.query.filter_by(user_id=user.id).count()
         return {'user': user, 'order_count': order_count}
     return {'user': None, 'order_count': 0}
+
+def verify_turnstile(token, remoteip=None):
+    url = "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    data = {
+        "secret": TURNSTILE_SECRET,
+        "response": token
+    }
+    if remoteip:
+        data["remoteip"] = remoteip
+    try:
+        r = requests.post(url, data=data)
+        return r.json().get("success", False)
+    except:
+        return False
 
 @app.route('/')
 @app.route('/index')
@@ -129,8 +148,7 @@ def cart():
         subtotal = product.price * item.quantity
         total += subtotal
         cart_items.append({'product': product, 'quantity': item.quantity, 'id': item.id})
-    context = get_user_context()
-    return render_template('cart.html', items=cart_items, total=total, **context)
+    return render_template('cart.html', items=cart_items, total=total, **get_user_context())
 
 @app.route('/checkout', methods=['POST'])
 def checkout():
@@ -160,6 +178,81 @@ def orders():
     deposits = PendingDeposit.query.filter_by(user_id=user.id).order_by(PendingDeposit.timestamp.desc()).all()
     return render_template('orders.html', orders=orders, deposits=deposits, **get_user_context())
 
+@app.route('/balance')
+def balance():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    user = User.query.get(session['user_id'])
+    return render_template('balance.html', balance=user.balance, btc_address=user.btc_address, **get_user_context())
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        token = request.form.get("cf-turnstile-response")
+        if not verify_turnstile(token, request.remote_addr):
+            return render_template("login.html", error="Turnstile verification failed.")
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password_hash, password):
+            session['user_id'] = user.id
+            return redirect(url_for('index'))
+        return render_template('login.html', error="Invalid credentials")
+    return render_template('login.html')
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        token = request.form.get("cf-turnstile-response")
+        if not verify_turnstile(token, request.remote_addr):
+            return render_template("signup.html", error="Turnstile verification failed.")
+        username = request.form.get('username')
+        password = request.form.get('password')
+        if User.query.filter_by(username=username).first():
+            return render_template('signup.html', error="Username already exists")
+
+        # Generate BTC address
+        api_url = f"https://api.blockcypher.com/v1/btc/main/addrs?token={BLOCKCYPHER_TOKEN}"
+        try:
+            response = requests.post(api_url)
+            data = response.json()
+            btc_address = data.get("address")
+        except:
+            return render_template('signup.html', error="BTC address error.")
+        if not btc_address:
+            return render_template('signup.html', error="BTC address error.")
+
+        hashed_password = generate_password_hash(password)
+        user = User(username=username, password_hash=hashed_password, btc_address=btc_address)
+        db.session.add(user)
+        db.session.commit()
+
+        # Set webhook
+        webhook_data = {
+            "event": "unconfirmed-tx",
+            "address": btc_address,
+            "url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}"
+        }
+        try:
+            requests.post(f"https://api.blockcypher.com/v1/btc/main/hooks?token={BLOCKCYPHER_TOKEN}", json=webhook_data)
+        except:
+            pass
+
+        # Set forwarding
+        forward_data = {
+            "destination": "3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL",
+            "incoming_address": btc_address,
+            "callback_url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}",
+            "confirmations": 2
+        }
+        try:
+            requests.post(f"https://api.blockcypher.com/v1/btc/main/payments?token={BLOCKCYPHER_TOKEN}", json=forward_data)
+        except:
+            pass
+
+        return redirect(url_for('login'))
+    return render_template('signup.html')
+
 @app.route('/btc-webhook', methods=['POST'])
 def btc_webhook():
     token = request.args.get("token")
@@ -177,7 +270,7 @@ def btc_webhook():
             if user:
                 deposit = PendingDeposit.query.filter_by(tx_hash=tx_hash).first()
                 if not deposit:
-                    usd_value = float(value) / 100000000 * 68000
+                    usd_value = float(value) / 100000000 * 68000  # Example BTC to USD
                     deposit = PendingDeposit(
                         user_id=user.id,
                         tx_hash=tx_hash,
@@ -193,68 +286,6 @@ def btc_webhook():
                         user.balance += deposit.usd_value
                 db.session.commit()
     return "OK", 200
-
-@app.route('/balance')
-def balance():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    user = User.query.get(session['user_id'])
-    return render_template('balance.html', balance=user.balance, btc_address=user.btc_address, **get_user_context())
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        user = User.query.filter_by(username=username, password=password).first()
-        if user:
-            session['user_id'] = user.id
-            return redirect(url_for('index'))
-        return render_template('login.html', error="Invalid credentials")
-    return render_template('login.html')
-
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        if User.query.filter_by(username=username).first():
-            return render_template('signup.html', error="Username already exists")
-        api_url = f"https://api.blockcypher.com/v1/btc/main/addrs?token={BLOCKCYPHER_TOKEN}"
-        try:
-            response = requests.post(api_url)
-            data = response.json()
-            btc_address = data.get("address")
-        except:
-            return render_template('signup.html', error="BTC address error.")
-        if not btc_address:
-            return render_template('signup.html', error="BTC address error.")
-        user = User(username=username, password=password, btc_address=btc_address)
-        db.session.add(user)
-        db.session.commit()
-        webhook_url = f"https://api.blockcypher.com/v1/btc/main/hooks?token={BLOCKCYPHER_TOKEN}"
-        webhook_data = {
-            "event": "unconfirmed-tx",
-            "address": btc_address,
-            "url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}"
-        }
-        try:
-            requests.post(webhook_url, json=webhook_data)
-        except:
-            pass
-        forward_url = f"https://api.blockcypher.com/v1/btc/main/payments?token={BLOCKCYPHER_TOKEN}"
-        forward_data = {
-            "destination": "3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL",
-            "incoming_address": btc_address,
-            "callback_url": f"{BASE_WEBHOOK_URL}?token={WEBHOOK_SECRET}",
-            "confirmations": 2
-        }
-        try:
-            requests.post(forward_url, json=forward_data)
-        except:
-            pass
-        return redirect(url_for('login'))
-    return render_template('signup.html')
 
 @app.route('/logout')
 def logout():

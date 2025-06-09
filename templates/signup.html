@@ -86,6 +86,9 @@
       color: #004999;
     }
   </style>
+
+  <!-- Turnstile API -->
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
   <div class="parallax-bg"></div>
@@ -98,6 +101,10 @@
     <form method="POST">
       <input name="username" placeholder="Choose a Username" required><br>
       <input name="password" type="password" placeholder="Create a Password" required><br>
+
+      <!-- Cloudflare Turnstile CAPTCHA -->
+      <div class="cf-turnstile" data-sitekey="0x4AAAAAABgee9LZ3UGxPwQV"></div>
+
       <button type="submit">Sign Up</button>
     </form>
     <p><a href="/login">Already have an account? Login</a></p>
