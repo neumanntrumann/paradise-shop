@@ -119,8 +119,13 @@ def verify_turnstile(token, remoteip=None):
 
 @app.before_request
 def enforce_https_in_production():
-    if not request.is_secure and not app.debug:
-        return redirect(request.url.replace("http://", "https://", 1))
+    if request.headers.get('X-Forwarded-Proto', 'http') != 'https' and not app.debug:
+        url = request.url.replace("http://", "https://", 1)
+        return redirect(url, code=301)
+
+@app.route('/robots.txt')
+def robots_txt():
+    return app.send_static_file('robots.txt')
 
 @app.route('/')
 @app.route('/index')
