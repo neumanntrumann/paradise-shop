@@ -7,11 +7,11 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+from flask_limiter.storage import RedisStorage
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # This loads variables from .env into os.environ
-
+load_dotenv()  # Loads .env variables
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'your-fallback-secret')
@@ -21,8 +21,12 @@ app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['REMEMBER_COOKIE_SECURE'] = True
 
-# Rate Limiting
-limiter = Limiter(key_func=get_remote_address)
+# Redis-based rate limiting (Upstash or other Redis backend)
+redis_url = os.getenv("REDIS_URL")
+limiter = Limiter(
+    key_func=get_remote_address,
+    storage=RedisStorage(redis_url)
+)
 limiter.init_app(app)
 
 db = SQLAlchemy(app)
