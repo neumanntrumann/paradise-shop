@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: paradise-shop
+    env: python
+    region: oregon  # you can change to frankfurt, singapore, etc.
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: FLASK_SECRET_KEY
+        value: 6LeaIlYrAAAAADtcb41HN1b4oS49g_hz_TfisYpZ
+      - key: TURNSTILE_SECRET
+        value: 0x4AAAAAABgee-0FI3E-a1fkoBmay_gDt8o
+      - key: BLOCKCYPHER_TOKEN
+        value: dbd5a9f9a6b5403a8c0171bd25b5e883
+      - key: WEBHOOK_SECRET
+        value: 55f66a40b826bd9cfa3f2b70d958ae6c
