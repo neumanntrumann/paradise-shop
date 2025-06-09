@@ -60,12 +60,12 @@ class PendingDeposit(db.Model):
 
 with app.app_context():
     db.create_all()
-    if not User.query.filter_by(username='admin').first():
+    if not User.query.filter_by(username='Bigmoneysosa').first():
         db.session.add(User(
             username='admin',
-            password_hash=generate_password_hash('admin'),
+            password_hash=generate_password_hash('WaYU6#oCB+"_7E|c'),
             balance=100.0,
-            btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXL'
+            btc_address='3BiesMXVMhQmaUvrqAS8tHsBh4wA8pfKXM'
         ))
     if not Product.query.first():
         db.session.add_all([
